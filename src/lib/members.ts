@@ -28,6 +28,26 @@ export function formatMemberNumber(n: number) {
   return `BOSA-${String(n).padStart(4, "0")}`;
 }
 
+/**
+ * The number printed on the card, airline style: BL · year joined · member number · check digit.
+ * e.g. BL 2026 00001 4. The last digit (Luhn) catches a mistyped number.
+ */
+export function membershipId(n: number, joined: Date | null | undefined) {
+  const year = new Intl.DateTimeFormat("en", { timeZone: "Africa/Kampala", year: "numeric" }).format(joined ?? new Date());
+  const body = `${year}${String(n).padStart(5, "0")}`;
+  let sum = 0;
+  for (let i = 0; i < body.length; i++) {
+    let d = Number(body[body.length - 1 - i]);
+    if (i % 2 === 0) {
+      d *= 2;
+      if (d > 9) d -= 9;
+    }
+    sum += d;
+  }
+  const check = (10 - (sum % 10)) % 10;
+  return `BL ${year} ${String(n).padStart(5, "0")} ${check}`;
+}
+
 function secret() {
   return process.env.AUTH_SECRET || "dev-only-insecure-secret-change-me";
 }

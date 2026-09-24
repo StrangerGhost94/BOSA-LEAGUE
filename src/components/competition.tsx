@@ -58,7 +58,7 @@ export function CompetitionHero({
 
 export function SubNav({ items }: { items: { href: string; label: string }[] }) {
   return (
-    <div className="sticky top-[68px] z-30 border-y border-white/[0.06] bg-night-900/80 backdrop-blur-xl lg:top-[76px]">
+    <div className="sticky top-[calc(var(--header-h)+var(--safe-top))] z-30 border-y border-white/[0.06] bg-night-900/80 backdrop-blur-xl">
       <div className="container-x flex gap-6 overflow-x-auto scrollbar-none">
         {items.map((i) => (
           <a key={i.href} href={i.href} className="whitespace-nowrap py-4 text-[12px] font-semibold uppercase tracking-[0.18em] text-ivory/55 transition hover:text-gold">

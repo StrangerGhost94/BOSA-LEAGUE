@@ -1,7 +1,7 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { db, pool } from "@/db";
 import * as s from "@/db/schema";
@@ -921,5 +921,35 @@ export async function markVouchersIssuedAction(_: ActionResult, fd: FormData): A
     const { rowCount } = await pool.query("update vouchers set note=$2 where batch=$1 and status='UNUSED'", [batch, note]);
     await logActivity(u.id, "Noted voucher batch", "Voucher", `${batch}: ${note}`);
     return ok(`Noted on ${rowCount} unused vouchers in "${batch}".`);
+  });
+}
+
+/* ============================== ACCOUNT SHARING ============================== */
+
+/** Ends every session of a member: all phones are signed out and must sign in again. */
+export async function signOutEverywhereAction(_: ActionResult, fd: FormData): A {
+  return guarded("users", async (u) => {
+    const id = str(fd, "userId");
+    const [t] = await db.update(s.users).set({ sessionVersion: sql`${s.users.sessionVersion} + 1` }).where(eq(s.users.id, id)).returning({ name: s.users.name });
+    if (!t) return fail("Account not found.");
+    await logActivity(u.id, "Signed out all devices", "User", t.name, id);
+    return ok(`${t.name} has been signed out on every device.`);
+  });
+}
+
+/** Suspends (or restores) a member account. Suspending also signs it out everywhere. */
+export async function setAccountSuspendedAction(_: ActionResult, fd: FormData): A {
+  return guarded("users", async (u) => {
+    const id = str(fd, "userId");
+    const suspend = str(fd, "suspend") === "1";
+    if (id === u.id) return fail("You cannot suspend your own account.");
+    const [t] = await db
+      .update(s.users)
+      .set(suspend ? { active: false, sessionVersion: sql`${s.users.sessionVersion} + 1` } : { active: true })
+      .where(eq(s.users.id, id))
+      .returning({ name: s.users.name });
+    if (!t) return fail("Account not found.");
+    await logActivity(u.id, suspend ? "Suspended account (sharing)" : "Restored account", "User", t.name, id);
+    return ok(suspend ? `${t.name} is suspended and signed out.` : `${t.name} can sign in again.`);
   });
 }

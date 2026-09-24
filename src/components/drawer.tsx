@@ -59,7 +59,9 @@ export function Drawer({
                   aria-label={title}
                   className={clsx(
                     "fixed z-[86] flex flex-col overflow-hidden border border-white/[0.08] bg-night-800 shadow-[0_40px_120px_-20px_rgba(0,0,0,.9)]",
-                    side === "right" ? "inset-y-0 right-0 w-full max-w-xl sm:rounded-l-3xl" : "left-1/2 top-1/2 max-h-[90vh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-3xl",
+                    side === "right"
+                      ? "inset-y-0 right-0 w-full max-w-xl pb-[var(--safe-bottom)] pr-[var(--safe-right)] pt-[var(--safe-top)] sm:rounded-l-3xl"
+                      : "left-1/2 top-1/2 max-h-[calc(100dvh-var(--safe-top)-var(--safe-bottom)-2rem)] w-[calc(100%-2rem-var(--safe-left)-var(--safe-right))] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-3xl",
                   )}
                   initial={side === "right" ? { x: "100%" } : { opacity: 0, scale: 0.95, y: "-46%", x: "-50%" }}
                   animate={side === "right" ? { x: 0 } : { opacity: 1, scale: 1, y: "-50%", x: "-50%" }}

@@ -79,7 +79,7 @@ export function CommandMenu() {
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[80] flex items-start justify-center bg-night-900/70 px-4 pt-[12vh] backdrop-blur-md"
+          className="fixed inset-0 z-[80] flex items-start justify-center bg-night-900/70 pl-[max(1rem,var(--safe-left))] pr-[max(1rem,var(--safe-right))] pt-[calc(12vh+var(--safe-top))] backdrop-blur-md"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

@@ -142,8 +142,26 @@ export const users = pgTable("users", {
     .references(() => players.id, { onDelete: "set null" }),
   active: boolean("active").notNull().default(true),
   lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
+  // Raised on every member sign-in: older sessions on other phones stop working (one phone at a time)
+  sessionVersion: integer("session_version").notNull().default(0),
   createdAt: created(),
 });
+
+/** Every sign-in, used to spot accounts that are being shared. */
+export const loginEvents = pgTable(
+  "login_events",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    device: text("device").notNull(), // short fingerprint of the browser and phone
+    deviceLabel: text("device_label").notNull(), // e.g. "iPhone · Safari"
+    ip: text("ip"),
+    createdAt: created(),
+  },
+  (t) => [index("login_events_user_idx").on(t.userId, t.createdAt)],
+);
 
 export const payments = pgTable("payments", {
   id: id(),
@@ -577,6 +595,8 @@ export const honoursRelations = relations(honours, ({ one }) => ({
 export const activityRelations = relations(activityLogs, ({ one }) => ({
   user: one(users, { fields: [activityLogs.userId], references: [users.id] }),
 }));
+
+export const loginEventsRelations = relations(loginEvents, ({ one }) => ({ user: one(users, { fields: [loginEvents.userId], references: [users.id] }) }));
 
 export const vouchersRelations = relations(vouchers, ({ one }) => ({ usedBy: one(users, { fields: [vouchers.usedById], references: [users.id] }) }));
 

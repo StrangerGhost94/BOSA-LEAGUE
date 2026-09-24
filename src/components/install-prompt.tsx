@@ -109,7 +109,7 @@ export function InstallPrompt() {
             key="sheet"
             role="dialog"
             aria-label="Install the BOSA app"
-            className="fixed inset-x-0 bottom-0 z-[81] mx-auto w-full max-w-md px-3 pb-[max(12px,env(safe-area-inset-bottom))] sm:bottom-6 sm:right-6 sm:left-auto sm:mx-0 sm:px-0"
+            className="fixed inset-x-0 bottom-0 z-[81] mx-auto w-full max-w-md pb-[max(12px,var(--safe-bottom))] pl-[max(12px,var(--safe-left))] pr-[max(12px,var(--safe-right))] sm:bottom-[calc(1.5rem+var(--safe-bottom))] sm:right-[max(1.5rem,var(--safe-right))] sm:left-auto sm:pb-0 sm:pl-0 sm:pr-0 sm:mx-0 sm:px-0"
             initial={{ y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 40, opacity: 0 }}

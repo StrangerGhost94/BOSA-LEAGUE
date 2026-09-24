@@ -75,7 +75,7 @@ export function InlineMessage({ state }: { state: ActionResult }) {
 
 function Toast({ state }: { state: ActionResult }) {
   return (
-    <div className="pointer-events-none fixed bottom-6 left-1/2 z-[90] -translate-x-1/2">
+    <div className="pointer-events-none fixed bottom-[calc(var(--tabbar-h)+var(--safe-bottom)+0.75rem)] left-1/2 z-[90] -translate-x-1/2 xl:bottom-[calc(1.5rem+var(--safe-bottom))]">
       <AnimatePresence mode="wait">
         {state?.message && (
           <motion.div

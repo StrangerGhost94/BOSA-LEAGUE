@@ -3,7 +3,7 @@ import { BosaLogo } from "@/components/ui";
 
 export function SiteFooter() {
   return (
-    <footer className="relative mt-32 overflow-hidden border-t border-white/[0.06] bg-night-900">
+    <footer className="relative mt-32 overflow-hidden border-t border-white/[0.06] bg-night-900 xl:pb-[var(--safe-bottom)]">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
       <div className="pointer-events-none absolute -bottom-40 left-1/2 h-80 w-[800px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(204,38,84,0.13),rgba(204,38,84,0))]" />
       <div className="container-x relative py-16">

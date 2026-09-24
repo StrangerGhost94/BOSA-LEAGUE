@@ -5,12 +5,17 @@ import { FadeIn } from "@/components/motion";
 
 export const metadata = { title: "Sign in" };
 
-export default function SignInPage({ searchParams }: { searchParams: { next?: string } }) {
+export default function SignInPage({ searchParams }: { searchParams: { next?: string; reason?: string } }) {
   return (
     <FadeIn>
       <div className="eyebrow mb-4">Welcome back</div>
       <h1 className="headline text-5xl">Sign in</h1>
       <p className="mt-3 text-sm text-ivory/55">Access your membership, club panel or the BOSA control room.</p>
+      {searchParams.reason === "elsewhere" && (
+        <p className="mt-6 rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-gold-300">
+          You were signed out because your account was signed in on another phone (or the League office ended your session). A membership can be used on one phone at a time.
+        </p>
+      )}
       <ActionForm action={signInAction} className="mt-10 space-y-5" toast={false}>
         <input type="hidden" name="next" value={searchParams.next ?? ""} />
         <Field label="Email">

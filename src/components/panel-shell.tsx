@@ -91,13 +91,13 @@ export function PanelShell({
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[272px_1fr]">
-      <aside className="sticky top-0 hidden h-screen border-r border-white/[0.06] bg-night-800/60 backdrop-blur-xl lg:block">{sidebar}</aside>
+      <aside className="sticky top-0 hidden h-screen border-r pb-[var(--safe-bottom)] pl-[var(--safe-left)] pt-[var(--safe-top)] border-white/[0.06] bg-night-800/60 backdrop-blur-xl lg:block">{sidebar}</aside>
       <AnimatePresence>
         {open && (
           <>
             <motion.div className="fixed inset-0 z-40 bg-night-900/70 backdrop-blur-sm lg:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)} />
             <motion.aside
-              className="fixed inset-y-0 left-0 z-50 w-[284px] border-r border-white/[0.08] bg-night-800 lg:hidden"
+              className="fixed inset-y-0 left-0 z-50 w-[calc(284px+var(--safe-left))] border-r border-white/[0.08] bg-night-800 pb-[var(--safe-bottom)] pl-[var(--safe-left)] pt-[var(--safe-top)] lg:hidden"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
@@ -113,7 +113,7 @@ export function PanelShell({
         )}
       </AnimatePresence>
       <div className="min-w-0">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-white/[0.06] bg-night-900/80 px-4 backdrop-blur-xl sm:px-8">
+        <header className="sticky top-0 z-30 flex h-[calc(4rem+var(--safe-top))] items-center gap-3 border-b border-white/[0.06] bg-night-900/80 pl-[max(1rem,var(--safe-left))] pr-[max(1rem,var(--safe-right))] pt-[var(--safe-top)] backdrop-blur-xl sm:pl-[max(2rem,var(--safe-left))] sm:pr-[max(2rem,var(--safe-right))]">
           <button className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 lg:hidden" onClick={() => setOpen(true)} aria-label="Open navigation">
             <Icon name="menu" />
           </button>
@@ -129,7 +129,7 @@ export function PanelShell({
             </Link>
           </div>
         </header>
-        <motion.main key={pathname} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0, transitionEnd: { transform: "none" } }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} className="px-4 py-8 sm:px-8 lg:py-10">
+        <motion.main key={pathname} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0, transitionEnd: { transform: "none" } }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} className="pb-[calc(2rem+var(--safe-bottom))] pl-[max(1rem,var(--safe-left))] pr-[max(1rem,var(--safe-right))] pt-8 sm:pl-[max(2rem,var(--safe-left))] sm:pr-[max(2rem,var(--safe-right))] lg:pb-[calc(2.5rem+var(--safe-bottom))] lg:pt-10">
           {children}
         </motion.main>
       </div>

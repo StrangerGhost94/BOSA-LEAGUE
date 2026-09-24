@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { parseCardCode, formatMemberNumber } from "@/lib/members";
+import { parseCardCode, membershipId } from "@/lib/members";
 import { BosaLogo, Icon } from "@/components/ui";
 import { hasMembership } from "@/lib/auth";
 
@@ -23,7 +23,8 @@ export default async function VerifyPage({ params }: { params: { code: string } 
         {valid && u ? (
           <div className="mt-4 space-y-1 text-ivory/80">
             <div className="font-serif text-2xl">{u.name}</div>
-            <div className="text-sm">{u.completionYear ? `Class of ${u.completionYear} · ` : ""}{formatMemberNumber(n!)}</div>
+            <div className="font-mono text-sm tracking-wide text-gold">{membershipId(n!, u.membershipPaidAt ?? u.createdAt)}</div>
+            <div className="text-sm">{u.completionYear ? `${u.completionYear} intake · ` : ""}Active member</div>
             <div className="text-xs text-ivory/50">Checked {new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Kampala", dateStyle: "medium", timeStyle: "short" }).format(new Date())}</div>
           </div>
         ) : (

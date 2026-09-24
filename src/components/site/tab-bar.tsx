@@ -20,14 +20,14 @@ export function MobileTabBar({ liveCount = 0 }: { liveCount?: number }) {
   return (
     <nav
       aria-label="Quick navigation"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] bg-night-900/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl xl:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] bg-night-900/90 pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)] backdrop-blur-xl xl:hidden"
     >
       <div className="mx-auto grid max-w-lg grid-cols-5">
         {TABS.map((t) => (
           <Link
             key={t.href}
             href={t.href}
-            className={clsx("relative flex min-h-[56px] flex-col items-center justify-center gap-1 text-[10px] font-semibold uppercase tracking-[0.12em] transition", active(t.href) ? "text-gold" : "text-ivory/55")}
+            className={clsx("relative flex min-h-[var(--tabbar-h)] flex-col items-center justify-center gap-1 text-[10px] font-semibold uppercase tracking-[0.12em] transition", active(t.href) ? "text-gold" : "text-ivory/55")}
           >
             {active(t.href) && <span className="absolute top-0 h-[2px] w-8 rounded-full bg-gold" />}
             <span className="relative">

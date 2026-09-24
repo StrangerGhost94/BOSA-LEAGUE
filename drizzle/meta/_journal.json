@@ -57,6 +57,13 @@
       "when": 1790276785943,
       "tag": "0007_vouchers",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790280166753,
+      "tag": "0008_single_session",
+      "breakpoints": true
     }
   ]
 }

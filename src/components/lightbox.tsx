@@ -46,7 +46,7 @@ export function Lightbox({ items }: { items: Item[] }) {
       </div>
       <AnimatePresence>
         {cur && (
-          <motion.div className="fixed inset-0 z-[90] flex items-center justify-center bg-night-900/95 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(null)}>
+          <motion.div className="fixed inset-0 z-[90] flex items-center justify-center bg-night-900/95 pb-[max(1rem,var(--safe-bottom))] pl-[max(1rem,var(--safe-left))] pr-[max(1rem,var(--safe-right))] pt-[max(1rem,var(--safe-top))]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(null)}>
             <motion.img
               key={cur.id}
               src={`/api/media/${cur.id}?v=full`}

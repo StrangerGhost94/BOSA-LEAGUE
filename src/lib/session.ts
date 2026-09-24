@@ -12,7 +12,8 @@ function secret() {
   return encoder.encode(s);
 }
 
-export type SessionPayload = { uid: string; role: string; name: string };
+/** sv: session version. For members it must match users.session_version, so only the latest sign-in works. */
+export type SessionPayload = { uid: string; role: string; name: string; sv?: number };
 
 export async function signSession(p: SessionPayload) {
   return new SignJWT(p as unknown as Record<string, unknown>)

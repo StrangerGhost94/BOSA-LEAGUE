@@ -11,6 +11,23 @@
   --gold: #d6b676;
   --ivory: #f6f1e7;
   color-scheme: dark;
+  /* Device safe areas (status bar, notch, Dynamic Island, camera cutout, home indicator).
+     They are 0 in a normal browser tab and take the real values in the installed app or on notched phones. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  /* Height of the site header bar itself, below the safe area */
+  --header-h: 64px;
+  /* Height of the phone tab bar itself, above the safe area */
+  --tabbar-h: 56px;
+  --gutter: 1rem;
+}
+@media (min-width: 640px) {
+  :root { --header-h: 68px; --gutter: 1.5rem; }
+}
+@media (min-width: 1024px) {
+  :root { --header-h: 76px; --gutter: 2.5rem; }
 }
 
 html {
@@ -57,7 +74,10 @@ body {
 
 @layer components {
   .container-x {
-    @apply mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-10;
+    @apply mx-auto w-full max-w-[1320px];
+    /* Normal gutter, or more in landscape where a notch or cutout sits at the side */
+    padding-left: max(var(--gutter), var(--safe-left));
+    padding-right: max(var(--gutter), var(--safe-right));
   }
   .eyebrow {
     @apply font-sans text-[11px] font-semibold uppercase tracking-widest2 text-gold;
@@ -247,8 +267,8 @@ body {
 
 @media print {
   body * { visibility: hidden; }
-  #member-card, #member-card * { visibility: visible; }
-  #member-card { position: fixed; top: 15mm; left: 15mm; width: 120mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #member-card-export, #member-card-export * { visibility: visible; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #member-card-export { position: fixed; top: 12mm; left: 12mm; }
   .grain { display: none; }
 }
 

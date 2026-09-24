@@ -82,7 +82,7 @@ export default async function FixturesPage({ searchParams }: { searchParams: Rec
           {byDay.size === 0 && <EmptyState title="No matches found" body="Try widening the date range or clearing a filter." />}
           {Array.from(byDay.entries()).map(([day, ms]) => (
             <div key={day}>
-              <div className="sticky top-[68px] z-20 -mx-2 mb-5 flex items-center gap-4 bg-night-900/85 px-2 py-3 backdrop-blur-lg lg:top-[76px]">
+              <div className="sticky top-[calc(var(--header-h)+var(--safe-top))] z-20 -mx-2 mb-5 flex items-center gap-4 bg-night-900/85 px-2 py-3 backdrop-blur-lg">
                 <h2 className="font-serif text-2xl sm:text-3xl">{fmtLong(ms[0].kickoff)}</h2>
                 <span className="h-px flex-1 bg-gradient-to-r from-gold/40 to-transparent" />
                 <span className="text-xs uppercase tracking-[0.18em] text-ivory/45">{ms.length} match{ms.length > 1 ? "es" : ""}</span>

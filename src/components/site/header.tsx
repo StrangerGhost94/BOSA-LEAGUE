@@ -30,7 +30,7 @@ const MEMBER_LINKS = [
   { href: "/members/perks", label: "Perks", icon: "sparkle" as const },
 ];
 
-export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: HeaderUser; liveCount?: number; seasonLabel?: string }) {
+export function SiteHeader({ user, liveCount = 0 }: { user: HeaderUser; liveCount?: number }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -57,16 +57,17 @@ export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: He
     <>
       <header
         className={clsx(
-          "fixed inset-x-0 top-0 z-50 transition-all duration-500",
+          "fixed inset-x-0 top-0 z-50 pt-[var(--safe-top)] transition-all duration-500",
           scrolled ? "border-b border-white/[0.06] bg-night-900/90 backdrop-blur-md" : "bg-transparent",
         )}
       >
-        <div className="container-x flex h-[64px] items-center gap-3 sm:h-[68px] sm:gap-6 lg:h-[76px]">
+        {/* Status bar area: always solid, so app content never shows behind the time, signal and battery */}
+        <div aria-hidden className="absolute inset-x-0 top-0 h-[var(--safe-top)] bg-night-900" />
+        <div className="container-x relative flex h-[var(--header-h)] items-center gap-3 sm:gap-6">
           <Link href="/" className="group flex items-center gap-3" aria-label="BOSA League home">
             <BosaLogo size={36} className="transition-transform duration-500 group-hover:scale-105" />
             <span className="block whitespace-nowrap leading-none xl:hidden 2xl:block">
               <span className="block font-display text-[15px] font-semibold tracking-[0.12em] text-ivory sm:text-[17px]">BOSA LEAGUE</span>
-              <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.34em] text-gold/80">{seasonLabel}</span>
             </span>
           </Link>
 
@@ -167,7 +168,7 @@ export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: He
       <AnimatePresence>
         {open && (
           <motion.div
-            className="fixed inset-0 z-[70] overflow-y-auto overscroll-contain bg-night-900 pb-[max(2rem,env(safe-area-inset-bottom))] backdrop-blur-2xl xl:hidden"
+            className="fixed inset-0 z-[70] overflow-y-auto overscroll-contain bg-night-900 pb-[max(2rem,var(--safe-bottom))] pt-[var(--safe-top)] backdrop-blur-2xl xl:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -175,7 +176,7 @@ export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: He
           >
             <div className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-[radial-gradient(closest-side,rgba(204,38,84,0.26),rgba(204,38,84,0))]" />
             <div className="pointer-events-none absolute -right-40 bottom-10 h-96 w-96 rounded-full bg-[radial-gradient(closest-side,rgba(214,182,118,0.13),rgba(214,182,118,0))]" />
-            <div className="container-x sticky top-0 z-10 flex h-[64px] items-center gap-3 bg-night-900 sm:h-[68px]">
+            <div className="container-x sticky top-0 z-10 flex h-[var(--header-h)] items-center gap-3 bg-night-900">
               <BosaLogo size={36} />
               <span className="font-display text-sm tracking-[0.14em]">BOSA LEAGUE</span>
               <button className="ml-auto grid h-10 w-10 place-items-center rounded-full border border-white/10" onClick={() => setOpen(false)} aria-label="Close menu">

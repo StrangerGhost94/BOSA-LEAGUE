@@ -30,7 +30,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
       </aside>
-      <section className="relative flex items-center justify-center px-4 py-16 sm:px-8">
+      <section className="relative flex items-center justify-center pb-[calc(4rem+var(--safe-bottom))] pl-[max(1rem,var(--safe-left))] pr-[max(1rem,var(--safe-right))] pt-[calc(4rem+var(--safe-top))] sm:pl-[max(2rem,var(--safe-left))] sm:pr-[max(2rem,var(--safe-right))]">
         <div className="pointer-events-none absolute right-0 top-0 h-96 w-96 rounded-full bg-[radial-gradient(closest-side,rgba(204,38,84,0.13),rgba(204,38,84,0))]" />
         <div className="relative w-full max-w-md">
           <Link href="/" className="mb-10 flex items-center gap-3 lg:hidden">
