@@ -21,7 +21,7 @@ import {
   updateScheduleAction,
   deleteMatchAction,
 } from "@/app/actions/admin";
-import { fmtLong, fmtTime } from "@/lib/format";
+import { fmtLong, fmtTime, liveMinute } from "@/lib/format";
 
 const EV: Record<string, string> = { GOAL: "Goal", PENALTY_GOAL: "Penalty", OWN_GOAL: "Own goal", PENALTY_MISS: "Pen. missed", YELLOW: "Yellow", SECOND_YELLOW: "2nd yellow", RED: "Red", SUB: "Sub" };
 
@@ -76,7 +76,7 @@ export async function MatchConsole({ id, mode }: { id: string; mode: "admin" | "
       {/* Scoreboard */}
       <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] p-6 sm:p-8" style={{ background: `linear-gradient(110deg, ${m.homeTeam?.primaryColor ?? "#1B2033"}55, #0A0F1E 40%, #0A0F1E 60%, ${m.awayTeam?.primaryColor ?? "#1B2033"}55)` }}>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <StatusBadge status={m.status} minute={m.minute} />
+          <StatusBadge status={m.status} minute={liveMinute(m)} />
           <span className="text-xs text-ivory/55">
             {fmtLong(m.kickoff)} · {fmtTime(m.kickoff)} · {m.venue?.name ?? "Venue TBC"} · {m.referee?.name ?? "No referee"}
           </span>
@@ -106,7 +106,7 @@ export async function MatchConsole({ id, mode }: { id: string; mode: "admin" | "
           {live && (
             <ActionForm action={setMinuteAction} className="flex items-center gap-2">
               <input type="hidden" name="id" value={m.id} />
-              <input name="minute" type="number" min={0} max={130} defaultValue={m.minute ?? 0} className="input w-20 py-1.5 text-center" aria-label="Minute" />
+              <input name="minute" type="number" min={0} max={130} defaultValue={liveMinute(m) ?? 0} className="input w-20 py-1.5 text-center" aria-label="Minute" />
               <Submit className="btn-quiet btn-sm">Set minute</Submit>
             </ActionForm>
           )}
@@ -151,7 +151,7 @@ export async function MatchConsole({ id, mode }: { id: string; mode: "admin" | "
           {teams.length === 2 ? (
             <EventForm
               matchId={m.id}
-              minute={m.minute}
+              minute={liveMinute(m)}
               teams={teams.map((t) => ({ id: t.id, name: t.name, players: t.players.map((p) => ({ id: p.id, name: `${p.firstName} ${p.lastName}`, number: p.number, status: p.status })) }))}
             />
           ) : (

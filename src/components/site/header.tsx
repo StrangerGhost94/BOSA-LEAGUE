@@ -17,11 +17,12 @@ export const NAV = [
   { href: "/teams", label: "Teams" },
   { href: "/players", label: "Players" },
   { href: "/news", label: "Newsroom" },
+  { href: "/members", label: "Members" },
 ];
 
 type HeaderUser = { name: string; role: string; roleLabel: string; member: boolean; home: string } | null;
 
-export function SiteHeader({ user }: { user: HeaderUser }) {
+export function SiteHeader({ user, liveCount = 0 }: { user: HeaderUser; liveCount?: number }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -55,7 +56,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
         <div className="container-x flex h-[68px] items-center gap-6 lg:h-[76px]">
           <Link href="/" className="group flex items-center gap-3" aria-label="BOSA League home">
             <BosaLogo size={38} className="transition-transform duration-500 group-hover:scale-105" />
-            <span className="hidden whitespace-nowrap leading-none sm:block">
+            <span className="hidden whitespace-nowrap leading-none sm:block xl:hidden 2xl:block">
               <span className="block font-display text-[17px] font-semibold tracking-[0.12em] text-ivory">BOSA LEAGUE</span>
               <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.34em] text-gold/80">Season 4 · 2026</span>
             </span>
@@ -77,13 +78,18 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
+            {liveCount > 0 && (
+              <Link href="/live" className="flex items-center gap-2 whitespace-nowrap rounded-full border border-crimson/50 bg-crimson/15 px-3 py-1.5 text-xs font-semibold text-crimson-400">
+                <span className="h-1.5 w-1.5 animate-pulseDot rounded-full bg-crimson-400" /> Live{liveCount > 1 ? ` (${liveCount})` : ""}
+              </Link>
+            )}
             <button
               onClick={() => window.dispatchEvent(new CustomEvent("bosa:command"))}
               className="hidden items-center gap-2 whitespace-nowrap rounded-full border border-white/10 px-3 py-1.5 text-xs text-ivory/55 transition hover:border-gold/40 hover:text-ivory md:inline-flex"
               aria-label="Search"
             >
-              <Icon name="search" size={14} /> Search
-              <kbd className="whitespace-nowrap rounded border border-white/10 px-1.5 py-0.5 font-sans text-[10px] text-ivory/40">Ctrl K</kbd>
+              <Icon name="search" size={14} /> <span className="xl:hidden 2xl:inline">Search</span>
+              <kbd className="whitespace-nowrap rounded border border-white/10 px-1.5 py-0.5 font-sans text-[10px] text-ivory/40 xl:hidden 2xl:inline">Ctrl K</kbd>
             </button>
             {user ? (
               <div className="relative">
@@ -95,7 +101,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                   <span className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-gold-300 to-gold-600 font-display text-sm font-semibold text-night-900">
                     {user.name.split(" ").map((x) => x[0]).slice(0, 2).join("")}
                   </span>
-                  <span className="hidden max-w-[120px] truncate text-ivory/80 sm:block">{user.name.split(" ")[0]}</span>
+                  <span className="hidden max-w-[120px] truncate text-ivory/80 sm:block xl:hidden 2xl:block">{user.name.split(" ")[0]}</span>
                 </button>
                 <AnimatePresence>
                   {menu && (
@@ -112,6 +118,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                       </div>
                       <div className="my-1 h-px bg-white/5" />
                       <MenuLink href={user.home} icon="grid" label={user.home === "/account" ? "My account" : "My control panel"} />
+                      {user.member && <MenuLink href="/members/card" icon="card" label="My member card" />}
                       {user.home !== "/account" && <MenuLink href="/account" icon="user" label="My account" />}
                       {!user.member && <MenuLink href="/membership" icon="card" label="Activate membership" />}
                       <form action="/api/auth/sign-out" method="post">

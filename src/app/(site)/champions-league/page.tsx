@@ -4,7 +4,8 @@ import { MatchCard, StandingsTable } from "@/components/match";
 import { Bracket } from "@/components/bracket";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion";
 import { EmptyState, SectionHeading } from "@/components/ui";
-import { getCompetition, getGroupTables, getHonours, getMatches, getPlayerStats, getSeasonTotals, getTeams } from "@/lib/data";
+import { getCompetition, getGroupTables, getHonours, getMatches, getPlayerStats, getSeasonTotals, getTeams, visibleTo } from "@/lib/data";
+import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { toBracket } from "@/lib/bracket-data";
 
 export const metadata = { title: "BOSA Champions League" };
@@ -24,7 +25,8 @@ export default async function ChampionsLeaguePage() {
   const qf = all.filter((m) => m.stage === "QUARTER_FINAL").map(toBracket);
   const sf = all.filter((m) => m.stage === "SEMI_FINAL").map(toBracket);
   const finalM = all.find((m) => m.stage === "FINAL");
-  const upcoming = all.filter((m) => m.status !== "FULL_TIME" && m.status !== "CANCELLED").slice(0, 6);
+  const member = hasMembership(await getCurrentUser());
+  const upcoming = visibleTo(all.filter((m) => m.status !== "FULL_TIME" && m.status !== "CANCELLED"), member).slice(0, 6);
   const scorers = stats.filter((p) => p.goals > 0).slice(0, 6);
   const assists = [...stats].filter((p) => p.assists > 0).sort((a, b) => b.assists - a.assists).slice(0, 6);
   const potm = [...stats].filter((p) => p.potm > 0).sort((a, b) => b.potm - a.potm).slice(0, 6);

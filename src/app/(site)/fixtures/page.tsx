@@ -3,7 +3,8 @@ import { FilterBar } from "@/components/filter-bar";
 import { MatchCard } from "@/components/match";
 import { Stagger, StaggerItem } from "@/components/motion";
 import { EmptyState } from "@/components/ui";
-import { getCompetitions, getMatches, getTeams, getVenues } from "@/lib/data";
+import { getCompetitions, getMatches, getTeams, getVenues, visibleTo } from "@/lib/data";
+import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { db } from "@/db";
 import { seasons } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -19,7 +20,8 @@ export default async function FixturesPage({ searchParams }: { searchParams: Rec
   const status = (["upcoming", "completed", "live"].includes(searchParams.status ?? "") ? searchParams.status : "all") as "upcoming" | "completed" | "live" | "all";
   const from = searchParams.from ? new Date(`${searchParams.from}T00:00:00+03:00`) : undefined;
   const to = searchParams.to ? new Date(`${searchParams.to}T23:59:59+03:00`) : undefined;
-  const matches = await getMatches({
+  const member = hasMembership(await getCurrentUser());
+  const matchesAll = await getMatches({
     seasonIds,
     teamId: team?.id,
     venueId: searchParams.venue || undefined,
@@ -29,6 +31,8 @@ export default async function FixturesPage({ searchParams }: { searchParams: Rec
     order: status === "completed" ? "desc" : "asc",
     limit: 400,
   });
+  const matches = visibleTo(matchesAll, member);
+  const earlyCount = matchesAll.length - matches.length;
   // Default view: from last week onwards, so the page opens on what matters now
   const defaultView = !searchParams.from && !searchParams.to && status === "all";
   const cutoff = Date.now() - 1000 * 60 * 60 * 24 * 8;
@@ -65,6 +69,15 @@ export default async function FixturesPage({ searchParams }: { searchParams: Rec
             { name: "to", label: "To", type: "date" },
           ]}
         />
+        {earlyCount > 0 && (
+          <a href="/members" className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-gold/30 bg-gold/[0.06] px-5 py-4 text-sm">
+            <span>
+              <span className="font-semibold text-gold">{earlyCount} upcoming fixture{earlyCount === 1 ? " is" : "s are"} in members&apos; early access.</span>{" "}
+              <span className="text-ivory/60">Members see them before everyone else.</span>
+            </span>
+            <span className="shrink-0 text-gold">Become a member</span>
+          </a>
+        )}
         <div className="mt-12 space-y-14">
           {byDay.size === 0 && <EmptyState title="No matches found" body="Try widening the date range or clearing a filter." />}
           {Array.from(byDay.entries()).map(([day, ms]) => (

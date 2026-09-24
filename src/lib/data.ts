@@ -342,3 +342,10 @@ export async function getCurrentSeasonIds() {
   return ss.map((x) => x.id);
 }
 
+
+/** Early access: non-members only see fixtures whose public release time has passed. */
+export function visibleTo<T extends { publicFrom: Date | null }>(list: T[], member: boolean): T[] {
+  if (member) return list;
+  const now = Date.now();
+  return list.filter((m) => !m.publicFrom || m.publicFrom.getTime() <= now);
+}

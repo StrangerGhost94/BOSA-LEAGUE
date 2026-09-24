@@ -244,3 +244,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .route-curtain { display: none; }
 }
+
+@media print {
+  body * { visibility: hidden; }
+  #member-card, #member-card * { visibility: visible; }
+  #member-card { position: fixed; top: 15mm; left: 15mm; width: 120mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .grain { display: none; }
+}

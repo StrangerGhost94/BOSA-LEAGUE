@@ -33,6 +33,11 @@ export default async function AccountPage() {
               <Crest team={u.team} size={24} /> {u.team.name}
             </span>
           )}
+          {member && (
+            <Link href="/members/card" className="btn-ghost btn-sm">
+              My member card
+            </Link>
+          )}
           {panel !== "/account" && (
             <Link href={panel} className="btn-gold btn-sm">
               Open my control panel

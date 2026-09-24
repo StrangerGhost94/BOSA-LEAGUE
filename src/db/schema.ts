@@ -8,6 +8,8 @@ import {
   timestamp,
   primaryKey,
   index,
+  uniqueIndex,
+  customType,
 } from "drizzle-orm/pg-core";
 import { randomUUID } from "crypto";
 
@@ -126,6 +128,7 @@ export const users = pgTable("users", {
   role: roleEnum("role").notNull().default("STUDENT_FAN"),
   university: text("university"),
   completionYear: integer("completion_year"),
+  memberNumber: integer("member_number").unique(),
   membership: membershipEnum("membership").notNull().default("NONE"),
   membershipPaidAt: timestamp("membership_paid_at", { withTimezone: true }),
   teamId: text("team_id").references(() => teams.id, { onDelete: "set null" }),
@@ -254,6 +257,8 @@ export const matches = pgTable(
     refereeId: text("referee_id").references(() => users.id, { onDelete: "set null" }),
     status: matchStatusEnum("status").notNull().default("SCHEDULED"),
     minute: integer("minute"),
+    // When the clock was last set (kick-off, second half, manual correction); the live minute counts on from here
+    clockAt: timestamp("clock_at", { withTimezone: true }),
     homeScore: integer("home_score"),
     awayScore: integer("away_score"),
     homePens: integer("home_pens"),
@@ -263,6 +268,8 @@ export const matches = pgTable(
     potmId: text("potm_id").references(() => players.id, { onDelete: "set null" }),
     statusNote: text("status_note"),
     countsInTable: boolean("counts_in_table").notNull().default(true),
+    // Early access: before this time only members (and staff) can see the fixture
+    publicFrom: timestamp("public_from", { withTimezone: true }),
     createdAt: created(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -315,6 +322,8 @@ export const articles = pgTable("articles", {
   featured: boolean("featured").notNull().default(false),
   published: boolean("published").notNull().default(true),
   membersOnly: boolean("members_only").notNull().default(false),
+  // Early access: members read it straight away, everyone else from this time
+  publicFrom: timestamp("public_from", { withTimezone: true }),
   publishedAt: timestamp("published_at", { withTimezone: true }).notNull().defaultNow(),
   readMinutes: integer("read_minutes").notNull().default(3),
   authorId: text("author_id").references(() => users.id, { onDelete: "set null" }),
@@ -377,6 +386,74 @@ export const settings = pgTable("settings", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
 });
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
+
+export const perks = pgTable("perks", {
+  id: id(),
+  sponsor: text("sponsor").notNull(),
+  offer: text("offer").notNull(),
+  details: text("details"),
+  active: boolean("active").notNull().default(true),
+  order: integer("order").notNull().default(0),
+  createdAt: created(),
+});
+
+export const votes = pgTable(
+  "votes",
+  {
+    id: id(),
+    kind: text("kind").notNull(), // MATCH | MONTH
+    matchId: text("match_id").references(() => matches.id, { onDelete: "cascade" }),
+    month: text("month"), // YYYY-MM for player of the month
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    playerId: text("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    createdAt: created(),
+  },
+  (t) => [
+    uniqueIndex("votes_match_user").on(t.matchId, t.userId),
+    uniqueIndex("votes_month_user").on(t.month, t.userId),
+    index("votes_player_idx").on(t.playerId),
+  ],
+);
+
+export const albums = pgTable("albums", {
+  id: id(),
+  title: text("title").notNull(),
+  description: text("description"),
+  matchday: integer("matchday"),
+  seasonId: text("season_id").references(() => seasons.id, { onDelete: "set null" }),
+  takenOn: timestamp("taken_on", { withTimezone: true }),
+  coverId: text("cover_id"),
+  published: boolean("published").notNull().default(true),
+  createdAt: created(),
+});
+
+export const media = pgTable(
+  "media",
+  {
+    id: id(),
+    albumId: text("album_id")
+      .notNull()
+      .references(() => albums.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull().default("PHOTO"), // PHOTO | VIDEO
+    caption: text("caption"),
+    videoUrl: text("video_url"),
+    mime: text("mime"),
+    width: integer("width"),
+    height: integer("height"),
+    full: bytea("full"),
+    thumb: bytea("thumb"),
+    teaser: bytea("teaser"),
+    order: integer("order").notNull().default(0),
+    createdAt: created(),
+  },
+  (t) => [index("media_album_idx").on(t.albumId)],
+);
 
 /* ---------------- Relations ---------------- */
 
@@ -478,6 +555,16 @@ export const honoursRelations = relations(honours, ({ one }) => ({
 
 export const activityRelations = relations(activityLogs, ({ one }) => ({
   user: one(users, { fields: [activityLogs.userId], references: [users.id] }),
+}));
+
+export const albumsRelations = relations(albums, ({ many, one }) => ({
+  media: many(media),
+  season: one(seasons, { fields: [albums.seasonId], references: [seasons.id] }),
+}));
+export const mediaRelations = relations(media, ({ one }) => ({ album: one(albums, { fields: [media.albumId], references: [albums.id] }) }));
+export const votesRelations = relations(votes, ({ one }) => ({
+  player: one(players, { fields: [votes.playerId], references: [players.id] }),
+  match: one(matches, { fields: [votes.matchId], references: [matches.id] }),
 }));
 
 export type Team = typeof teams.$inferSelect;

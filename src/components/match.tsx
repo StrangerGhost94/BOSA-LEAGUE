@@ -1,7 +1,7 @@
 import Link from "next/link";
 import clsx from "clsx";
 import { Crest, FormPills, Icon, StatusBadge } from "@/components/ui";
-import { fmtDate, fmtTime } from "@/lib/format";
+import { fmtDate, fmtTime, liveMinute } from "@/lib/format";
 import type { TableRow } from "@/lib/data";
 
 type T = { id: string; name: string; shortName: string; crest: string; primaryColor: string; slug: string } | null;
@@ -10,6 +10,7 @@ export type MatchCardData = {
   kickoff: Date;
   status: string;
   minute: number | null;
+  clockAt?: Date | null;
   round: string;
   homeScore: number | null;
   awayScore: number | null;
@@ -49,7 +50,7 @@ export function MatchCard({ m, variant = "dark", showComp = true }: { m: MatchCa
           {showComp && m.season ? `${m.season.competition.shortName} · ` : ""}
           {m.round}
         </span>
-        {played || m.status !== "SCHEDULED" ? <StatusBadge status={m.status} minute={m.minute} /> : <span className={light ? "text-crimson" : "text-gold"}>{fmtDate(m.kickoff)}</span>}
+        {played || m.status !== "SCHEDULED" ? <StatusBadge status={m.status} minute={liveMinute(m)} /> : <span className={light ? "text-crimson" : "text-gold"}>{fmtDate(m.kickoff)}</span>}
       </div>
       <div className="relative mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
         <TeamSide team={m.homeTeam} win={hWin} light={light} />
@@ -123,7 +124,7 @@ export function FixtureRow({ m }: { m: MatchCardData }) {
         <span className="truncate text-sm font-medium">{m.awayTeam?.name ?? "TBD"}</span>
       </span>
       <span className="hidden justify-end sm:flex">
-        <StatusBadge status={m.status} minute={m.minute} />
+        <StatusBadge status={m.status} minute={liveMinute(m)} />
       </span>
       <Icon name="arrowRight" size={14} className="text-ivory/25 transition group-hover:translate-x-1 group-hover:text-gold" />
     </Link>

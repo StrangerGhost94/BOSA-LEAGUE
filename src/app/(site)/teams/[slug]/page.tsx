@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { teams, seasonTeams } from "@/db/schema";
-import { getCurrentSeason, getMatches, getPlayerStats, getSeasonTable, getArticles, getGroupTables } from "@/lib/data";
+import { getCurrentSeason, getMatches, getPlayerStats, getSeasonTable, getArticles, getGroupTables, visibleTo } from "@/lib/data";
+import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { CountUp, FadeIn, HeroParallax, Stagger, StaggerItem } from "@/components/motion";
 import { Crest, FormPills, SectionHeading, StatTile, Pill } from "@/components/ui";
 import { FixtureRow, MatchCard } from "@/components/match";
@@ -28,7 +29,8 @@ export default async function TeamPage({ params }: { params: { slug: string } })
   ]);
   const row = table.find((r) => r.teamId === t.id);
   const results = matches.filter((m) => m.status === "FULL_TIME" && m.homeScore != null).reverse();
-  const upcoming = matches.filter((m) => m.status !== "FULL_TIME" && m.status !== "CANCELLED").slice(0, 4);
+  const member = hasMembership(await getCurrentUser());
+  const upcoming = visibleTo(matches.filter((m) => m.status !== "FULL_TIME" && m.status !== "CANCELLED"), member).slice(0, 4);
   const all = results.reduce(
     (acc, m) => {
       const home = m.homeTeamId === t.id;

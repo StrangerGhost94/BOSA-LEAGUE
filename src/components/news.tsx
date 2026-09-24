@@ -11,6 +11,7 @@ type A = {
   publishedAt: Date;
   readMinutes: number;
   membersOnly: boolean;
+  publicFrom?: Date | null;
   team?: { crest: string; primaryColor: string; secondaryColor: string; name: string } | null;
   competition?: { type: string; name: string } | null;
 };
@@ -38,6 +39,11 @@ export function NewsCover({ a, className, big, chip = true }: { a: A; className?
       <div className="absolute inset-0 bg-gradient-to-t from-night-900/90 via-night-900/10 to-transparent" />
       {chip && <div className="absolute left-5 top-5 flex gap-2">
         <span className="rounded-full bg-night-900/60 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gold backdrop-blur">{CATEGORY_LABEL[a.category]}</span>
+        {!a.membersOnly && a.publicFrom && a.publicFrom.getTime() > Date.now() && (
+          <span className="flex items-center gap-1 rounded-full bg-gold/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-night-900">
+            <Icon name="lock" size={11} /> Members first
+          </span>
+        )}
         {a.membersOnly && (
           <span className="flex items-center gap-1 rounded-full bg-crimson/80 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white">
             <Icon name="lock" size={11} /> Members

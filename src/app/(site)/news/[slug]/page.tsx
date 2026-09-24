@@ -21,7 +21,8 @@ export default async function ArticlePage({ params }: { params: { slug: string }
   const user = await getCurrentUser();
   if (!a || (!a.published && !can(user?.role, "news"))) notFound();
   const member = hasMembership(user);
-  const locked = a.membersOnly && !member;
+  const early = !!a.publicFrom && a.publicFrom.getTime() > Date.now();
+  const locked = (a.membersOnly || early) && !member;
   const paragraphs = a.body.split(/\n+/).filter(Boolean);
   const more = (await getArticles({ limit: 4 })).filter((x) => x.id !== a.id).slice(0, 3);
 
@@ -62,7 +63,15 @@ export default async function ArticlePage({ params }: { params: { slug: string }
               <div className="pointer-events-none -mt-24 h-24 bg-gradient-to-t from-ivory to-transparent" />
             </div>
             <div className="mt-8">
-              <MembersLock title="Continue reading as a member" body="This story is reserved for BOSA League members. A one-time membership unlocks every members-only story, the full match centre and player profiles." signedIn={!!user} />
+              <MembersLock
+                title={a.membersOnly ? "Continue reading as a member" : "Members read this first"}
+                body={
+                  a.membersOnly
+                    ? "This story is reserved for BOSA League members. A one-time membership unlocks every members-only story, the full match centre and player profiles."
+                    : `Members get this story first. It opens to everyone on ${fmtLong(a.publicFrom!)}.`
+                }
+                signedIn={!!user}
+              />
             </div>
           </>
         ) : (

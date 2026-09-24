@@ -7,7 +7,8 @@ import { CompetitionHero, HonoursList } from "@/components/competition";
 import { MatchCard } from "@/components/match";
 import { FadeIn } from "@/components/motion";
 import { EmptyState, SectionHeading } from "@/components/ui";
-import { getCompetition, getHonours, getMatches, getTeams } from "@/lib/data";
+import { getCompetition, getHonours, getMatches, getTeams, visibleTo } from "@/lib/data";
+import { getCurrentUser, hasMembership } from "@/lib/auth";
 
 export const metadata = { title: "BOSA Super League" };
 
@@ -19,7 +20,8 @@ export default async function SuperLeaguePage() {
     getHonours(c.comp.id),
     getTeams(),
   ]);
-  const matches = (await Promise.all(allSeasons.map((s) => getMatches({ seasonId: s.id })))).flat().sort((a, b) => b.kickoff.getTime() - a.kickoff.getTime());
+  const member = hasMembership(await getCurrentUser());
+  const matches = visibleTo((await Promise.all(allSeasons.map((s) => getMatches({ seasonId: s.id })))).flat(), member).sort((a, b) => b.kickoff.getTime() - a.kickoff.getTime());
   const current = matches[0];
   const past = matches.slice(1);
   // Winners from recorded matches, plus any honours the League office has added by hand

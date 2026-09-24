@@ -8,10 +8,10 @@ import { ActionForm, Field, Submit } from "@/components/form";
 import { FilterBar } from "@/components/filter-bar";
 import { MatchFields } from "@/components/admin/match-fields";
 import { Crest, EmptyState, StatusBadge } from "@/components/ui";
-import { createMatchAction, generateRoundRobinAction } from "@/app/actions/admin";
+import { createMatchAction, generateRoundRobinAction, releaseRoundAction } from "@/app/actions/admin";
 import { getTeams, getVenues } from "@/lib/data";
 import { getAllSeasons, getReferees } from "@/lib/admin-data";
-import { fmtDate, fmtTime } from "@/lib/format";
+import { fmtDate, fmtTime, toLocalInput } from "@/lib/format";
 
 export const metadata = { title: "Fixtures & results" };
 
@@ -104,7 +104,31 @@ export default async function AdminFixtures({ searchParams }: { searchParams: Re
           <div key={round} className="panel overflow-hidden">
             <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-3">
               <h2 className="font-serif text-xl">{round}</h2>
-              <span className="text-xs text-ivory/45">{fmtDate(ms[0].kickoff, { weekday: "long", day: "numeric", month: "long" })}</span>
+              <span className="flex items-center gap-3 text-xs text-ivory/45">
+                {(() => {
+                  const until = ms.find((m) => m.publicFrom && m.publicFrom.getTime() > Date.now())?.publicFrom;
+                  return until ? <span className="rounded-full bg-gold/15 px-2.5 py-1 font-semibold text-gold">Members first until {fmtDate(until, { day: "numeric", month: "short" })} {fmtTime(until)}</span> : null;
+                })()}
+                {fmtDate(ms[0].kickoff, { weekday: "long", day: "numeric", month: "long" })}
+                <Drawer label="Early access" title={`Early access: ${round}`} description="Members see these fixtures straight away. Everyone else sees them from the time you choose. Leave empty to make them public now." buttonClass="btn-quiet btn-sm" side="center">
+                  <ActionForm action={releaseRoundAction} className="space-y-4">
+                    <input type="hidden" name="seasonId" value={seasonId} />
+                    <input type="hidden" name="round" value={round} />
+                    <Field label="Public from (Kampala time)">
+                      <input
+                        name="publicFrom"
+                        type="datetime-local"
+                        className="input"
+                        defaultValue={(() => {
+                          const p = ms.find((m) => m.publicFrom)?.publicFrom;
+                          return p ? toLocalInput(p) : "";
+                        })()}
+                      />
+                    </Field>
+                    <Submit>Save</Submit>
+                  </ActionForm>
+                </Drawer>
+              </span>
             </div>
             <div className="overflow-x-auto scrollbar-none">
               <table className="table-luxe min-w-[860px]">

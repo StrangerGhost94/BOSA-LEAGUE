@@ -209,6 +209,7 @@ export async function updateScheduleAction(_: ActionResult, fd: FormData): A {
         matchday: num(fd, "matchday") ?? m.matchday,
         status,
         statusNote: optStr(fd, "statusNote"),
+        publicFrom: str(fd, "publicFrom") ? fromLocalInput(str(fd, "publicFrom")) : null,
         updatedAt: new Date(),
       })
       .where(eq(s.matches.id, id));
@@ -300,6 +301,7 @@ export async function setMatchStatusAction(_: ActionResult, fd: FormData): A {
     const patch: Partial<s.Match> = { status, updatedAt: new Date() };
     if (status === "LIVE") {
       patch.minute = minute ?? m.minute ?? 1;
+      patch.clockAt = new Date();
       if (m.homeScore == null) patch.homeScore = 0;
       if (m.awayScore == null) patch.awayScore = 0;
     }
@@ -325,7 +327,7 @@ export async function setMatchStatusAction(_: ActionResult, fd: FormData): A {
 export async function setMinuteAction(_: ActionResult, fd: FormData): A {
   return guarded(canResults, async (u) => {
     const m = await loadMatchForEdit(u, str(fd, "id"));
-    await db.update(s.matches).set({ minute: num(fd, "minute") }).where(eq(s.matches.id, m.id));
+    await db.update(s.matches).set({ minute: num(fd, "minute"), clockAt: new Date() }).where(eq(s.matches.id, m.id));
     return ok("Clock updated.");
   });
 }
@@ -376,7 +378,7 @@ export async function addEventAction(_: ActionResult, fd: FormData): A {
       const reason = await applyDiscipline(e.id);
       if (reason) extra = ` Suspension applied: ${reason}.`;
     }
-    if (m.status === "SCHEDULED") await db.update(s.matches).set({ status: "LIVE", minute, homeScore: m.homeScore ?? 0, awayScore: m.awayScore ?? 0 }).where(eq(s.matches.id, m.id));
+    if (m.status === "SCHEDULED") await db.update(s.matches).set({ status: "LIVE", minute, clockAt: new Date(), homeScore: m.homeScore ?? 0, awayScore: m.awayScore ?? 0 }).where(eq(s.matches.id, m.id));
     if (["GOAL", "PENALTY_GOAL", "OWN_GOAL"].includes(type) && m.status === "SCHEDULED") await recalcScore(m.id);
     await logActivity(u.id, `Added ${type.replace("_", " ").toLowerCase()}`, "Match", `${m.round} ${minute}'`, m.id);
     return ok(`Event added.${extra}`);
@@ -641,6 +643,7 @@ export async function saveArticleAction(_: ActionResult, fd: FormData): A {
       competitionId: optStr(fd, "competitionId"),
       teamId: optStr(fd, "teamId"),
       authorName: str(fd, "authorName") || u.name,
+      publicFrom: str(fd, "publicFrom") ? fromLocalInput(str(fd, "publicFrom")) : null,
       readMinutes: Math.max(1, Math.round(body.split(/\s+/).length / 200)),
     };
     if (id) {
@@ -722,6 +725,10 @@ export async function updateUserAction(_: ActionResult, fd: FormData): A {
         membershipPaidAt: membership === "ACTIVE" && target.membership !== "ACTIVE" ? new Date() : target.membershipPaidAt,
       })
       .where(eq(s.users.id, id));
+    if (membership === "ACTIVE") {
+      const { ensureMemberNumber } = await import("@/lib/members");
+      await ensureMemberNumber(id);
+    }
     if (membership === "ACTIVE" && target.membership !== "ACTIVE")
       await db.insert(s.payments).values({ userId: id, amount: 0, merchantRef: `MANUAL-${Date.now().toString(36)}`, status: "COMPLETED", provider: "MANUAL", method: `Approved by ${u.name}` });
     await logActivity(u.id, "Updated user", "User", `${target.name}: ${role}${membership === "ACTIVE" ? ", member" : ""}`, id);
@@ -828,5 +835,45 @@ export async function scheduleSuperMatchAction(_: ActionResult, fd: FormData): A
     const [m] = await db.insert(s.matches).values({ ...values, seasonId, stage: "FINAL", round: "Super League", bracketSlot: 1 }).returning();
     await logActivity(u.id, "Scheduled Super League match", "Match", undefined, m.id);
     return ok("Super League match scheduled.");
+  });
+}
+
+
+/* ============================== EARLY ACCESS ============================== */
+
+/** Members see a whole round of fixtures first; everyone else from the chosen time. Empty time = public now. */
+export async function releaseRoundAction(_: ActionResult, fd: FormData): A {
+  return guarded("fixtures", async (u) => {
+    const seasonId = str(fd, "seasonId");
+    const round = str(fd, "round");
+    const when = str(fd, "publicFrom");
+    const publicFrom = when ? fromLocalInput(when) : null;
+    await db.update(s.matches).set({ publicFrom }).where(and(eq(s.matches.seasonId, seasonId), eq(s.matches.round, round)));
+    await logActivity(u.id, publicFrom ? "Set members-first release" : "Made fixtures public", "Season", `${round}${publicFrom ? ` public from ${when.replace("T", " ")}` : ""}`, seasonId);
+    return ok(publicFrom ? `${round}: members see it now, everyone else from ${when.replace("T", " ")}.` : `${round} is now public.`);
+  });
+}
+
+/* ============================== MEMBER PERKS ============================== */
+
+export async function savePerkAction(_: ActionResult, fd: FormData): A {
+  return guarded("payments", async (u) => {
+    const id = str(fd, "id");
+    const sponsor = str(fd, "sponsor");
+    const offer = str(fd, "offer");
+    if (!sponsor || !offer) return fail("Sponsor and offer are required.");
+    const values = { sponsor, offer, details: optStr(fd, "details"), active: bool(fd, "active"), order: num(fd, "order") ?? 0 };
+    if (id) await db.update(s.perks).set(values).where(eq(s.perks.id, id));
+    else await db.insert(s.perks).values(values);
+    await logActivity(u.id, id ? "Updated member perk" : "Added member perk", "Perk", `${sponsor}: ${offer}`);
+    return ok("Member perk saved.");
+  });
+}
+
+export async function deletePerkAction(_: ActionResult, fd: FormData): A {
+  return guarded("payments", async (u) => {
+    const [p] = await db.delete(s.perks).where(eq(s.perks.id, str(fd, "id"))).returning();
+    await logActivity(u.id, "Deleted member perk", "Perk", p?.sponsor);
+    return ok("Perk removed.");
   });
 }

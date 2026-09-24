@@ -14,7 +14,7 @@ export function MatchFields({
   venues: Opt[];
   referees: Opt[];
   seasons?: { id: string; label: string; groups: Opt[] }[];
-  match?: { homeTeamId: string | null; awayTeamId: string | null; kickoff: Date; venueId: string | null; refereeId: string | null; round: string; matchday: number | null; statusNote: string | null };
+  match?: { homeTeamId: string | null; awayTeamId: string | null; kickoff: Date; venueId: string | null; refereeId: string | null; round: string; matchday: number | null; statusNote: string | null; publicFrom?: Date | null };
   mode: "create" | "edit";
 }) {
   return (
@@ -101,6 +101,9 @@ export function MatchFields({
       </Field>
       {mode === "edit" && (
         <>
+          <Field label="Members first until (optional)" className="sm:col-span-2">
+            <input name="publicFrom" type="datetime-local" className="input" defaultValue={match?.publicFrom ? toLocalInput(match.publicFrom) : ""} />
+          </Field>
           <Field label="Public note (e.g. reason for postponement)" className="sm:col-span-2">
             <input name="statusNote" className="input" defaultValue={match?.statusNote ?? ""} />
           </Field>

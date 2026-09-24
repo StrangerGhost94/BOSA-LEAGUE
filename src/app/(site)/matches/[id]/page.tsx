@@ -8,7 +8,15 @@ import { Crest, Icon, SectionHeading, StatusBadge } from "@/components/ui";
 import { StandingsTable, FixtureRow } from "@/components/match";
 import { MembersLock } from "@/components/members-lock";
 import { AutoRefresh } from "@/components/auto-refresh";
-import { fmtLong, fmtTime, STAGE_LABEL } from "@/lib/format";
+import { VoteForm } from "@/components/vote-form";
+import { VoteResults } from "@/components/vote-results";
+import { voteMatchAction } from "@/app/actions/members";
+import { isPublicNow, matchVoteOpen } from "@/lib/members";
+import { myVote, tally } from "@/lib/votes";
+import { db } from "@/db";
+import { players } from "@/db/schema";
+import { and, eq, notInArray } from "drizzle-orm";
+import { fmtLong, fmtTime, liveMinute, STAGE_LABEL } from "@/lib/format";
 import { StadiumBackdrop } from "@/components/site/stadium";
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
@@ -32,6 +40,35 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
   if (!m) notFound();
   const user = await getCurrentUser();
   const member = hasMembership(user);
+  if (!member && !isPublicNow(m)) {
+    return (
+      <section className="container-x pt-40">
+        <MembersLock
+          title="Members see this fixture first"
+          body={`This fixture is in early access for BOSA League members. It opens to everyone on ${fmtLong(m.publicFrom!)} at ${fmtTime(m.publicFrom!)}.`}
+          signedIn={!!user}
+        />
+      </section>
+    );
+  }
+  const voteOpen = matchVoteOpen(m);
+  const [voteRows, mine, voteTeams] = member
+    ? await Promise.all([
+        tally({ matchId: m.id }),
+        user ? myVote(user.id, { matchId: m.id }) : Promise.resolve(null),
+        Promise.all(
+          [m.homeTeam, m.awayTeam]
+            .filter((t): t is NonNullable<typeof t> => !!t)
+            .map(async (t) => {
+              const inLineup = m.lineups.filter((l) => l.teamId === t.id).map((l) => l.player);
+              const squad = inLineup.length
+                ? inLineup
+                : await db.query.players.findMany({ where: and(eq(players.teamId, t.id), notInArray(players.status, ["PENDING", "REJECTED"])) });
+              return { id: t.id, name: t.name, players: squad.map((p) => ({ id: p.id, name: `${p.firstName} ${p.lastName}`.trim() })) };
+            }),
+        ),
+      ])
+    : [[], null, []];
   const live = m.status === "LIVE" || m.status === "HALF_TIME";
   const played = live || m.status === "FULL_TIME";
   const hasScore = m.homeScore != null && m.awayScore != null;
@@ -53,7 +90,7 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
 
   return (
     <>
-      <AutoRefresh enabled={live} seconds={15} />
+      <AutoRefresh enabled={live && member} seconds={10} />
       <section className="relative overflow-hidden pb-14 pt-32">
         <StadiumBackdrop intensity={0.8} />
         <div
@@ -69,7 +106,7 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
               {m.round}
               {m.group ? ` · ${m.group.name}` : ""}
             </span>
-            <StatusBadge status={m.status} minute={m.minute} />
+            <StatusBadge status={m.status} minute={liveMinute(m)} />
           </FadeIn>
 
           <div className="mt-12 grid grid-cols-[1fr_auto_1fr] items-center gap-4 sm:gap-10">
@@ -111,7 +148,7 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
                 </div>
               )}
               {m.homePens != null && m.awayPens != null && <div className="mt-2 text-sm text-gold">Penalties {m.homePens} - {m.awayPens}</div>}
-              {live && m.minute != null && <div className="mt-2 font-display text-lg text-crimson-400">{m.status === "HALF_TIME" ? "HT" : `${m.minute}'`}</div>}
+              {live && m.minute != null && <div className="mt-2 font-display text-lg text-crimson-400">{m.status === "HALF_TIME" ? "HT" : `${liveMinute(m)}'`}</div>}
             </FadeIn>
             <FadeIn className="text-center" delay={0.1}>
               {a ? (
@@ -277,6 +314,25 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
                   );
                 })}
                 {m.attendance && <div className="mt-6 border-t border-white/[0.06] pt-4 text-sm text-ivory/55">Attendance: {m.attendance.toLocaleString()}</div>}
+              </div>
+            )}
+            {played && (
+              <div className="panel p-6">
+                <div className="eyebrow mb-4">Fans&apos; player of the match</div>
+                {!member ? (
+                  <p className="text-sm text-ivory/55">
+                    Members vote for the fans&apos; player of the match. <Link href="/membership" className="text-gold hover:underline">Become a member</Link>
+                  </p>
+                ) : (
+                  <div className="space-y-5">
+                    {voteOpen ? (
+                      <VoteForm action={voteMatchAction} teams={voteTeams} hidden={{ matchId: m.id }} current={mine} label="Vote" />
+                    ) : (
+                      <p className="text-xs text-ivory/45">Voting has closed for this match.</p>
+                    )}
+                    <VoteResults rows={voteRows} mine={mine} limit={5} />
+                  </div>
+                )}
               </div>
             )}
             {m.potm && member && (

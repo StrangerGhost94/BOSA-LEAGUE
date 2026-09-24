@@ -23,5 +23,7 @@ export async function syncPayment(orderTrackingId: string) {
 
 export async function activateMembership(userId: string, details: string) {
   await db.update(users).set({ membership: "ACTIVE", membershipPaidAt: new Date() }).where(eq(users.id, userId));
+  const { ensureMemberNumber } = await import("./members");
+  await ensureMemberNumber(userId);
   await logActivity(userId, "Membership activated", "User", details, userId);
 }

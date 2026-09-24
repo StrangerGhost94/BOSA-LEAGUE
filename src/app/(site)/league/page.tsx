@@ -3,7 +3,9 @@ import { CompetitionHero, HonoursList, LeaderBoard, MatchdayNav, SubNav, TeamGoa
 import { FixtureRow, StandingsTable } from "@/components/match";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion";
 import { SectionHeading, StatTile } from "@/components/ui";
-import { getCompetition, getHonours, getMatches, getPlayerStats, getSeasonTable, getSeasonTotals, getTeams } from "@/lib/data";
+import { getCompetition, getHonours, getMatches, getPlayerStats, getSeasonTable, getSeasonTotals, getTeams, visibleTo } from "@/lib/data";
+import { getCurrentUser, hasMembership } from "@/lib/auth";
+import { MembersLock } from "@/components/members-lock";
 import { fmtLong } from "@/lib/format";
 
 export const metadata = { title: "BOSA League" };
@@ -12,7 +14,9 @@ export default async function LeaguePage({ searchParams }: { searchParams: { md?
   const c = await getCompetition("bosa-league");
   if (!c?.season) notFound();
   const season = c.season;
-  const [table, totals, all, stats, honours, teams] = await Promise.all([
+  const user = await getCurrentUser();
+  const member = hasMembership(user);
+  const [table, totals, allMatches, stats, honours, teams] = await Promise.all([
     getSeasonTable(season.id),
     getSeasonTotals(season.id),
     getMatches({ seasonId: season.id }),
@@ -20,11 +24,14 @@ export default async function LeaguePage({ searchParams }: { searchParams: { md?
     getHonours(c.comp.id),
     getTeams(),
   ]);
+  const all = allMatches;
   const totalMd = Math.max(1, ...all.map((m) => m.matchday ?? 0));
   const playedMd = Math.max(0, ...all.filter((m) => m.status === "FULL_TIME").map((m) => m.matchday ?? 0));
   const nextMd = all.find((m) => m.status !== "FULL_TIME")?.matchday ?? totalMd;
   const md = Math.min(totalMd, Math.max(1, parseInt(searchParams.md ?? "", 10) || nextMd));
-  const mdMatches = all.filter((m) => m.matchday === md);
+  const mdAll = all.filter((m) => m.matchday === md);
+  const mdMatches = visibleTo(mdAll, member);
+  const lockedUntil = mdAll.length > mdMatches.length ? mdAll.find((m) => m.publicFrom)?.publicFrom ?? null : null;
 
   const scorers = stats.filter((p) => p.goals > 0).slice(0, 6);
   const assists = [...stats].filter((p) => p.assists > 0).sort((a, b) => b.assists - a.assists).slice(0, 6);
@@ -66,6 +73,15 @@ export default async function LeaguePage({ searchParams }: { searchParams: { md?
       <section id="fixtures" className="container-x scroll-mt-40 pt-24">
         <SectionHeading eyebrow={mdMatches[0] ? fmtLong(mdMatches[0].kickoff) : "Matchweek"} title={<>Matchday <em className="gold-text">{md}</em></>} />
         <MatchdayNav base="/league" current={md} total={totalMd} played={playedMd} />
+        {lockedUntil && (
+          <div className="mt-6">
+            <MembersLock
+              title={`Matchday ${md}: members see it first`}
+              body={`The Matchday ${md} fixtures are in early access for members. They open to everyone on ${fmtLong(lockedUntil)}.`}
+              signedIn={!!user}
+            />
+          </div>
+        )}
         <Stagger className="panel mt-6 p-2 sm:p-3">
           {mdMatches.map((m) => (
             <StaggerItem key={m.id}>

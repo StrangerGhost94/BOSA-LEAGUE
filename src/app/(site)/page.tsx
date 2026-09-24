@@ -19,13 +19,16 @@ import {
   getTopScorers,
   getLiveMatches,
   getCurrentSeasonIds,
+  visibleTo,
 } from "@/lib/data";
+import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { fmtDate, fmtLong, fmtTime } from "@/lib/format";
 
 export default async function HomePage() {
   const [lg, cl, sl, teams] = await Promise.all([getCompetition("bosa-league"), getCompetition("champions-league"), getCompetition("super-league"), getTeams()]);
   const lgSeason = lg!.season!;
-  const [table, upcoming, totals, scorers, news, honours, live, seasonIds] = await Promise.all([
+  const member = hasMembership(await getCurrentUser());
+  const [table, upcomingAll, totals, scorers, news, honours, live, seasonIds] = await Promise.all([
     getSeasonTable(lgSeason.id),
     getMatches({ seasonId: lgSeason.id, status: "upcoming", limit: 14 }),
     getSeasonTotals(lgSeason.id),
@@ -36,6 +39,7 @@ export default async function HomePage() {
     getCurrentSeasonIds(),
   ]);
   const recent = await getRecentResults(6, seasonIds);
+  const upcoming = visibleTo(upcomingAll, member);
 
   const nextMd = upcoming[0]?.matchday;
   const matchday = upcoming.filter((m) => m.matchday === nextMd);
@@ -71,7 +75,8 @@ export default async function HomePage() {
     sl?.season ? getMatches({ seasonId: sl.season.id }) : null,
   ]);
   if (cl?.season && clData) {
-    const [groups, clUp, clTot, semis] = clData;
+    const [groups, clUpAll, clTot, semis] = clData;
+    const clUp = visibleTo(clUpAll, member);
     previews.push({
       slug: "champions-league",
       href: "/champions-league",
@@ -90,6 +95,7 @@ export default async function HomePage() {
     });
   }
   if (sl?.season && slData) {
+    slData.splice(0, slData.length, ...visibleTo(slData, member));
     const opener = slData[slData.length - 1];
     const winner = opener && opener.status === "FULL_TIME" && opener.homeScore != null
       ? opener.homeScore > opener.awayScore! || (opener.homeScore === opener.awayScore && (opener.homePens ?? 0) > (opener.awayPens ?? 0))

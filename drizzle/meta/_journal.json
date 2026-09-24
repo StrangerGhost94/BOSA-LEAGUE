@@ -22,6 +22,20 @@
       "when": 1790249093732,
       "tag": "0002_completion_year",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790250621146,
+      "tag": "0003_members_features",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790251378619,
+      "tag": "0004_live_clock",
+      "breakpoints": true
     }
   ]
 }

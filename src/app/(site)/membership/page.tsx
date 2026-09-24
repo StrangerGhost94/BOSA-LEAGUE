@@ -12,11 +12,12 @@ import { BosaLogo, Icon } from "@/components/ui";
 export const metadata = { title: "Membership" };
 
 const BENEFITS = [
-  "Full match centre: timelines, line-ups and match reports",
-  "Complete player profiles and goal involvement history",
-  "Members-only interviews and editorial features",
-  "Player-of-the-match awards and advanced statistics",
-  "Support the referees, pitch hire and medical cover that keep BOSA running",
+  "Live match centre: follow every Sunday game minute by minute, with scores that update by themselves",
+  "Digital member card with your name, class year and member number, for partner offers",
+  "Vote for the fans' player of the match and the player of the month",
+  "Members-only photo albums and video highlights from every matchday",
+  "Early access to fixtures and team news before everyone else",
+  "Full match timelines, line-ups, reports and player profiles",
 ];
 
 export default async function MembershipPage({ searchParams }: { searchParams: { success?: string; welcome?: string } }) {

@@ -25,12 +25,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         ...item("rules", { href: "/admin/rules", label: "Rules", icon: "book" }),
       ],
     },
-    { section: "Publishing", items: [...item("news", { href: "/admin/news", label: "Newsroom", icon: "news" })] },
+    {
+      section: "Publishing",
+      items: [...item("news", { href: "/admin/news", label: "Newsroom", icon: "news" }), ...item("news", { href: "/admin/gallery", label: "Gallery", icon: "grid" })],
+    },
     {
       section: "Administration",
       items: [
         ...item("users", { href: "/admin/users", label: "Users & roles", icon: "user" }),
         ...item("payments", { href: "/admin/payments", label: "Memberships", icon: "card" }),
+        ...item("payments", { href: "/admin/perks", label: "Member perks", icon: "sparkle" }),
         ...item("exports", { href: "/admin/exports", label: "Reports & exports", icon: "download" }),
         ...item("activity", { href: "/admin/activity", label: "Activity history", icon: "activity" }),
         ...item("fixtures", { href: "/admin/settings", label: "Settings & venues", icon: "settings" }),

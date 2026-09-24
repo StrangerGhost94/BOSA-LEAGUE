@@ -66,3 +66,13 @@ export const STAGE_LABEL: Record<string, string> = {
   SEMI_FINAL: "Semi-final",
   FINAL: "Final",
 };
+
+/** Running match minute: counts on from the last time the clock was set; stops at 45 in the first half and 90 in the second. */
+export function liveMinute(m: { status: string; minute: number | null; clockAt?: Date | string | null }) {
+  if (m.status === "HALF_TIME") return 45;
+  if (m.status !== "LIVE" || m.minute == null) return m.minute;
+  if (!m.clockAt) return m.minute;
+  const run = m.minute + Math.floor((Date.now() - new Date(m.clockAt).getTime()) / 60000);
+  const cap = m.minute <= 45 ? 45 : 90;
+  return Math.max(m.minute, Math.min(run, cap));
+}

@@ -1,6 +1,6 @@
 import { ActionForm, Field, Submit } from "@/components/form";
 import { saveArticleAction } from "@/app/actions/admin";
-import { CATEGORY_LABEL } from "@/lib/format";
+import { CATEGORY_LABEL, toLocalInput } from "@/lib/format";
 import type { Article } from "@/db/schema";
 
 export function ArticleForm({ article, teams, comps }: { article?: Article; teams: { id: string; name: string }[]; comps: { id: string; name: string }[] }) {
@@ -48,6 +48,9 @@ export function ArticleForm({ article, teams, comps }: { article?: Article; team
                 </option>
               ))}
             </select>
+          </Field>
+          <Field label="Members first until (optional)">
+            <input name="publicFrom" type="datetime-local" className="input" defaultValue={article?.publicFrom ? toLocalInput(article.publicFrom) : ""} />
           </Field>
           <Field label="Byline">
             <input name="authorName" className="input" defaultValue={article?.authorName ?? "BOSA Newsroom"} />
