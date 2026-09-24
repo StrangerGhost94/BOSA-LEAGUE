@@ -214,6 +214,20 @@ export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: He
                   </Link>
                 ))}
               </div>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  window.dispatchEvent(new Event("bosa:install"));
+                }}
+                className="mt-6 flex items-center gap-3 rounded-2xl border border-gold/25 bg-gold/[0.06] px-4 py-3 text-left"
+              >
+                <BosaLogo size={32} />
+                <span className="flex-1">
+                  <span className="block text-sm font-semibold">Get the BOSA app</span>
+                  <span className="block text-xs text-ivory/55">Add it to your home screen</span>
+                </span>
+                <Icon name="download" size={18} className="text-gold" />
+              </button>
               <div className="mt-6 flex gap-3">
                 {user ? (
                   <Link href={user.home} className="btn-gold flex-1">
