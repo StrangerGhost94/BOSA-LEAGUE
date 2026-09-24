@@ -15,6 +15,13 @@
       "when": 1790247940216,
       "tag": "0001_opening_balances",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790249093732,
+      "tag": "0002_completion_year",
+      "breakpoints": true
     }
   ]
 }

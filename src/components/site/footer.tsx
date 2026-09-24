@@ -13,7 +13,7 @@ export function SiteFooter() {
               <BosaLogo size={56} />
               <div>
                 <div className="font-display text-2xl tracking-[0.12em]">BOSA LEAGUE</div>
-                <div className="text-[10px] uppercase tracking-[0.34em] text-gold/80">Students · Alumni · Since 2023</div>
+                <div className="text-[10px] uppercase tracking-[0.34em] text-gold/80">Bilal Institute · Old Students</div>
               </div>
             </div>
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-ivory/50">

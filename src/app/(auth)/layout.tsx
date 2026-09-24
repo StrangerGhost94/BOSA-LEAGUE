@@ -18,7 +18,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               The pitch is <em className="gold-text not-italic">yours</em> this Sunday.
             </h1>
             <p className="mt-6 max-w-md text-ivory/60">
-              One membership, the whole season. Full match centre, player profiles, members-only stories and the best seat in university football.
+              One membership, the whole season. Full match centre, player profiles, members-only stories and the best seat at Henry's Pitch.
             </p>
           </div>
           <div className="flex items-center gap-6 text-[11px] uppercase tracking-[0.24em] text-ivory/40">

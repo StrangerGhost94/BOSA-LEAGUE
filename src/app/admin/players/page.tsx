@@ -56,7 +56,7 @@ export default async function AdminPlayers({ searchParams }: { searchParams: Rec
                     {p.firstName} {p.lastName} <span className="text-ivory/40">#{p.number || "–"} · {p.position}</span>
                   </div>
                   <div className="text-xs text-ivory/50">
-                    {p.team.name} · {p.affiliation === "ALUMNI" ? "Alumni" : "Student"} · {p.course ?? "Course not given"} · submitted {fmtDate(p.createdAt, { day: "numeric", month: "short" })}
+                    {p.team.name} · {p.completionYear ? `Class of ${p.completionYear}` : "Completion year not given"} · submitted {fmtDate(p.createdAt, { day: "numeric", month: "short" })}
                   </div>
                 </div>
                 <ActionForm action={reviewPlayerAction}>
@@ -85,7 +85,7 @@ export default async function AdminPlayers({ searchParams }: { searchParams: Rec
                 <th>Player</th>
                 <th>Club</th>
                 <th>Pos</th>
-                <th>Type</th>
+                <th>Completed</th>
                 <th>Status</th>
                 <th />
               </tr>
@@ -103,7 +103,7 @@ export default async function AdminPlayers({ searchParams }: { searchParams: Rec
                     </span>
                   </td>
                   <td className="text-xs">{p.position}</td>
-                  <td className="text-xs text-ivory/60">{p.affiliation === "ALUMNI" ? "Alumni" : "Student"}</td>
+                  <td className="text-xs text-ivory/60">{p.completionYear ?? "-"}</td>
                   <td>
                     <Pill tone={p.status === "ACTIVE" ? "emerald" : p.status === "INJURED" ? "gold" : p.status === "SUSPENDED" || p.status === "REJECTED" ? "crimson" : "default"}>{p.status}</Pill>
                     {p.statusNote && <div className="mt-1 max-w-[220px] truncate text-[11px] text-ivory/45">{p.statusNote}</div>}

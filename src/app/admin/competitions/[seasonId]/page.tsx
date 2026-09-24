@@ -17,6 +17,7 @@ import {
   generateKnockoutAction,
 } from "@/app/actions/admin";
 import { getGroupTables, getSeasonTable, getTeams, getVenues } from "@/lib/data";
+import { SuperSeasonAdmin } from "@/components/admin/super-season";
 
 export default async function SeasonAdmin({ params }: { params: { seasonId: string } }) {
   const season = await db.query.seasons.findFirst({
@@ -24,6 +25,16 @@ export default async function SeasonAdmin({ params }: { params: { seasonId: stri
     with: { competition: true, teams: true, groups: { orderBy: asc(s.groups.order), with: { teams: true } } },
   });
   if (!season) notFound();
+  if (season.competition.type === "SUPER")
+    return (
+      <>
+        <Link href="/admin/competitions" className="mb-4 inline-flex items-center gap-1 text-sm text-ivory/50 hover:text-gold">
+          <Icon name="arrowLeft" size={14} /> All competitions
+        </Link>
+        <PageHeader eyebrow={season.competition.name} title={season.name} />
+        <SuperSeasonAdmin seasonId={season.id} />
+      </>
+    );
   const [teams, venues] = await Promise.all([getTeams(), getVenues()]);
   const entered = new Set(season.teams.map((t) => t.teamId));
   const adj = Object.fromEntries(season.teams.map((t) => [t.teamId, t.pointsAdjustment]));

@@ -22,7 +22,7 @@ export default async function Applications() {
               <div>
                 <h3 className="font-serif text-2xl">{a.teamName}</h3>
                 <div className="text-sm text-ivory/55">
-                  {a.campus} · {a.affiliation === "ALUMNI" ? "Mostly alumni" : "Mostly students"} · squad of {a.squadSize ?? "?"}
+                  {a.campus ? `Year group: ${a.campus}` : "Year group not given"} · squad of {a.squadSize ?? "?"}
                 </div>
               </div>
               <Pill tone={a.status === "APPROVED" ? "emerald" : a.status === "DECLINED" ? "crimson" : "gold"}>{a.status}</Pill>

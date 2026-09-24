@@ -30,7 +30,7 @@ export async function saveTeamAction(_: ActionResult, fd: FormData): A {
     const values = {
       name,
       shortName: (str(fd, "shortName") || name.slice(0, 3)).toUpperCase().slice(0, 4),
-      campus: str(fd, "campus") || "To be confirmed",
+      campus: str(fd, "campus"),
       founded: num(fd, "founded") ?? new Date().getFullYear(),
       primaryColor,
       secondaryColor,
@@ -82,9 +82,8 @@ export async function savePlayerAction(_: ActionResult, fd: FormData): A {
         lastName,
         number,
         position,
-        affiliation: (str(fd, "affiliation") === "ALUMNI" ? "ALUMNI" : "STUDENT") as "ALUMNI" | "STUDENT",
-        course: optStr(fd, "course"),
-        yearOfStudy: optStr(fd, "yearOfStudy"),
+        affiliation: "ALUMNI" as const,
+        completionYear: num(fd, "completionYear"),
         birthYear: num(fd, "birthYear"),
         bio: optStr(fd, "bio"),
         ...(can(u.role, "players") && fd.has("baseGoals")
@@ -800,4 +799,34 @@ export async function updateOwnTeamAction(_: ActionResult, fd: FormData): A {
       return ok("Club profile saved.");
     },
   );
+}
+
+/* ============================== SUPER LEAGUE ============================== */
+
+/** Schedules the single season-opening Super League match. Its winner automatically becomes the season's champion. */
+export async function scheduleSuperMatchAction(_: ActionResult, fd: FormData): A {
+  return guarded("fixtures", async (u) => {
+    const seasonId = str(fd, "seasonId");
+    const home = str(fd, "homeTeamId");
+    const away = str(fd, "awayTeamId");
+    const kickoff = str(fd, "kickoff");
+    if (!seasonId || !home || !away || !kickoff) return fail("Choose both clubs and the kick-off time.");
+    if (home === away) return fail("Choose two different clubs.");
+    const existing = await db.query.matches.findFirst({ where: and(eq(s.matches.seasonId, seasonId), eq(s.matches.stage, "FINAL")) });
+    const values = {
+      homeTeamId: home,
+      awayTeamId: away,
+      kickoff: fromLocalInput(kickoff),
+      venueId: optStr(fd, "venueId"),
+      refereeId: optStr(fd, "refereeId"),
+    };
+    if (existing) {
+      await db.update(s.matches).set({ ...values, updatedAt: new Date() }).where(eq(s.matches.id, existing.id));
+      await logActivity(u.id, "Updated Super League match", "Match", undefined, existing.id);
+      return ok("Super League match updated.");
+    }
+    const [m] = await db.insert(s.matches).values({ ...values, seasonId, stage: "FINAL", round: "Super League", bracketSlot: 1 }).returning();
+    await logActivity(u.id, "Scheduled Super League match", "Match", undefined, m.id);
+    return ok("Super League match scheduled.");
+  });
 }

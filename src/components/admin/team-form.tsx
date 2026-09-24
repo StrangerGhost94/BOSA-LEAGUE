@@ -12,7 +12,7 @@ export function TeamForm({ team }: { team?: Team }) {
       <Field label="Short name">
         <input name="shortName" className="input" maxLength={4} defaultValue={team?.shortName} />
       </Field>
-      <Field label="University or campus" className="sm:col-span-2">
+      <Field label="Year group (optional, e.g. Class of 2012 to 2015)" className="sm:col-span-2">
         <input name="campus" className="input" defaultValue={team?.campus} />
       </Field>
       <Field label="Founded">

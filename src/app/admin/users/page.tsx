@@ -88,7 +88,10 @@ export default async function AdminUsers({ searchParams }: { searchParams: Recor
                   <div className="font-semibold">
                     {u.name} {!u.active && <Pill tone="crimson">Disabled</Pill>}
                   </div>
-                  <div className="text-xs text-ivory/45">{u.email}</div>
+                  <div className="text-xs text-ivory/45">
+                    {u.email}
+                    {u.completionYear ? ` · Class of ${u.completionYear}` : ""}
+                  </div>
                 </td>
                 <td className="text-sm">{ROLE_LABEL[u.role]}</td>
                 <td className="text-sm text-ivory/60">{u.team?.name ?? "-"}</td>

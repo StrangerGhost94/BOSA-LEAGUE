@@ -22,7 +22,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         ...item("competitions", { href: "/admin/competitions", label: "Competitions & seasons", icon: "trophy" }),
         ...item("teams", { href: "/admin/teams", label: "Teams", icon: "shield" }),
         ...item("players", { href: "/admin/players", label: "Players", icon: "users", badge: c.pending }),
-        ...item("competitions", { href: "/admin/applications", label: "Team applications", icon: "flag", badge: c.apps }),
         ...item("rules", { href: "/admin/rules", label: "Rules", icon: "book" }),
       ],
     },

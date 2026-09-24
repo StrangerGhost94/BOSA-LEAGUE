@@ -7,8 +7,8 @@ export const ROLE_LABEL: Record<Role, string> = {
   TEAM_MANAGER: "Team Manager",
   REFEREE: "Referee",
   PLAYER: "Player",
-  STUDENT_FAN: "Student Fan",
-  ALUMNI_FAN: "Alumni Fan",
+  STUDENT_FAN: "Current Student",
+  ALUMNI_FAN: "Old Student",
 };
 
 export const ALL_ROLES = Object.keys(ROLE_LABEL) as Role[];

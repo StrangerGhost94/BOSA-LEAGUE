@@ -16,6 +16,7 @@ export type CompPreview = {
   tagline: string;
   season: string;
   tableTitle: string;
+  emptyText?: string;
   rows: Row[];
   fixtures: Fx[];
   stat: { label: string; value: string }[];
@@ -70,9 +71,10 @@ export function CompetitionSwitcher({ items }: { items: CompPreview[] }) {
             <div className="flex items-center justify-between">
               <div className="eyebrow">{c.tableTitle}</div>
               <Link href={c.href} className="group flex items-center gap-1.5 text-xs font-semibold text-ivory/60 hover:text-gold">
-                Full table <Arrow className="transition group-hover:translate-x-1" />
+                {c.type === "SUPER" ? "Details" : "Full table"} <Arrow className="transition group-hover:translate-x-1" />
               </Link>
             </div>
+            {c.rows.length === 0 && <p className="mt-5 font-serif text-xl leading-relaxed text-ivory/75">{c.emptyText ?? "Details will appear here once the League office publishes them."}</p>}
             <ul className="mt-5 space-y-1.5">
               {c.rows.map((r, i) => (
                 <motion.li
@@ -102,7 +104,7 @@ export function CompetitionSwitcher({ items }: { items: CompPreview[] }) {
                 </div>
               ))}
             </div>
-            <div className="eyebrow mb-3 mt-8">Next up</div>
+            <div className="eyebrow mb-3 mt-8">{c.type === "SUPER" ? "The match" : "Next up"}</div>
             <ul className="space-y-2">
               {c.fixtures.map((f) => (
                 <li key={f.id}>
@@ -120,7 +122,7 @@ export function CompetitionSwitcher({ items }: { items: CompPreview[] }) {
                   </Link>
                 </li>
               ))}
-              {c.fixtures.length === 0 && <li className="text-sm text-ivory/45">No upcoming fixtures scheduled.</li>}
+              {c.fixtures.length === 0 && <li className="text-sm text-ivory/45">No fixtures scheduled yet.</li>}
             </ul>
           </div>
         </motion.div>

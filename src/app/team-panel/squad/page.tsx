@@ -44,7 +44,7 @@ export default async function Squad() {
                   <div className="font-semibold">
                     {p.firstName} {p.lastName}
                   </div>
-                  <div className="text-xs text-ivory/45">{p.affiliation === "ALUMNI" ? "Alumni" : "Student"}{p.course ? ` · ${p.course}` : ""}</div>
+                  <div className="text-xs text-ivory/45">{p.completionYear ? `Class of ${p.completionYear}` : "Completion year not set"}</div>
                 </td>
                 <td className="text-xs">{p.position}</td>
                 <td className="text-center">{stats[p.id]?.apps ?? 0}</td>

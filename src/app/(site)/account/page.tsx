@@ -10,6 +10,7 @@ import { changePasswordAction, updateProfileAction } from "@/app/actions/account
 import { Crest, Pill, SectionHeading } from "@/components/ui";
 import { FadeIn } from "@/components/motion";
 import { getPlayerStats } from "@/lib/data";
+import { completionYears } from "@/lib/years";
 
 export const metadata = { title: "My account" };
 
@@ -91,8 +92,15 @@ export default async function AccountPage() {
               <Field label="Phone">
                 <input name="phone" defaultValue={u.phone ?? ""} className="input" />
               </Field>
-              <Field label="University or institute" className="sm:col-span-2">
-                <input name="university" defaultValue={u.university ?? ""} className="input" />
+              <Field label="Year completed at Bilal Institute" className="sm:col-span-2">
+                <select name="completionYear" defaultValue={u.completionYear ?? ""} className="input">
+                  <option value="">Select year</option>
+                  {completionYears().map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
               </Field>
               <div>
                 <Submit className="btn-gold">Save profile</Submit>

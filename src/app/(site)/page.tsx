@@ -68,7 +68,7 @@ export default async function HomePage() {
     cl?.season
       ? Promise.all([getGroupTables(cl.season.id), getMatches({ seasonId: cl.season.id, status: "upcoming", limit: 3 }), getSeasonTotals(cl.season.id), getMatches({ seasonId: cl.season.id, stage: "SEMI_FINAL" })])
       : null,
-    sl?.season ? Promise.all([getSeasonTable(sl.season.id), getMatches({ seasonId: sl.season.id, status: "upcoming", limit: 3 }), getSeasonTotals(sl.season.id)]) : null,
+    sl?.season ? getMatches({ seasonId: sl.season.id }) : null,
   ]);
   if (cl?.season && clData) {
     const [groups, clUp, clTot, semis] = clData;
@@ -90,7 +90,12 @@ export default async function HomePage() {
     });
   }
   if (sl?.season && slData) {
-    const [slTable, slUp, slTot] = slData;
+    const opener = slData[slData.length - 1];
+    const winner = opener && opener.status === "FULL_TIME" && opener.homeScore != null
+      ? opener.homeScore > opener.awayScore! || (opener.homeScore === opener.awayScore && (opener.homePens ?? 0) > (opener.awayPens ?? 0))
+        ? opener.homeTeam
+        : opener.awayTeam
+      : null;
     previews.push({
       slug: "super-league",
       href: "/super-league",
@@ -98,13 +103,21 @@ export default async function HomePage() {
       type: "SUPER",
       tagline: sl.comp.tagline ?? "",
       season: sl.season.name,
-      tableTitle: "Standings",
-      rows: slTable.slice(0, 5).map((r) => ({ pos: r.position, name: r.team.name, crest: r.team.crest, primaryColor: r.team.primaryColor, pts: r.points, played: r.played, gd: r.goalDifference })),
-      fixtures: slUp.map((m) => ({ id: m.id, home: m.homeTeam, away: m.awayTeam, when: `${fmtDate(m.kickoff, { day: "numeric", month: "short" })} ${fmtTime(m.kickoff)}`, round: m.round })),
+      tableTitle: "The season opener",
+      emptyText: "One match opens every season: last season's BOSA League champion against last season's Champions League winner.",
+      rows: [],
+      fixtures: slData.map((m) => ({
+        id: m.id,
+        home: m.homeTeam,
+        away: m.awayTeam,
+        when: `${fmtDate(m.kickoff, { day: "numeric", month: "short" })} ${fmtTime(m.kickoff)}`,
+        round: m.round,
+        score: m.status === "FULL_TIME" && m.homeScore != null ? `${m.homeScore}-${m.awayScore}` : undefined,
+      })),
       stat: [
-        { label: "Goals", value: String(slTot.goals) },
-        { label: "Clubs", value: String(slTable.length) },
-        { label: "Played", value: String(slTot.played) },
+        { label: "Format", value: "1 match" },
+        { label: "Opens", value: "Season" },
+        { label: "Holder", value: winner?.shortName ?? "TBC" },
       ],
     });
   }
@@ -135,7 +148,7 @@ export default async function HomePage() {
             </h1>
             <FadeIn delay={0.6}>
               <p className="mt-8 max-w-xl text-base leading-relaxed text-ivory/65 sm:text-lg">
-                Fourteen clubs of students and alumni. Three competitions. One pitch behind Shell Kabalagala where reputations are made every weekend.
+                Fourteen clubs of Bilal Islamic Institute old students. Three competitions. One pitch behind Shell Kabalagala where reputations are made every weekend.
               </p>
               <div className="mt-10 flex flex-wrap items-center gap-4">
                 <Magnetic>

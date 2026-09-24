@@ -40,7 +40,7 @@ export async function GET(req: Request, { params }: { params: { kind: string } }
     rows = [["Round", "Kick-off", "Home", "Away", "Home score", "Away score", "Pens", "Status", "Venue"], ...ms.map((m) => [m.round, fmtDateTime(m.kickoff), m.homeTeam?.name ?? "TBD", m.awayTeam?.name ?? "TBD", m.homeScore, m.awayScore, m.homePens != null ? `${m.homePens}-${m.awayPens}` : "", m.status, m.venue?.name ?? ""])];
   } else if (params.kind === "players") {
     const ps = await getPlayerStats({ includePending: true });
-    rows = [["Club", "Number", "First name", "Last name", "Position", "Type", "Status", "Apps", "Goals", "Assists", "Clean sheets", "Yellow", "Red", "POTM"], ...ps.map((p) => [p.teamName, p.number, p.firstName, p.lastName, p.position, p.affiliation, p.status, p.apps, p.goals, p.assists, p.cleanSheets, p.yellows, p.reds, p.potm])];
+    rows = [["Club", "Number", "First name", "Last name", "Position", "Completed", "Status", "Apps", "Goals", "Assists", "Clean sheets", "Yellow", "Red", "POTM"], ...ps.map((p) => [p.teamName, p.number, p.firstName, p.lastName, p.position, p.completionYear ?? "", p.status, p.apps, p.goals, p.assists, p.cleanSheets, p.yellows, p.reds, p.potm])];
   } else if (params.kind === "members") {
     const { rows: r } = await pool.query("select name, email, phone, role, membership, membership_paid_at, created_at from users order by created_at desc");
     rows = [["Name", "Email", "Phone", "Role", "Membership", "Paid at", "Joined"], ...r.map((x: Record<string, string | Date | null>) => [x.name as string, x.email as string, x.phone as string, x.role as string, x.membership as string, x.membership_paid_at ? fmtDateTime(x.membership_paid_at as Date) : "", fmtDateTime(x.created_at as Date)])];

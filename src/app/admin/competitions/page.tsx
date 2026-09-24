@@ -33,7 +33,7 @@ export default async function AdminCompetitions() {
               <select name="type" className="input">
                 <option value="LEAGUE">League table</option>
                 <option value="CHAMPIONS">Groups and knockout</option>
-                <option value="SUPER">Student and alumni league</option>
+                <option value="SUPER">Single season-opening match (Super League format)</option>
               </select>
             </Field>
             <Field label="Tagline">

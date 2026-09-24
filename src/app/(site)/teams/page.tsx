@@ -24,7 +24,7 @@ export default async function TeamsPage() {
         type="LEAGUE"
         name="The Fourteen"
         season="Registered clubs · Season 4"
-        tagline="Every badge carries a campus, a history and a Sunday ritual."
+        tagline="Fourteen clubs of Bilal Institute old students."
         stats={[
           { label: "Registered clubs", value: teams.length },
           { label: "Registered players", value: Object.values(squadSize).reduce((a, b) => a + b, 0) },

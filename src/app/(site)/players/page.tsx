@@ -29,7 +29,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Reco
       (!team || p.teamId === team.id) &&
       (!searchParams.pos || p.position === searchParams.pos) &&
       (!searchParams.status || p.status === searchParams.status) &&
-      (!searchParams.aff || p.affiliation === searchParams.aff),
+      (!searchParams.year || String(p.completionYear) === searchParams.year),
   );
   list = list.sort(SORTS[searchParams.sort ?? "goals"] ?? SORTS.goals);
   const shown = list.slice(0, 120);
@@ -40,7 +40,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Reco
         type="LEAGUE"
         name="Player Directory"
         season="All competitions · Season 4"
-        tagline="Every registered student and alumnus, with live statistics."
+        tagline="Every registered Bilal Institute old student, with live statistics."
         stats={[
           { label: "Registered players", value: all.length },
           { label: "Goals scored", value: all.reduce((a, p) => a + p.goals, 0) },
@@ -55,7 +55,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Reco
             { name: "team", label: "Club", type: "select", all: "All clubs", options: teams.map((t) => ({ value: t.slug, label: t.name })) },
             { name: "pos", label: "Position", type: "select", all: "All positions", options: Object.entries(POSITION_LABEL).map(([value, label]) => ({ value, label })) },
             { name: "status", label: "Status", type: "select", all: "Any status", options: [{ value: "ACTIVE", label: "Available" }, { value: "INJURED", label: "Injured" }, { value: "SUSPENDED", label: "Suspended" }] },
-            { name: "aff", label: "Student / Alumni", type: "select", all: "Both", options: [{ value: "STUDENT", label: "Students" }, { value: "ALUMNI", label: "Alumni" }] },
+            { name: "year", label: "Completion year", type: "select", all: "All years", options: Array.from(new Set(all.map((p) => p.completionYear).filter((y): y is number => !!y))).sort((a, b) => b - a).map((y) => ({ value: String(y), label: `Class of ${y}` })) },
             { name: "sort", label: "Sort by", type: "select", all: "Goals", options: [{ value: "assists", label: "Assists" }, { value: "apps", label: "Appearances" }, { value: "cleansheets", label: "Clean sheets" }, { value: "potm", label: "Player of the match" }, { value: "cards", label: "Cards" }, { value: "name", label: "Name" }] },
           ]}
         />
@@ -95,6 +95,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Reco
                           <span className="block font-semibold group-hover:text-gold">
                             {p.firstName} {p.lastName}
                           </span>
+                          {p.completionYear && <span className="text-[10px] uppercase tracking-[0.14em] text-ivory/40">Class of {p.completionYear}</span>}
 
                         </span>
                       </Link>

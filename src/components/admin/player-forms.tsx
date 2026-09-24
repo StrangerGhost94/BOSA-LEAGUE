@@ -2,6 +2,7 @@ import { ActionForm, Field, Submit } from "@/components/form";
 import { savePlayerAction, setPlayerStatusAction } from "@/app/actions/admin";
 import type { Player } from "@/db/schema";
 import { dayKey } from "@/lib/format";
+import { completionYears } from "@/lib/years";
 
 export function PlayerForm({ player, teams, fixedTeam, admin }: { player?: Player; teams?: { id: string; name: string }[]; fixedTeam?: boolean; admin?: boolean }) {
   return (
@@ -38,17 +39,15 @@ export function PlayerForm({ player, teams, fixedTeam, admin }: { player?: Playe
           <option value="FWD">Forward</option>
         </select>
       </Field>
-      <Field label="Student or alumni">
-        <select name="affiliation" className="input" defaultValue={player?.affiliation ?? "STUDENT"}>
-          <option value="STUDENT">Student</option>
-          <option value="ALUMNI">Alumni</option>
+      <Field label="Year completed at Bilal Institute">
+        <select name="completionYear" className="input" defaultValue={player?.completionYear ?? ""}>
+          <option value="">Not known</option>
+          {completionYears().map((y) => (
+            <option key={y} value={y}>
+              {y}
+            </option>
+          ))}
         </select>
-      </Field>
-      <Field label="Year of study / class">
-        <input name="yearOfStudy" className="input" defaultValue={player?.yearOfStudy ?? ""} placeholder="Year 2 or Class of 2022" />
-      </Field>
-      <Field label="Course">
-        <input name="course" className="input" defaultValue={player?.course ?? ""} />
       </Field>
       <Field label="Birth year">
         <input name="birthYear" type="number" className="input" defaultValue={player?.birthYear ?? ""} />

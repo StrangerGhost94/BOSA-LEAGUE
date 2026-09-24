@@ -178,6 +178,7 @@ export type PlayerStat = {
   status: s.PlayerStatus;
   statusNote: string | null;
   affiliation: string;
+  completionYear: number | null;
   teamId: string;
   teamName: string;
   teamSlug: string;
@@ -225,7 +226,7 @@ export async function getPlayerStats(opts: { seasonId?: string | null; teamId?: 
       group by m.potm_id
     )
     select p.id, p.first_name "firstName", p.last_name "lastName", p.number, p.position, p.status, p.status_note "statusNote",
-      p.affiliation, p.team_id "teamId", t.name "teamName", t.slug "teamSlug", t.crest, t.primary_color "primaryColor",
+      p.affiliation, p.completion_year "completionYear", p.team_id "teamId", t.name "teamName", t.slug "teamSlug", t.crest, t.primary_color "primaryColor",
       (coalesce(ev.goals,0) + case when $1::text is null or exists (select 1 from seasons cs join competitions cc on cc.id = cs.competition_id where cs.id = $1 and cs.is_current and cc.type = 'LEAGUE') then p.base_goals else 0 end)::int goals,
       (coalesce(asx.assists,0) + case when $1::text is null or exists (select 1 from seasons cs join competitions cc on cc.id = cs.competition_id where cs.id = $1 and cs.is_current and cc.type = 'LEAGUE') then p.base_assists else 0 end)::int assists,
       (coalesce(ap.apps,0) + case when $1::text is null or exists (select 1 from seasons cs join competitions cc on cc.id = cs.competition_id where cs.id = $1 and cs.is_current and cc.type = 'LEAGUE') then p.base_apps else 0 end)::int apps, coalesce(ap.starts,0) starts,
@@ -239,7 +240,7 @@ export async function getPlayerStats(opts: { seasonId?: string | null; teamId?: 
     where ($2::text is null or p.team_id = $2)
       and ($3::text is null or p.id = $3)
       and ($4::boolean or p.status not in ('PENDING','REJECTED'))
-    order by 14 desc, 15 desc, p.last_name asc
+    order by 15 desc, 16 desc, p.last_name asc
     `,
     [opts.seasonId ?? null, opts.teamId ?? null, opts.playerId ?? null, !!opts.includePending],
   );

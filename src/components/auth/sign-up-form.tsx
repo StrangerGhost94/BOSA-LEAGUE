@@ -5,21 +5,22 @@ import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
 import { ActionForm, Field, Submit } from "@/components/form";
 import { signUpAction } from "@/app/actions/auth";
+import { completionYears } from "@/lib/years";
 
 const TYPES = [
-  { v: "STUDENT_FAN", t: "Student fan", d: "Currently enrolled" },
-  { v: "ALUMNI_FAN", t: "Alumni fan", d: "Graduated supporter" },
-  { v: "PLAYER", t: "Player", d: "Register with a club" },
+  { v: "ALUMNI_FAN", t: "Old student", d: "Follow the league as a supporter" },
+  { v: "PLAYER", t: "Player", d: "Register to play for a club" },
 ];
 
 export function SignUpForm({ teams }: { teams: { id: string; name: string }[] }) {
-  const [type, setType] = useState("STUDENT_FAN");
+  const [type, setType] = useState("ALUMNI_FAN");
+  const years = completionYears();
   return (
     <ActionForm action={signUpAction} className="mt-10 space-y-5" toast={false}>
       <input type="hidden" name="type" value={type} />
       <div>
-        <span className="label">Account type</span>
-        <div className="grid grid-cols-3 gap-2">
+        <span className="label">I am joining as</span>
+        <div className="grid grid-cols-2 gap-2">
           {TYPES.map((x) => (
             <button
               type="button"
@@ -35,9 +36,10 @@ export function SignUpForm({ teams }: { teams: { id: string; name: string }[] })
             </button>
           ))}
         </div>
+        <p className="mt-2 text-xs text-ivory/45">BOSA League is for old students of Bilal Islamic Institute only.</p>
       </div>
       <Field label="Full name">
-        <input name="name" required className="input" placeholder="e.g. Aisha Namutebi" autoComplete="name" />
+        <input name="name" required className="input" placeholder="Your full name" autoComplete="name" />
       </Field>
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label="Email">
@@ -47,17 +49,21 @@ export function SignUpForm({ teams }: { teams: { id: string; name: string }[] })
           <input name="phone" className="input" placeholder="07XX XXX XXX" autoComplete="tel" />
         </Field>
       </div>
-      <Field label="University or institute">
-        <input name="university" className="input" placeholder="e.g. Makerere University" />
+      <Field label="Year you completed at Bilal Institute">
+        <select name="completionYear" className="input" defaultValue="" required>
+          <option value="" disabled>
+            Select your year of completion
+          </option>
+          {years.map((y) => (
+            <option key={y} value={y}>
+              {y}
+            </option>
+          ))}
+        </select>
       </Field>
       <AnimatePresence initial={false}>
         {type === "PLAYER" && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
             <div className="space-y-5 rounded-2xl border border-gold/20 bg-gold/[0.04] p-4">
               <div className="text-xs text-ivory/60">Your registration is sent to the League office and your club manager for approval.</div>
               <Field label="Club">
@@ -72,28 +78,19 @@ export function SignUpForm({ teams }: { teams: { id: string; name: string }[] })
                   ))}
                 </select>
               </Field>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <Field label="Position">
                   <select name="position" className="input" defaultValue="MID">
-                    <option value="GK">GK</option>
-                    <option value="DEF">DEF</option>
-                    <option value="MID">MID</option>
-                    <option value="FWD">FWD</option>
+                    <option value="GK">Goalkeeper</option>
+                    <option value="DEF">Defender</option>
+                    <option value="MID">Midfielder</option>
+                    <option value="FWD">Forward</option>
                   </select>
                 </Field>
-                <Field label="Number">
-                  <input name="number" type="number" min={1} max={99} className="input" defaultValue={23} />
-                </Field>
-                <Field label="Status">
-                  <select name="affiliation" className="input" defaultValue="STUDENT">
-                    <option value="STUDENT">Student</option>
-                    <option value="ALUMNI">Alumni</option>
-                  </select>
+                <Field label="Shirt number">
+                  <input name="number" type="number" min={1} max={99} className="input" placeholder="e.g. 10" />
                 </Field>
               </div>
-              <Field label="Course">
-                <input name="course" className="input" placeholder="e.g. BSc Computer Science" />
-              </Field>
             </div>
           </motion.div>
         )}
@@ -103,7 +100,7 @@ export function SignUpForm({ teams }: { teams: { id: string; name: string }[] })
       </Field>
       <label className="flex items-start gap-3 text-sm text-ivory/60">
         <input type="checkbox" name="terms" className="mt-1 accent-[#CC2654]" />
-        <span>I agree to the BOSA League membership terms and the competition code of conduct.</span>
+        <span>I confirm I am an old student of Bilal Islamic Institute and agree to the BOSA League membership terms.</span>
       </label>
       <Submit className="btn-primary w-full py-3" pendingText="Creating account">
         Create account

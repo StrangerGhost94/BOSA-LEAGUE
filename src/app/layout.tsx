@@ -9,7 +9,7 @@ import { CommandMenu } from "@/components/site/command-menu";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: { default: "BOSA League · Students and Alumni Football", template: "%s · BOSA League" },
+  title: { default: "BOSA League · Bilal Institute Old Students Football", template: "%s · BOSA League" },
   description:
     "The official home of the BOSA League, BOSA Champions League and BOSA Super League. Fixtures, results, standings, teams, players and news from Henry's Pitch, Kabalagala.",
   icons: { icon: "/crests/bosa-logo.png", apple: "/crests/bosa-logo.png" },

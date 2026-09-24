@@ -99,7 +99,7 @@ export default async function TeamPage({ params }: { params: { slug: string } })
               <div className="eyebrow mb-5">Club profile</div>
               <dl className="grid grid-cols-2 gap-6 text-sm">
                 {[
-                  ["Campus", t.campus],
+                  ["Year group", t.campus || "-"],
                   ["Head coach", t.coachName ?? "To be confirmed"],
                   ["Captain", t.captainName ?? "To be confirmed"],
                   ["Home ground", t.homeVenue ?? "Henry's Pitch"],

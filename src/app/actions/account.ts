@@ -13,7 +13,7 @@ export async function updateProfileAction(_: ActionResult, fd: FormData): Promis
   const u = await requireUser();
   const name = str(fd, "name");
   if (name.length < 3) return fail("Please enter your full name.");
-  await db.update(users).set({ name, phone: optStr(fd, "phone"), university: optStr(fd, "university") }).where(eq(users.id, u.id));
+  await db.update(users).set({ name, phone: optStr(fd, "phone"), completionYear: parseInt(str(fd, "completionYear"), 10) || null }).where(eq(users.id, u.id));
   revalidatePath("/account");
   return ok("Profile updated.");
 }
