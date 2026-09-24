@@ -65,7 +65,7 @@ export function CompetitionSwitcher({ items }: { items: CompPreview[] }) {
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           exit={{ opacity: 0, y: -10, filter: "blur(6px)" }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="glass mt-4 grid gap-8 rounded-3xl p-6 sm:p-8 lg:grid-cols-[1.1fr_1fr]"
+          className="glass mt-4 grid gap-8 rounded-3xl p-4 sm:p-8 lg:grid-cols-[1.1fr_1fr] [&>*]:min-w-0"
         >
           <div>
             <div className="flex items-center justify-between">
@@ -82,12 +82,12 @@ export function CompetitionSwitcher({ items }: { items: CompPreview[] }) {
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.06, duration: 0.5 }}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-white/[0.04]"
+                  className="flex items-center gap-2.5 rounded-xl px-2 py-2.5 hover:bg-white/[0.04] sm:gap-3 sm:px-3"
                 >
                   <span className={clsx("w-5 font-display text-sm", r.pos === 1 ? "text-gold" : "text-ivory/50")}>{r.pos}</span>
                   <Crest team={{ name: r.name, crest: r.crest, primaryColor: r.primaryColor }} size={28} />
                   <span className="flex-1 truncate text-sm font-medium">{r.name}</span>
-                  <span className="w-10 text-right text-xs tabular-nums text-ivory/45">{r.played} P</span>
+                  <span className="hidden w-10 text-right text-xs tabular-nums text-ivory/45 sm:inline">{r.played} P</span>
                   <span className="w-12 text-right text-xs tabular-nums text-ivory/45">{r.gd > 0 ? `+${r.gd}` : r.gd}</span>
                   <span className="w-10 rounded-md bg-white/[0.06] py-0.5 text-center font-display tabular-nums">{r.pts}</span>
                 </motion.li>
@@ -98,8 +98,8 @@ export function CompetitionSwitcher({ items }: { items: CompPreview[] }) {
             <p className="font-serif text-2xl leading-snug text-ivory/90">{c.tagline}</p>
             <div className="mt-6 grid grid-cols-3 gap-3">
               {c.stat.map((s) => (
-                <div key={s.label} className="rounded-xl border border-white/[0.07] p-3">
-                  <div className="font-display text-2xl text-gold">{s.value}</div>
+                <div key={s.label} className="min-w-0 rounded-xl border border-white/[0.07] p-2.5 sm:p-3">
+                  <div className="break-words font-display text-xl leading-tight text-gold sm:text-2xl">{s.value}</div>
                   <div className="text-[10px] uppercase tracking-[0.16em] text-ivory/45">{s.label}</div>
                 </div>
               ))}
@@ -108,14 +108,14 @@ export function CompetitionSwitcher({ items }: { items: CompPreview[] }) {
             <ul className="space-y-2">
               {c.fixtures.map((f) => (
                 <li key={f.id}>
-                  <Link href={`/matches/${f.id}`} className="flex items-center gap-3 rounded-xl border border-white/[0.06] px-3 py-2.5 text-sm transition hover:border-gold/30">
-                    <span className="w-24 shrink-0 text-[11px] uppercase tracking-[0.12em] text-gold">{f.when}</span>
-                    <span className="flex flex-1 items-center justify-end gap-2 truncate text-right">
+                  <Link href={`/matches/${f.id}`} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-xl border border-white/[0.06] px-3 py-2.5 text-sm transition hover:border-gold/30 sm:flex-nowrap">
+                    <span className="w-full shrink-0 text-[11px] uppercase tracking-[0.12em] text-gold sm:w-24">{f.when}</span>
+                    <span className="flex min-w-0 flex-1 items-center justify-end gap-2 truncate text-right">
                       <span className="truncate">{f.home?.name ?? "TBD"}</span>
                       <Crest team={f.home} size={22} />
                     </span>
                     <span className="text-ivory/35">{f.score ?? "v"}</span>
-                    <span className="flex flex-1 items-center gap-2 truncate">
+                    <span className="flex min-w-0 flex-1 items-center gap-2 truncate">
                       <Crest team={f.away} size={22} />
                       <span className="truncate">{f.away?.name ?? "TBD"}</span>
                     </span>

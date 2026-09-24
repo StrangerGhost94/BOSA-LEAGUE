@@ -2,13 +2,14 @@ import { redirect } from "next/navigation";
 import QRCode from "qrcode";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { perks } from "@/db/schema";
+import { perks, teams } from "@/db/schema";
 import { requireUser, hasMembership } from "@/lib/auth";
 import { cardCode, ensureMemberNumber, formatMemberNumber } from "@/lib/members";
 import { MembersNav } from "@/components/members-nav";
 import { BosaLogo, Crest } from "@/components/ui";
 import { FadeIn } from "@/components/motion";
-import { ROLE_LABEL } from "@/lib/roles";
+import { ROLE_LABEL, isStaff } from "@/lib/roles";
+import Link from "next/link";
 import { fmtLong } from "@/lib/format";
 import { CardActions } from "@/components/card-actions";
 
@@ -22,10 +23,12 @@ export default async function CardPage() {
   const base = process.env.APP_URL || "";
   const verifyUrl = `${base}/verify/${code}`;
   const qr = await QRCode.toString(verifyUrl, { type: "svg", margin: 1, color: { dark: "#0A0F1E", light: "#FFFFFF" } });
+  // Old students belong to the club of the year they joined Bilal Institute
+  const club = u.team ?? (u.completionYear ? await db.query.teams.findFirst({ where: eq(teams.intakeYear, u.completionYear) }) : null);
   const offers = await db.query.perks.findMany({ where: eq(perks.active, true), orderBy: asc(perks.order) });
 
   return (
-    <section className="container-x pt-32">
+    <section className="container-x pt-24 sm:pt-32">
       <MembersNav active="/members/card" />
       <div className="mt-8 grid items-start gap-10 lg:grid-cols-[minmax(0,480px)_1fr]">
         <FadeIn>
@@ -53,10 +56,10 @@ export default async function CardPage() {
               <div className="mt-auto">
                 <div className="font-serif text-2xl leading-tight sm:text-3xl">{u.name}</div>
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 text-[11px] uppercase tracking-[0.16em] text-ivory/70">
-                  <span>{u.completionYear ? `Class of ${u.completionYear}` : ROLE_LABEL[u.role]}</span>
-                  {u.team && (
+                  <span>{u.completionYear ? `${u.completionYear} intake` : ROLE_LABEL[u.role]}</span>
+                  {club && (
                     <span className="flex items-center gap-1.5">
-                      <Crest team={u.team} size={16} ring={false} /> {u.team.name}
+                      <Crest team={club} size={16} ring={false} /> {club.name}
                     </span>
                   )}
                 </div>
@@ -67,7 +70,7 @@ export default async function CardPage() {
                   </div>
                   <div className="text-right">
                     <div className="text-[8px] uppercase tracking-[0.3em] text-gold-300">Member since</div>
-                    <div className="text-xs">{u.membershipPaidAt ? fmtLong(u.membershipPaidAt).replace(/^\w+, /, "") : "Staff"}</div>
+                    <div className="text-xs">{u.membershipPaidAt ? fmtLong(u.membershipPaidAt).replace(/^\w+, /, "") : u.membership === "ACTIVE" && !isStaff(u.role) ? "Founding member" : "Staff"}</div>
                   </div>
                 </div>
               </div>
@@ -84,6 +87,9 @@ export default async function CardPage() {
           <div className="mt-8">
             <div className="eyebrow mb-4">Member offers</div>
             {offers.length === 0 && <p className="text-sm text-ivory/50">Partner offers will appear here as they are announced.</p>}
+            <Link href="/members/perks" className="btn-ghost btn-sm mt-4">
+              All member perks
+            </Link>
             <div className="space-y-3">
               {offers.map((o) => (
                 <div key={o.id} className="rounded-2xl border border-gold/20 bg-gold/[0.04] p-4">

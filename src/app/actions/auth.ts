@@ -37,7 +37,7 @@ export async function signUpAction(_: ActionResult, fd: FormData): Promise<Actio
   if (!EMAIL.test(email)) return fail("Please enter a valid email address.");
   if (password.length < 8) return fail("Your password must be at least 8 characters.");
   if (!["ALUMNI_FAN", "PLAYER"].includes(type)) return fail("Choose whether you are joining as an old student or a player.");
-  if (!(completionYear >= 1980 && completionYear <= new Date().getFullYear())) return fail("Select the year you completed at Bilal Institute.");
+  if (!(completionYear >= 1980 && completionYear <= new Date().getFullYear())) return fail("Select the year you joined Bilal Institute.");
   if (fd.get("terms") !== "on") return fail("Please accept the membership terms to continue.");
   const exists = await db.query.users.findFirst({ where: eq(users.email, email) });
   if (exists) return fail("An account with this email already exists. Try signing in.");
@@ -50,6 +50,8 @@ export async function signUpAction(_: ActionResult, fd: FormData): Promise<Actio
     const number = parseInt(str(fd, "number"), 10) || 0;
     const team = teamId ? await db.query.teams.findFirst({ where: eq(teams.id, teamId) }) : null;
     if (!team) return fail("Select the club you play for.");
+    const intakeClub = await db.query.teams.findFirst({ where: eq(teams.intakeYear, completionYear) });
+    if (intakeClub && intakeClub.id !== team.id) return fail(`Players from the ${completionYear} intake play for ${intakeClub.name}.`);
     if (!["GK", "DEF", "MID", "FWD"].includes(position)) return fail("Select your position.");
     if (number < 0 || number > 99) return fail("Choose a shirt number between 1 and 99, or leave it blank.");
     const clash = number ? await db.query.players.findFirst({ where: and(eq(players.teamId, team.id), eq(players.number, number)) }) : null;
@@ -84,7 +86,7 @@ export async function signUpAction(_: ActionResult, fd: FormData): Promise<Actio
       teamId,
     })
     .returning();
-  await logActivity(u.id, "Created account", "User", `${name} (class of ${completionYear}) registered as ${type === "PLAYER" ? "a player" : "an old student"}`, u.id);
+  await logActivity(u.id, "Created account", "User", `${name} (${completionYear} intake) registered as ${type === "PLAYER" ? "a player" : "an old student"}`, u.id);
   await startSession(u);
   redirect("/membership?welcome=1");
 }

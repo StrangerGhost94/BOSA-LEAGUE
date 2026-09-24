@@ -25,6 +25,6 @@ export async function applyTeamAction(_: ActionResult, fd: FormData): Promise<Ac
     squadSize: Number.isFinite(squad) ? squad : null,
     message: optStr(fd, "message"),
   });
-  await logActivity(null, "Team application received", "TeamApplication", `${teamName} (completion years ${campus})`);
+  await logActivity(null, "Team application received", "TeamApplication", `${teamName} (${campus})`);
   return ok("Application received. The Competitions Desk will contact you within fourteen days.");
 }

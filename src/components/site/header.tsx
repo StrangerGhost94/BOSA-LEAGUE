@@ -22,7 +22,15 @@ export const NAV = [
 
 type HeaderUser = { name: string; role: string; roleLabel: string; member: boolean; home: string } | null;
 
-export function SiteHeader({ user, liveCount = 0 }: { user: HeaderUser; liveCount?: number }) {
+const MEMBER_LINKS = [
+  { href: "/live", label: "Live", icon: "activity" as const },
+  { href: "/members/card", label: "Card", icon: "card" as const },
+  { href: "/vote", label: "Vote", icon: "trophy" as const },
+  { href: "/gallery", label: "Gallery", icon: "grid" as const },
+  { href: "/members/perks", label: "Perks", icon: "sparkle" as const },
+];
+
+export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: HeaderUser; liveCount?: number; seasonLabel?: string }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -58,7 +66,7 @@ export function SiteHeader({ user, liveCount = 0 }: { user: HeaderUser; liveCoun
             <BosaLogo size={38} className="transition-transform duration-500 group-hover:scale-105" />
             <span className="hidden whitespace-nowrap leading-none sm:block xl:hidden 2xl:block">
               <span className="block font-display text-[17px] font-semibold tracking-[0.12em] text-ivory">BOSA LEAGUE</span>
-              <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.34em] text-gold/80">Season 4 · 2026</span>
+              <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.34em] text-gold/80">{seasonLabel}</span>
             </span>
           </Link>
 
@@ -89,7 +97,7 @@ export function SiteHeader({ user, liveCount = 0 }: { user: HeaderUser; liveCoun
               aria-label="Search"
             >
               <Icon name="search" size={14} /> <span className="xl:hidden 2xl:inline">Search</span>
-              <kbd className="whitespace-nowrap rounded border border-white/10 px-1.5 py-0.5 font-sans text-[10px] text-ivory/40 xl:hidden 2xl:inline">Ctrl K</kbd>
+              <kbd className="hidden whitespace-nowrap rounded border border-white/10 px-1.5 py-0.5 font-sans text-[10px] text-ivory/40 2xl:inline">Ctrl K</kbd>
             </button>
             {user ? (
               <div className="relative">
@@ -156,7 +164,7 @@ export function SiteHeader({ user, liveCount = 0 }: { user: HeaderUser; liveCoun
       <AnimatePresence>
         {open && (
           <motion.div
-            className="fixed inset-0 z-[70] bg-night-900/97 backdrop-blur-2xl xl:hidden"
+            className="fixed inset-0 z-[70] overflow-y-auto overscroll-contain bg-night-900/97 pb-[max(2rem,env(safe-area-inset-bottom))] backdrop-blur-2xl xl:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -164,14 +172,14 @@ export function SiteHeader({ user, liveCount = 0 }: { user: HeaderUser; liveCoun
           >
             <div className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-crimson/20 blur-[120px]" />
             <div className="pointer-events-none absolute -right-40 bottom-10 h-96 w-96 rounded-full bg-gold/10 blur-[120px]" />
-            <div className="container-x flex h-[68px] items-center justify-between">
+            <div className="container-x sticky top-0 z-10 flex h-[68px] items-center justify-between bg-night-900/80 backdrop-blur">
               <BosaLogo size={36} />
               <button className="grid h-10 w-10 place-items-center rounded-full border border-white/10" onClick={() => setOpen(false)} aria-label="Close menu">
                 <Icon name="close" />
               </button>
             </div>
             <motion.nav
-              className="container-x mt-6 flex flex-col"
+              className="container-x relative mt-2 flex flex-col"
               initial="h"
               animate="s"
               variants={{ h: {}, s: { transition: { staggerChildren: 0.05, delayChildren: 0.1 } } }}
@@ -184,7 +192,7 @@ export function SiteHeader({ user, liveCount = 0 }: { user: HeaderUser; liveCoun
                   <Link
                     href={n.href}
                     className={clsx(
-                      "flex items-baseline gap-4 border-b border-white/[0.06] py-4 font-serif text-3xl",
+                      "flex items-baseline gap-4 border-b border-white/[0.06] py-3 font-serif text-2xl sm:py-4 sm:text-3xl",
                       active(n.href) ? "text-gold" : "text-ivory",
                     )}
                   >
@@ -193,7 +201,16 @@ export function SiteHeader({ user, liveCount = 0 }: { user: HeaderUser; liveCoun
                   </Link>
                 </motion.div>
               ))}
-              <div className="mt-8 flex gap-3">
+              <div className="mt-6 text-[10px] uppercase tracking-[0.24em] text-gold/80">Members</div>
+              <div className="mt-3 grid grid-cols-5 gap-2">
+                {MEMBER_LINKS.map((m) => (
+                  <Link key={m.href} href={m.href} className={clsx("flex flex-col items-center gap-1.5 rounded-xl border px-1 py-3 text-[11px]", active(m.href) ? "border-gold/50 text-gold" : "border-white/10 text-ivory/70")}>
+                    <Icon name={m.icon} size={18} />
+                    {m.label}
+                  </Link>
+                ))}
+              </div>
+              <div className="mt-6 flex gap-3">
                 {user ? (
                   <Link href={user.home} className="btn-gold flex-1">
                     My panel

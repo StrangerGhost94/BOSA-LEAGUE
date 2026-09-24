@@ -90,6 +90,8 @@ export const teams = pgTable("teams", {
   coachName: text("coach_name"),
   captainName: text("captain_name"),
   bio: text("bio"),
+  // Each club is made up of the old students who joined Bilal Institute in this year
+  intakeYear: integer("intake_year"),
   // Clubs that withdraw stay on record (history, players) but are left out of new fixtures
   active: boolean("active").notNull().default(true),
   withdrawnAt: timestamp("withdrawn_at", { withTimezone: true }),

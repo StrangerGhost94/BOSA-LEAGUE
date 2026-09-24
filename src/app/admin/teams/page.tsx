@@ -33,7 +33,7 @@ export default async function AdminTeams() {
                 <Crest team={t} size={56} />
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-serif text-xl">{t.name}</div>
-                  <div className="truncate text-xs text-ivory/50">{t.campus}</div>
+                  <div className="truncate text-xs text-ivory/50">{t.intakeYear ? `${t.intakeYear} intake` : t.campus}</div>
                 </div>
               </div>
               <div className="mt-5 grid grid-cols-3 gap-2 text-center text-xs">
@@ -46,8 +46,8 @@ export default async function AdminTeams() {
                   <div className="text-ivory/40">Pending</div>
                 </div>
                 <div className="rounded-lg bg-white/[0.03] py-2">
-                  <div className="font-display text-lg">{t.founded}</div>
-                  <div className="text-ivory/40">Founded</div>
+                  <div className="font-display text-lg">{t.intakeYear ?? "-"}</div>
+                  <div className="text-ivory/40">Intake</div>
                 </div>
               </div>
               <div className="mt-4 truncate text-xs text-ivory/50">Manager: {info[t.id]?.managers ?? "Unassigned"}</div>

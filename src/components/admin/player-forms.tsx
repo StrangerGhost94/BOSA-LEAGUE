@@ -39,7 +39,7 @@ export function PlayerForm({ player, teams, fixedTeam, admin }: { player?: Playe
           <option value="FWD">Forward</option>
         </select>
       </Field>
-      <Field label="Year completed at Bilal Institute">
+      <Field label="Year joined Bilal Institute">
         <select name="completionYear" className="input" defaultValue={player?.completionYear ?? ""}>
           <option value="">Not known</option>
           {completionYears().map((y) => (

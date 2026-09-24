@@ -27,7 +27,7 @@ export default async function VotePage() {
   const earlier = past.filter((p) => p.month !== month);
 
   return (
-    <section className="container-x pt-32">
+    <section className="container-x pt-24 sm:pt-32">
       <MembersNav active="/vote" />
       <div className="mt-8">
         <div className="eyebrow">Members&apos; vote</div>

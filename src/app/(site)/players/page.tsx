@@ -55,7 +55,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Reco
             { name: "team", label: "Club", type: "select", all: "All clubs", options: teams.map((t) => ({ value: t.slug, label: t.name })) },
             { name: "pos", label: "Position", type: "select", all: "All positions", options: Object.entries(POSITION_LABEL).map(([value, label]) => ({ value, label })) },
             { name: "status", label: "Status", type: "select", all: "Any status", options: [{ value: "ACTIVE", label: "Available" }, { value: "INJURED", label: "Injured" }, { value: "SUSPENDED", label: "Suspended" }] },
-            { name: "year", label: "Completion year", type: "select", all: "All years", options: Array.from(new Set(all.map((p) => p.completionYear).filter((y): y is number => !!y))).sort((a, b) => b - a).map((y) => ({ value: String(y), label: `Class of ${y}` })) },
+            { name: "year", label: "Intake year", type: "select", all: "All years", options: Array.from(new Set(all.map((p) => p.completionYear).filter((y): y is number => !!y))).sort((a, b) => b - a).map((y) => ({ value: String(y), label: `${y} intake` })) },
             { name: "sort", label: "Sort by", type: "select", all: "Goals", options: [{ value: "assists", label: "Assists" }, { value: "apps", label: "Appearances" }, { value: "cleansheets", label: "Clean sheets" }, { value: "potm", label: "Player of the match" }, { value: "cards", label: "Cards" }, { value: "name", label: "Name" }] },
           ]}
         />
@@ -95,7 +95,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Reco
                           <span className="block font-semibold group-hover:text-gold">
                             {p.firstName} {p.lastName}
                           </span>
-                          {p.completionYear && <span className="text-[10px] uppercase tracking-[0.14em] text-ivory/40">Class of {p.completionYear}</span>}
+                          {p.completionYear && <span className="text-[10px] uppercase tracking-[0.14em] text-ivory/40">{p.completionYear} intake</span>}
 
                         </span>
                       </Link>

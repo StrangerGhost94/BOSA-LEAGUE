@@ -12,7 +12,7 @@ export default async function GalleryPage() {
   const [u, albums] = await Promise.all([getCurrentUser(), getAlbums()]);
   const member = hasMembership(u);
   return (
-    <section className="container-x pt-32">
+    <section className="container-x pt-24 sm:pt-32">
       <MembersNav active="/gallery" />
       <div className="mt-8">
         <div className="eyebrow">Members&apos; gallery</div>

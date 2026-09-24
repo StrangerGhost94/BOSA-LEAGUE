@@ -41,7 +41,7 @@ export default async function LivePage() {
   const name = (p?: { firstName: string; lastName: string } | null) => (p ? `${p.firstName} ${p.lastName}`.trim() : "Unknown");
 
   return (
-    <section className="container-x pt-32">
+    <section className="container-x pt-24 sm:pt-32">
       {member && <AutoRefresh enabled seconds={live ? 10 : 60} />}
       <MembersNav active="/live" />
       <div className="mt-8 flex flex-wrap items-end justify-between gap-4">

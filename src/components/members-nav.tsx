@@ -7,6 +7,7 @@ const ITEMS = [
   { href: "/members/card", label: "Member card", icon: "card" as const },
   { href: "/vote", label: "Vote", icon: "trophy" as const },
   { href: "/gallery", label: "Gallery", icon: "grid" as const },
+  { href: "/members/perks", label: "Perks", icon: "sparkle" as const },
 ];
 
 export function MembersNav({ active }: { active: string }) {

@@ -193,7 +193,7 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
       </section>
 
       <section className="container-x pt-12">
-        <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
+        <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr] [&>*]:min-w-0">
           <div className="space-y-8">
             {played &&
               (member ? (

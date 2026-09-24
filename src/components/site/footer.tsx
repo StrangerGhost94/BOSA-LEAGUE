@@ -7,8 +7,8 @@ export function SiteFooter() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
       <div className="pointer-events-none absolute -bottom-40 left-1/2 h-80 w-[800px] -translate-x-1/2 rounded-full bg-crimson/10 blur-[120px]" />
       <div className="container-x relative py-16">
-        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
-          <div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-12">
+          <div className="col-span-2 sm:col-span-3 lg:col-span-1">
             <div className="flex items-center gap-4">
               <BosaLogo size={56} />
               <div>
@@ -23,7 +23,7 @@ export function SiteFooter() {
           </div>
           <FooterCol title="Competitions" links={[["BOSA League", "/league"], ["Champions League", "/champions-league"], ["Super Cup", "/super-cup"], ["Rules", "/rules"]]} />
           <FooterCol title="Matchday" links={[["Fixtures & Results", "/fixtures"], ["Teams", "/teams"], ["Players", "/players"], ["Newsroom", "/news"]]} />
-          <FooterCol title="Members" links={[["Become a member", "/membership"], ["Sign in", "/sign-in"], ["Create account", "/sign-up"], ["My account", "/account"]]} />
+          <FooterCol title="Members" links={[["Become a member", "/membership"], ["Member perks", "/members/perks"], ["Sign in", "/sign-in"], ["Create account", "/sign-up"], ["My account", "/account"]]} />
         </div>
         <div className="mt-14 border-t border-white/[0.06] pt-8">
           <div className="text-[10px] uppercase tracking-[0.3em] text-ivory/30">Official partners</div>

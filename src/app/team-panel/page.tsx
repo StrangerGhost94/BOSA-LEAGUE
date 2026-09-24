@@ -24,7 +24,7 @@ export default async function TeamHome() {
           <div>
             <div className="eyebrow text-gold-300">Club panel</div>
             <h1 className="headline mt-2 text-4xl sm:text-5xl">{t.name}</h1>
-            <div className="mt-1 text-sm text-ivory/60">{t.campus}</div>
+            <div className="mt-1 text-sm text-ivory/60">{t.intakeYear ? `${t.intakeYear} intake` : t.campus}</div>
           </div>
           {row && (
             <div className="ml-auto flex items-center gap-3 text-xs text-ivory/60">

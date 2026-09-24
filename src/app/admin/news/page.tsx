@@ -34,7 +34,7 @@ export default async function AdminNews() {
                 {a.authorName} · {timeAgo(a.publishedAt)}
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Link href={`/news/${a.slug}`} className="btn-quiet btn-sm">
                 View
               </Link>

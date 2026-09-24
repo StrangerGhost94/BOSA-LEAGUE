@@ -267,17 +267,17 @@ export default async function HomePage() {
 
       {/* ---------------- MATCHDAY TIMELINE ---------------- */}
       {matchday.length > 0 && (
-        <section className="container-x pt-24">
+        <section className="container-x pt-14 sm:pt-24">
           <SectionHeading eyebrow={`Upcoming · ${fmtLong(matchday[0].kickoff)}`} title={<>Matchday {nextMd} <em className="gold-text">fixtures</em></>} action={{ href: "/fixtures", label: "All fixtures" }} />
           <div className="grid gap-10 lg:grid-cols-[320px_1fr]">
             <FadeIn>
-              <div className="relative overflow-hidden rounded-3xl border border-crimson/30 bg-gradient-to-br from-crimson-600 via-crimson-800 to-night-800 p-7">
+              <div className="relative overflow-hidden rounded-3xl border border-crimson/30 bg-gradient-to-br from-crimson-600 via-crimson-800 to-night-800 p-6 sm:p-7">
                 <div className="absolute -right-12 -top-12 opacity-20">
                   <BosaLogo size={220} />
                 </div>
                 <div className="relative">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.3em] text-ivory/70">Matchday</div>
-                  <div className="font-display text-[120px] leading-none">{nextMd}</div>
+                  <div className="font-display text-[88px] leading-none sm:text-[120px]">{nextMd}</div>
                   <div className="mt-2 font-serif text-2xl">{fmtDate(matchday[0].kickoff, { weekday: "long", day: "numeric", month: "long" })}</div>
                   <div className="mt-6 space-y-2 text-sm text-ivory/80">
                     <div className="flex items-center gap-2"><Icon name="clock" size={15} /> {fmtTime(matchday[0].kickoff)} to {fmtTime(matchday[matchday.length - 1].kickoff)}</div>
@@ -301,7 +301,7 @@ export default async function HomePage() {
       )}
 
       {/* ---------------- STATS BAND ---------------- */}
-      <section className="container-x pt-28">
+      <section className="container-x pt-14 sm:pt-28">
         <div className="relative overflow-hidden rounded-[2rem] border border-white/[0.07] bg-night-800/60 px-6 py-12 sm:px-12">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(214,182,118,.12),transparent)]" />
           <div className="relative grid grid-cols-2 gap-y-10 md:grid-cols-5">
@@ -322,7 +322,7 @@ export default async function HomePage() {
       </section>
 
       {/* ---------------- COMPETITIONS ---------------- */}
-      <section className="container-x pt-28">
+      <section className="container-x pt-14 sm:pt-28">
         <SectionHeading eyebrow="Three competitions" title={<>Choose your <em className="gold-text">stage</em></>} />
         <CompetitionSwitcher items={previews} />
       </section>
@@ -332,12 +332,12 @@ export default async function HomePage() {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold to-transparent" />
         <div className="container-x">
           <SectionHeading light eyebrow="The summit" title={<>Leading the <em className="text-crimson">race</em></>} action={{ href: "/league", label: "Full standings" }} />
-          <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
+          <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr] [&>*]:min-w-0">
             {leader && (
               <FadeIn>
                 <Link
                   href={`/teams/${leader.team.slug}`}
-                  className="group relative block overflow-hidden rounded-3xl p-8 text-ivory sm:p-10"
+                  className="group relative block overflow-hidden rounded-3xl p-6 text-ivory sm:p-10"
                   style={{ background: `linear-gradient(135deg, ${leader.team.primaryColor} 0%, #0A0F1E 80%)` }}
                 >
                   <div className="absolute -right-16 -top-16 opacity-25 transition-transform duration-1000 group-hover:rotate-6 group-hover:scale-110">
@@ -345,14 +345,14 @@ export default async function HomePage() {
                   </div>
                   <div className="relative">
                     <div className="eyebrow text-gold-300">League leader</div>
-                    <div className="mt-6 flex items-center gap-5">
-                      <Crest team={leader.team} size={96} />
-                      <div>
-                        <div className="headline text-5xl sm:text-6xl">{leader.team.name}</div>
-                        <div className="mt-2 text-sm text-ivory/60">{leader.team.campus}</div>
+                    <div className="mt-6 flex flex-wrap items-center gap-5">
+                      <Crest team={leader.team} size={80} />
+                      <div className="min-w-0">
+                        <div className="headline break-words text-4xl sm:text-6xl">{leader.team.name}</div>
+                        <div className="mt-2 text-sm text-ivory/60">{leader.team.intakeYear ? `${leader.team.intakeYear} intake` : leader.team.campus}</div>
                       </div>
                     </div>
-                    <div className="mt-10 grid grid-cols-4 gap-4 border-t border-white/15 pt-6">
+                    <div className="mt-10 grid grid-cols-4 gap-2 border-t border-white/15 pt-6 sm:gap-4">
                       {[
                         ["Points", leader.points],
                         ["Won", leader.won],
@@ -360,10 +360,10 @@ export default async function HomePage() {
                         ["GD", leader.goalDifference],
                       ].map(([l, v]) => (
                         <div key={l as string}>
-                          <div className="font-display text-4xl">
+                          <div className="font-display text-3xl sm:text-4xl">
                             <CountUp value={v as number} />
                           </div>
-                          <div className="text-[10px] uppercase tracking-[0.22em] text-ivory/50">{l}</div>
+                          <div className="text-[10px] uppercase tracking-[0.14em] text-ivory/50 sm:tracking-[0.22em]">{l}</div>
                         </div>
                       ))}
                     </div>
@@ -430,7 +430,7 @@ export default async function HomePage() {
       </section>
 
       {/* ---------------- RECENT RESULTS ---------------- */}
-      <section className="container-x pt-28">
+      <section className="container-x pt-14 sm:pt-28">
         <SectionHeading eyebrow="Final whistle" title={<>Recent <em className="gold-text">results</em></>} action={{ href: "/fixtures?status=completed", label: "All results" }} />
         <Stagger className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {recent.map((m) => (
@@ -442,7 +442,7 @@ export default async function HomePage() {
       </section>
 
       {/* ---------------- NEWS ---------------- */}
-      <section className="container-x pt-28">
+      <section className="container-x pt-14 sm:pt-28">
         <SectionHeading eyebrow="BOSA Newsroom" title={<>Stories from the <em className="gold-text">touchline</em></>} action={{ href: "/news", label: "Newsroom" }} />
         <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr]">
           {featuredNews && (
@@ -461,13 +461,13 @@ export default async function HomePage() {
       </section>
 
       {/* ---------------- HONOURS ---------------- */}
-      {honours.length > 0 && <section className="container-x pt-28">
-        <SectionHeading eyebrow="Roll of honour" title={<>Previous <em className="gold-text">champions</em></>} />
+      {honours.length > 0 && <section className="container-x pt-14 sm:pt-28">
+        <SectionHeading eyebrow="Roll of honour" title={<>Previous <em className="gold-text">champions</em></>} action={{ href: "/league#history", label: "All champions" }} />
         <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {honours.slice(0, 12).map((h) => {
+          {honours.slice(0, 12).map((h, i) => {
             const t = teams.find((x) => x.name === h.champion);
             return (
-              <StaggerItem key={h.id}>
+              <StaggerItem key={h.id} className={i >= 4 ? "hidden sm:block" : undefined}>
                 <div className="group relative h-full overflow-hidden rounded-2xl border border-white/[0.07] bg-night-800/60 p-6 transition-all duration-500 hover:-translate-y-1 hover:border-gold/30">
                   <div className="flex items-center justify-between">
                     <CompetitionBadge type={h.competition.type} size={36} />
@@ -489,7 +489,7 @@ export default async function HomePage() {
       </section>}
 
       {/* ---------------- MEMBERSHIP CTA ---------------- */}
-      <section className="container-x pt-28">
+      <section className="container-x pt-14 sm:pt-28">
         <FadeIn>
           <div className="relative overflow-hidden rounded-[2rem] border border-gold/25 px-6 py-16 text-center sm:px-16">
             <StadiumBackdrop intensity={0.7} />
@@ -499,13 +499,35 @@ export default async function HomePage() {
                 One payment. <em className="gold-text">The whole season.</em>
               </h2>
               <p className="mx-auto mt-5 max-w-xl text-ivory/60">
-                Full match centre, line-ups, player profiles and members-only stories. Pay once with Mobile Money or card through Pesapal.
+                Pay once with Mobile Money or card through Pesapal, and it all opens up.
               </p>
-              <Magnetic className="mt-10">
-                <Link href="/membership" className="btn-gold px-8 py-3.5">
-                  Become a member <Arrow />
+              <div className="mx-auto mt-8 grid max-w-3xl grid-cols-2 gap-2 text-left sm:grid-cols-3">
+                {[
+                  { icon: "activity" as const, t: "Live match centre", href: "/members" },
+                  { icon: "card" as const, t: "Digital member card", href: "/members" },
+                  { icon: "sparkle" as const, t: "Partner perks", href: "/members/perks" },
+                  { icon: "trophy" as const, t: "Fans' votes", href: "/members" },
+                  { icon: "grid" as const, t: "Photos and highlights", href: "/members" },
+                  { icon: "calendar" as const, t: "Early fixtures", href: "/members" },
+                ].map((b) => (
+                  <Link key={b.t} href={b.href} className="flex items-center gap-3 rounded-xl border border-white/[0.08] bg-night-900/50 px-3 py-3 text-sm text-ivory/80 transition hover:border-gold/40">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gold/10 text-gold">
+                      <Icon name={b.icon} size={15} />
+                    </span>
+                    <span className="leading-tight">{b.t}</span>
+                  </Link>
+                ))}
+              </div>
+              <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+                <Magnetic>
+                  <Link href="/membership" className="btn-gold px-8 py-3.5">
+                    Become a member <Arrow />
+                  </Link>
+                </Magnetic>
+                <Link href="/members/perks" className="btn-ghost px-6 py-3.5">
+                  See member perks
                 </Link>
-              </Magnetic>
+              </div>
             </div>
           </div>
         </FadeIn>

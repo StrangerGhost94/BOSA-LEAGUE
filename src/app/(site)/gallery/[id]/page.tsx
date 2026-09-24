@@ -16,7 +16,7 @@ export default async function AlbumPage({ params }: { params: { id: string } }) 
   if (!a || (!a.published && !["SUPER_ADMIN", "LEAGUE_ADMIN", "COMPETITION_MANAGER"].includes(u!.role))) notFound();
   const items = await getAlbumMedia(a.id);
   return (
-    <section className="container-x pt-32">
+    <section className="container-x pt-24 sm:pt-32">
       <Link href="/gallery" className="inline-flex items-center gap-1 text-sm text-ivory/50 hover:text-gold">
         <Icon name="arrowLeft" size={14} /> All albums
       </Link>

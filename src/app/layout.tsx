@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: { images: ["/crests/bosa-logo.png"] },
 };
 
-export const viewport: Viewport = { themeColor: "#060913", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#060913", width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

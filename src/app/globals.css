@@ -127,7 +127,7 @@ body {
     @apply btn border border-crimson/40 text-crimson-400 hover:bg-crimson/10;
   }
   .input {
-    @apply w-full rounded-xl border bg-night-900/70 px-4 py-2.5 text-sm text-ivory placeholder:text-ivory/30 outline-none transition focus:border-gold/60 focus:ring-2 focus:ring-gold/15;
+    @apply w-full rounded-xl border bg-night-900/70 px-4 py-2.5 text-base sm:text-sm text-ivory placeholder:text-ivory/30 outline-none transition focus:border-gold/60 focus:ring-2 focus:ring-gold/15;
     border-color: rgba(255, 255, 255, 0.1);
   }
   select.input {
@@ -250,4 +250,23 @@ body {
   #member-card, #member-card * { visibility: visible; }
   #member-card { position: fixed; top: 15mm; left: 15mm; width: 120mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .grain { display: none; }
+}
+
+/* ---------- Phones and tablets ---------- */
+/* Grid children may shrink below their content width, so long names and tables never push the page sideways */
+.grid > * {
+  min-width: 0;
+}
+@media (pointer: coarse) {
+  /* Comfortable tap targets on touch screens */
+  .btn-sm {
+    min-height: 40px;
+  }
+  .btn {
+    min-height: 44px;
+  }
+}
+html {
+  -webkit-tap-highlight-color: transparent;
+  text-size-adjust: 100%;
 }

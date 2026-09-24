@@ -55,7 +55,7 @@ export default async function ChampionsLeaguePage() {
       />
       <SubNav items={[{ href: "#bracket", label: "Knockout bracket" }, { href: "#groups", label: groups.length ? "Group stage" : "Qualification" }, { href: "#upcoming", label: "Upcoming" }, { href: "#performers", label: "Best performers" }, { href: "#winners", label: "Previous winners" }]} />
 
-      <section id="bracket" className="container-x scroll-mt-40 pt-20">
+      <section id="bracket" className="container-x scroll-mt-40 pt-14 sm:pt-20">
         <SectionHeading eyebrow="Hover a club to trace its path" title={<>The road to the <em className="gold-text">final</em></>} />
         <div className="glass rounded-3xl p-6 sm:p-8">
           {qf.length ? <Bracket qf={qf} sf={sf} final={finalM ? toBracket(finalM) : null} championId={season.championId} /> : <EmptyState title="The draw is made when the league ends" body={`The top ${CL_PLACES} in the BOSA League go through, seeded by league position: 1 v 8, 4 v 5, 2 v 7, 3 v 6. The quarter-finals are played the Sunday after the last league matchday.`} />}
@@ -63,7 +63,7 @@ export default async function ChampionsLeaguePage() {
       </section>
 
       {!groups.length && race.length > 0 && (
-        <section id="groups" className="container-x scroll-mt-40 pt-24">
+        <section id="groups" className="container-x scroll-mt-40 pt-14 sm:pt-24">
           <SectionHeading eyebrow={`Top ${CL_PLACES} in the league qualify`} title={<>Race for the <em className="gold-text">top {CL_PLACES}</em></>} action={{ href: "/league#table", label: "Full table" }} />
           <FadeIn>
             <div className="panel p-2 sm:p-4">
@@ -72,7 +72,7 @@ export default async function ChampionsLeaguePage() {
           </FadeIn>
         </section>
       )}
-      {groups.length > 0 && <section id="groups" className="container-x scroll-mt-40 pt-24">
+      {groups.length > 0 && <section id="groups" className="container-x scroll-mt-40 pt-14 sm:pt-24">
         <SectionHeading eyebrow="Top two advance" title={<>Group <em className="gold-text">stage</em></>} />
         <Stagger className="grid gap-6 lg:grid-cols-2">
           {groups.map((g) => (
@@ -89,7 +89,7 @@ export default async function ChampionsLeaguePage() {
         </Stagger>
       </section>}
 
-      <section id="upcoming" className="container-x scroll-mt-40 pt-24">
+      <section id="upcoming" className="container-x scroll-mt-40 pt-14 sm:pt-24">
         <SectionHeading eyebrow="One round each Sunday" title={<>Upcoming <em className="gold-text">matches</em></>} action={{ href: "/fixtures?comp=champions-league", label: "All fixtures" }} />
         {upcoming.length ? (
           <Stagger className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -104,7 +104,7 @@ export default async function ChampionsLeaguePage() {
         )}
       </section>
 
-      <section id="performers" className="container-x scroll-mt-40 pt-24">
+      <section id="performers" className="container-x scroll-mt-40 pt-14 sm:pt-24">
         <SectionHeading eyebrow="This edition" title={<>Best <em className="gold-text">performers</em></>} />
         <div className="grid gap-6 lg:grid-cols-3">
           <LeaderBoard title="Top scorers" players={scorers} stat="goals" unit="goals" />
@@ -113,7 +113,7 @@ export default async function ChampionsLeaguePage() {
         </div>
       </section>
 
-      <section id="winners" className="container-x scroll-mt-40 pt-24">
+      <section id="winners" className="container-x scroll-mt-40 pt-14 sm:pt-24">
         <SectionHeading eyebrow="Roll of honour" title={<>Previous <em className="gold-text">winners</em></>} />
         <FadeIn>
           <HonoursList honours={honours} teams={teams} />

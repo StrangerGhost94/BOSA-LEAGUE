@@ -12,8 +12,8 @@ export function TeamForm({ team }: { team?: Team }) {
       <Field label="Short name">
         <input name="shortName" className="input" maxLength={4} defaultValue={team?.shortName} />
       </Field>
-      <Field label="Year group (optional, e.g. Class of 2012 to 2015)" className="sm:col-span-2">
-        <input name="campus" className="input" defaultValue={team?.campus} />
+      <Field label="Intake year (old students who joined Bilal Institute that year)" className="sm:col-span-2">
+        <input name="intakeYear" type="number" min={1980} max={2100} className="input" defaultValue={team?.intakeYear ?? ""} placeholder="e.g. 2017" />
       </Field>
       <Field label="Founded">
         <input name="founded" type="number" className="input" defaultValue={team?.founded} />

@@ -170,7 +170,7 @@ export default async function SeasonAdmin({ params }: { params: { seasonId: stri
             <div className="panel p-6">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <div className="eyebrow">Groups</div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Drawer label="Add group" title="Create a group" buttonClass="btn-ghost btn-sm" icon="plus">
                     <GroupForm seasonId={season.id} teams={teams} selected={[]} />
                   </Drawer>

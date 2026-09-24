@@ -97,7 +97,7 @@ export default async function AccountPage() {
               <Field label="Phone">
                 <input name="phone" defaultValue={u.phone ?? ""} className="input" />
               </Field>
-              <Field label="Year completed at Bilal Institute" className="sm:col-span-2">
+              <Field label="Year joined Bilal Institute" className="sm:col-span-2">
                 <select name="completionYear" defaultValue={u.completionYear ?? ""} className="input">
                   <option value="">Select year</option>
                   {completionYears().map((y) => (

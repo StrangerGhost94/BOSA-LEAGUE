@@ -1,4 +1,4 @@
-/** Years a person could have completed Bilal Institute, newest first. */
+/** Years a person could have joined Bilal Institute, newest first. */
 export function completionYears() {
   const now = new Date().getFullYear();
   const out: number[] = [];
@@ -7,5 +7,5 @@ export function completionYears() {
 }
 
 export function classOf(y?: number | null) {
-  return y ? `Class of ${y}` : "";
+  return y ? `${y} intake` : "";
 }

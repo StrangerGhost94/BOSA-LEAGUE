@@ -8,7 +8,7 @@ import { getCurrentSeason, getSeasonTable, getTeams } from "@/lib/data";
 export const metadata = { title: "Teams" };
 
 export default async function TeamsPage() {
-  const teams = (await getTeams()).filter((t) => t.active);
+  const teams = (await getTeams()).filter((t) => t.active).sort((a, b) => (a.intakeYear ?? 9999) - (b.intakeYear ?? 9999));
   const lg = await getCurrentSeason("bosa-league");
   const table = lg ? await getSeasonTable(lg.id) : [];
   const pos = Object.fromEntries(table.map((r) => [r.teamId, r]));
@@ -55,7 +55,7 @@ export default async function TeamsPage() {
                     )}
                   </div>
                   <h2 className="mt-6 font-serif text-3xl">{t.name}</h2>
-                  <div className="mt-1 text-sm text-ivory/55">{t.campus}</div>
+                  <div className="mt-1 text-sm text-ivory/55">{t.intakeYear ? `${t.intakeYear} intake` : t.campus}</div>
                   <div className="mt-5 flex h-1.5 overflow-hidden rounded-full">
                     <span className="flex-[3]" style={{ background: t.primaryColor }} />
                     <span className="flex-[2]" style={{ background: t.secondaryColor }} />

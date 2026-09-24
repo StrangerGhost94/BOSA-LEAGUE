@@ -13,7 +13,7 @@ export const metadata = { title: "Membership" };
 
 const BENEFITS = [
   "Live match centre: follow every Sunday game minute by minute, with scores that update by themselves",
-  "Digital member card with your name, class year and member number, for partner offers",
+  "Member perks: discounts from BOSA League partners with your digital member card",
   "Vote for the fans' player of the match and the player of the month",
   "Members-only photo albums and video highlights from every matchday",
   "Early access to fixtures and team news before everyone else",
@@ -27,7 +27,7 @@ export default async function MembershipPage({ searchParams }: { searchParams: {
   const demo = demoPaymentsEnabled();
 
   return (
-    <section className="relative min-h-screen overflow-hidden pb-24 pt-36">
+    <section className="relative min-h-screen overflow-hidden pb-16 pt-28 sm:pb-24 sm:pt-36">
       <StadiumBackdrop intensity={0.8} />
       <div className="container-x relative grid items-center gap-14 lg:grid-cols-[1.1fr_1fr]">
         <div>
@@ -48,6 +48,9 @@ export default async function MembershipPage({ searchParams }: { searchParams: {
                 </li>
               ))}
             </ul>
+            <Link href="/members/perks" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-gold hover:text-gold-300">
+              See the member perks <Icon name="arrowRight" size={14} />
+            </Link>
           </FadeIn>
         </div>
 

@@ -56,7 +56,7 @@ export default async function AdminPlayers({ searchParams }: { searchParams: Rec
                     {p.firstName} {p.lastName} <span className="text-ivory/40">#{p.number || "–"} · {p.position}</span>
                   </div>
                   <div className="text-xs text-ivory/50">
-                    {p.team.name} · {p.completionYear ? `Class of ${p.completionYear}` : "Completion year not given"} · submitted {fmtDate(p.createdAt, { day: "numeric", month: "short" })}
+                    {p.team.name} · {p.completionYear ? `${p.completionYear} intake` : "Intake year not given"} · submitted {fmtDate(p.createdAt, { day: "numeric", month: "short" })}
                   </div>
                 </div>
                 <ActionForm action={reviewPlayerAction}>

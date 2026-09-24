@@ -64,7 +64,7 @@ export default async function SuperCupPage() {
         </div>
       </section>
 
-      <section className="container-x pt-20">
+      <section className="container-x pt-14 sm:pt-20">
         <SectionHeading eyebrow={!current || current.status === "FULL_TIME" ? "Latest edition" : "Next edition"} title={<>The <em className="gold-text">match</em></>} />
         {current ? (
           <FadeIn className="mx-auto max-w-2xl">
@@ -90,7 +90,7 @@ export default async function SuperCupPage() {
         )}
       </section>
 
-      <section className="container-x pt-24">
+      <section className="container-x pt-14 sm:pt-24">
         <SectionHeading eyebrow="Roll of honour" title={<>Super Cup <em className="gold-text">winners</em></>} />
         <HonoursList honours={roll} teams={teams} />
       </section>

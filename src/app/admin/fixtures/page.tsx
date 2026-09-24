@@ -102,9 +102,9 @@ export default async function AdminFixtures({ searchParams }: { searchParams: Re
       <div className="space-y-8">
         {Array.from(byRound.entries()).map(([round, ms]) => (
           <div key={round} className="panel overflow-hidden">
-            <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] px-4 py-3 sm:px-5">
               <h2 className="font-serif text-xl">{round}</h2>
-              <span className="flex items-center gap-3 text-xs text-ivory/45">
+              <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ivory/45">
                 {(() => {
                   const until = ms.find((m) => m.publicFrom && m.publicFrom.getTime() > Date.now())?.publicFrom;
                   return until ? <span className="rounded-full bg-gold/15 px-2.5 py-1 font-semibold text-gold">Members first until {fmtDate(until, { day: "numeric", month: "short" })} {fmtTime(until)}</span> : null;
@@ -130,7 +130,34 @@ export default async function AdminFixtures({ searchParams }: { searchParams: Re
                 </Drawer>
               </span>
             </div>
-            <div className="overflow-x-auto scrollbar-none">
+            {/* Phones: one tappable row per match, straight into the match console */}
+            <ul className="divide-y divide-white/[0.05] md:hidden">
+              {ms.map((m) => (
+                <li key={m.id}>
+                  <Link href={`/admin/matches/${m.id}`} className="flex items-center gap-3 px-4 py-3 active:bg-white/[0.04]">
+                    <span className="w-12 shrink-0 text-[11px] leading-tight">
+                      <span className="block text-gold">{fmtDate(m.kickoff, { day: "numeric", month: "short" })}</span>
+                      {fmtTime(m.kickoff)}
+                    </span>
+                    <span className="min-w-0 flex-1 space-y-1 text-sm">
+                      <span className="flex items-center gap-2">
+                        <Crest team={m.homeTeam} size={20} /> <span className="truncate">{m.homeTeam?.name ?? "TBD"}</span>
+                        <span className="ml-auto font-display">{m.homeScore ?? ""}</span>
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <Crest team={m.awayTeam} size={20} /> <span className="truncate">{m.awayTeam?.name ?? "TBD"}</span>
+                        <span className="ml-auto font-display">{m.awayScore ?? ""}</span>
+                      </span>
+                    </span>
+                    <span className="flex shrink-0 flex-col items-end gap-1">
+                      <StatusBadge status={m.status} minute={m.minute} />
+                      {!m.referee && <span className="text-[10px] text-crimson-400">No referee</span>}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <div className="hidden overflow-x-auto scrollbar-none md:block">
               <table className="table-luxe min-w-[860px]">
                 <thead>
                   <tr>

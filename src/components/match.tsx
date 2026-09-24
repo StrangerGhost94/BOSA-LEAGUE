@@ -109,24 +109,30 @@ export function FixtureRow({ m }: { m: MatchCardData }) {
   return (
     <Link
       href={`/matches/${m.id}`}
-      className="group relative grid grid-cols-[56px_1fr_auto_1fr_28px] items-center gap-3 rounded-xl px-3 py-3.5 transition hover:bg-white/[0.04] sm:grid-cols-[72px_1fr_auto_1fr_120px_28px]"
+      className="group relative grid grid-cols-[42px_1fr_auto_1fr] items-center gap-2 rounded-xl px-2 py-3.5 transition hover:bg-white/[0.04] sm:grid-cols-[72px_1fr_auto_1fr_120px_28px] sm:gap-3 sm:px-3"
     >
       <span className="font-display text-sm tabular-nums text-gold">{fmtTime(m.kickoff)}</span>
-      <span className="flex min-w-0 items-center justify-end gap-2.5 text-right">
-        <span className="truncate text-sm font-medium">{m.homeTeam?.name ?? "TBD"}</span>
-        <Crest team={m.homeTeam} size={30} />
+      <span className="flex min-w-0 items-center justify-end gap-2 text-right sm:gap-2.5">
+        <span className="truncate text-sm font-medium">
+          <span className="sm:hidden">{m.homeTeam?.shortName ?? "TBD"}</span>
+          <span className="hidden sm:inline">{m.homeTeam?.name ?? "TBD"}</span>
+        </span>
+        <Crest team={m.homeTeam} size={28} />
       </span>
-      <span className={clsx("min-w-[64px] rounded-lg px-2 py-1 text-center font-display text-lg tabular-nums", played ? "bg-white/[0.06]" : "text-ivory/35")}>
+      <span className={clsx("min-w-[48px] rounded-lg px-1.5 py-1 text-center font-display text-base tabular-nums sm:min-w-[64px] sm:px-2 sm:text-lg", played ? "bg-white/[0.06]" : "text-ivory/35")}>
         {played ? `${m.homeScore} - ${m.awayScore}` : m.status === "FULL_TIME" ? "FT" : "vs"}
       </span>
-      <span className="flex min-w-0 items-center gap-2.5">
-        <Crest team={m.awayTeam} size={30} />
-        <span className="truncate text-sm font-medium">{m.awayTeam?.name ?? "TBD"}</span>
+      <span className="flex min-w-0 items-center gap-2 sm:gap-2.5">
+        <Crest team={m.awayTeam} size={28} />
+        <span className="truncate text-sm font-medium">
+          <span className="sm:hidden">{m.awayTeam?.shortName ?? "TBD"}</span>
+          <span className="hidden sm:inline">{m.awayTeam?.name ?? "TBD"}</span>
+        </span>
       </span>
       <span className="hidden justify-end sm:flex">
         <StatusBadge status={m.status} minute={liveMinute(m)} />
       </span>
-      <Icon name="arrowRight" size={14} className="text-ivory/25 transition group-hover:translate-x-1 group-hover:text-gold" />
+      <Icon name="arrowRight" size={14} className="hidden text-ivory/25 transition group-hover:translate-x-1 group-hover:text-gold sm:block" />
     </Link>
   );
 }
@@ -146,17 +152,17 @@ export function StandingsTable({
 }) {
   return (
     <div className="overflow-x-auto scrollbar-none">
-      <table className="table-luxe min-w-[560px]">
+      <table className="table-luxe w-full sm:min-w-[560px]">
         <thead>
           <tr>
             <th className="w-10 text-center">Pos</th>
             <th>Club</th>
             <th className="text-center">P</th>
-            {!compact && <th className="text-center">W</th>}
-            {!compact && <th className="text-center">D</th>}
-            {!compact && <th className="text-center">L</th>}
-            {!compact && <th className="text-center">GF</th>}
-            {!compact && <th className="text-center">GA</th>}
+            {!compact && <th className="hidden text-center sm:table-cell">W</th>}
+            {!compact && <th className="hidden text-center sm:table-cell">D</th>}
+            {!compact && <th className="hidden text-center sm:table-cell">L</th>}
+            {!compact && <th className="hidden text-center sm:table-cell">GF</th>}
+            {!compact && <th className="hidden text-center sm:table-cell">GA</th>}
             <th className="text-center">GD</th>
             <th className="text-center">Pts</th>
             {!compact && <th className="hidden md:table-cell">Form</th>}
@@ -184,16 +190,16 @@ export function StandingsTable({
                 <td>
                   <Link href={`/teams/${r.team.slug}`} className="flex items-center gap-3">
                     <Crest team={r.team} size={30} className="transition-transform duration-300 group-hover:scale-110" />
-                    <span className="font-semibold text-ivory transition group-hover:text-gold">{compact ? r.team.shortName : r.team.name}</span>
+                    <span className="truncate font-semibold text-ivory transition group-hover:text-gold">{compact ? r.team.shortName : r.team.name}</span>
                     {r.live && <span className="h-1.5 w-1.5 animate-pulseDot rounded-full bg-crimson-400" title="Live" />}
                   </Link>
                 </td>
                 <td className="text-center tabular-nums text-ivory/70">{r.played}</td>
-                {!compact && <td className="text-center tabular-nums text-ivory/70">{r.won}</td>}
-                {!compact && <td className="text-center tabular-nums text-ivory/70">{r.drawn}</td>}
-                {!compact && <td className="text-center tabular-nums text-ivory/70">{r.lost}</td>}
-                {!compact && <td className="text-center tabular-nums text-ivory/70">{r.goalsFor}</td>}
-                {!compact && <td className="text-center tabular-nums text-ivory/70">{r.goalsAgainst}</td>}
+                {!compact && <td className="hidden text-center tabular-nums text-ivory/70 sm:table-cell">{r.won}</td>}
+                {!compact && <td className="hidden text-center tabular-nums text-ivory/70 sm:table-cell">{r.drawn}</td>}
+                {!compact && <td className="hidden text-center tabular-nums text-ivory/70 sm:table-cell">{r.lost}</td>}
+                {!compact && <td className="hidden text-center tabular-nums text-ivory/70 sm:table-cell">{r.goalsFor}</td>}
+                {!compact && <td className="hidden text-center tabular-nums text-ivory/70 sm:table-cell">{r.goalsAgainst}</td>}
                 <td className={clsx("text-center tabular-nums", r.goalDifference > 0 ? "text-emerald-400" : r.goalDifference < 0 ? "text-crimson-400" : "text-ivory/60")}>
                   {r.goalDifference > 0 ? `+${r.goalDifference}` : r.goalDifference}
                 </td>

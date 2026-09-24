@@ -13,7 +13,8 @@ export const metadata = { title: "Members" };
 
 const FEATURES = [
   { href: "/live", icon: "activity" as const, t: "Live match centre", d: "Follow every Sunday game minute by minute on your phone: goals, cards and substitutions as they happen, with scores that update by themselves." },
-  { href: "/members/card", icon: "card" as const, t: "Digital member card", d: "Your BOSA card with your name, class year and member number. Show it at partner businesses for member offers." },
+  { href: "/members/perks", icon: "sparkle" as const, t: "Member perks", d: "Discounts and offers from BOSA League partners. Show your member card at the counter to claim them.", open: true },
+  { href: "/members/card", icon: "card" as const, t: "Digital member card", d: "Your BOSA card with your name, intake year and member number. Partners scan its QR code to confirm you are a member." },
   { href: "/vote", icon: "trophy" as const, t: "Vote", d: "Choose the fans' player of the match after every game, and the player of the month." },
   { href: "/gallery", icon: "grid" as const, t: "Photos and highlights", d: "Members-only photo albums and video highlights from every matchday at Henry's Pitch." },
   { href: "/fixtures", icon: "calendar" as const, t: "Early access", d: "See the next matchday's fixtures and team news before they are published to everyone." },
@@ -25,7 +26,7 @@ export default async function MembersPage() {
   const member = hasMembership(u);
   return (
     <>
-      <section className="relative overflow-hidden pb-16 pt-36">
+      <section className="relative overflow-hidden pb-12 pt-28 sm:pb-16 sm:pt-36">
         <StadiumBackdrop intensity={0.8} />
         <div className="container-x relative">
           <div className="eyebrow">{member ? `Welcome, ${u!.name.split(" ")[0]}` : "BOSA League membership"}</div>
@@ -48,14 +49,14 @@ export default async function MembersPage() {
         <Stagger className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {FEATURES.map((f) => (
             <StaggerItem key={f.t}>
-              <Link href={member ? f.href : "/membership"} className="panel group flex h-full flex-col p-6 transition hover:-translate-y-1 hover:border-gold/30">
+              <Link href={member || f.open ? f.href : "/membership"} className="panel group flex h-full flex-col p-6 transition hover:-translate-y-1 hover:border-gold/30">
                 <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gold/10 text-gold">
                   <Icon name={f.icon} size={22} />
                 </span>
                 <h2 className="mt-5 font-serif text-2xl group-hover:text-gold-300">{f.t}</h2>
                 <p className="mt-2 flex-1 text-sm leading-relaxed text-ivory/55">{f.d}</p>
                 <span className="mt-5 flex items-center gap-1.5 text-sm font-semibold text-gold">
-                  {member ? "Open" : <><Icon name="lock" size={13} /> Members</>} <Icon name="arrowRight" size={14} />
+                  {member ? "Open" : f.open ? "See the offers" : <><Icon name="lock" size={13} /> Members</>} <Icon name="arrowRight" size={14} />
                 </span>
               </Link>
             </StaggerItem>

@@ -27,10 +27,16 @@ export async function saveTeamAction(_: ActionResult, fd: FormData): A {
     const primaryColor = str(fd, "primaryColor") || "#1B2033";
     const secondaryColor = str(fd, "secondaryColor") || "#D6B676";
     if (!COLOR.test(primaryColor) || !COLOR.test(secondaryColor)) return fail("Colours must be hex values like #CC2654.");
+    const intake = num(fd, "intakeYear");
+    if (intake != null) {
+      const clash = await db.query.teams.findFirst({ where: eq(s.teams.intakeYear, intake) });
+      if (clash && clash.id !== id) return fail(`The ${intake} intake already has a club: ${clash.name}.`);
+    }
     const values = {
       name,
       shortName: (str(fd, "shortName") || name.slice(0, 3)).toUpperCase().slice(0, 4),
       campus: str(fd, "campus"),
+      intakeYear: num(fd, "intakeYear"),
       founded: num(fd, "founded") ?? new Date().getFullYear(),
       primaryColor,
       secondaryColor,

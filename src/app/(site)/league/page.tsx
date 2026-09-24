@@ -68,7 +68,7 @@ export default async function LeaguePage({ searchParams }: { searchParams: { md?
       />
       <SubNav items={[{ href: "#table", label: "Standings" }, { href: "#fixtures", label: "Fixtures & Results" }, { href: "#stats", label: "Statistics" }, { href: "#history", label: "Champions" }]} />
 
-      <section id="table" className="container-x scroll-mt-40 pt-20">
+      <section id="table" className="container-x scroll-mt-40 pt-14 sm:pt-20">
         {seasons.length > 1 && (
           <div className="mb-8 flex flex-wrap gap-2">
             {seasons.map((x) => (
@@ -100,7 +100,7 @@ export default async function LeaguePage({ searchParams }: { searchParams: { md?
         </FadeIn>
       </section>
 
-      <section id="fixtures" className="container-x scroll-mt-40 pt-24">
+      <section id="fixtures" className="container-x scroll-mt-40 pt-14 sm:pt-24">
         <SectionHeading eyebrow={mdMatches[0] ? fmtLong(mdMatches[0].kickoff) : "Matchweek"} title={<>Matchday <em className="gold-text">{md}</em></>} />
         <MatchdayNav base={qs ? `/league?${qs}` : "/league"} current={md} total={totalMd} played={playedMd} />
         {lockedUntil && (
@@ -121,7 +121,7 @@ export default async function LeaguePage({ searchParams }: { searchParams: { md?
         </Stagger>
       </section>
 
-      <section id="stats" className="container-x scroll-mt-40 pt-24">
+      <section id="stats" className="container-x scroll-mt-40 pt-14 sm:pt-24">
         <SectionHeading eyebrow="Season in numbers" title={<>Competition <em className="gold-text">statistics</em></>} />
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatTile label="Goals per match" hint={`${totals.goals} goals in ${totals.played} matches`}>{totals.played ? (totals.goals / totals.played).toFixed(2) : "0.00"}</StatTile>
@@ -140,7 +140,7 @@ export default async function LeaguePage({ searchParams }: { searchParams: { md?
         </div>
       </section>
 
-      <section id="history" className="container-x scroll-mt-40 pt-24">
+      <section id="history" className="container-x scroll-mt-40 pt-14 sm:pt-24">
         <SectionHeading eyebrow="Roll of honour" title={<>Champion <em className="gold-text">history</em></>} />
         <HonoursList honours={honours} teams={teams} />
       </section>

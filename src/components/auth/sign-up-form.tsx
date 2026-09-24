@@ -12,8 +12,11 @@ const TYPES = [
   { v: "PLAYER", t: "Player", d: "Register to play for a club" },
 ];
 
-export function SignUpForm({ teams }: { teams: { id: string; name: string }[] }) {
+export function SignUpForm({ teams }: { teams: { id: string; name: string; intakeYear: number | null }[] }) {
   const [type, setType] = useState("ALUMNI_FAN");
+  const [year, setYear] = useState("");
+  const [teamId, setTeamId] = useState("");
+  const intakeClub = teams.find((t) => String(t.intakeYear) === year);
   const years = completionYears();
   return (
     <ActionForm action={signUpAction} className="mt-10 space-y-5" toast={false}>
@@ -49,10 +52,20 @@ export function SignUpForm({ teams }: { teams: { id: string; name: string }[] })
           <input name="phone" className="input" placeholder="07XX XXX XXX" autoComplete="tel" />
         </Field>
       </div>
-      <Field label="Year you completed at Bilal Institute">
-        <select name="completionYear" className="input" defaultValue="" required>
+      <Field label="Year you joined Bilal Institute">
+        <select
+          name="completionYear"
+          className="input"
+          value={year}
+          onChange={(e) => {
+            setYear(e.target.value);
+            const club = teams.find((t) => String(t.intakeYear) === e.target.value);
+            if (club) setTeamId(club.id);
+          }}
+          required
+        >
           <option value="" disabled>
-            Select your year of completion
+            Select the year you joined
           </option>
           {years.map((y) => (
             <option key={y} value={y}>
@@ -60,6 +73,17 @@ export function SignUpForm({ teams }: { teams: { id: string; name: string }[] })
             </option>
           ))}
         </select>
+        {year && (
+          <span className="mt-2 block text-xs text-ivory/55">
+            {intakeClub ? (
+              <>
+                Your intake&apos;s club is <span className="font-semibold text-gold">{intakeClub.name}</span>.
+              </>
+            ) : (
+              "No club has been registered for this intake yet."
+            )}
+          </span>
+        )}
       </Field>
       <AnimatePresence initial={false}>
         {type === "PLAYER" && (
@@ -67,16 +91,18 @@ export function SignUpForm({ teams }: { teams: { id: string; name: string }[] })
             <div className="space-y-5 rounded-2xl border border-gold/20 bg-gold/[0.04] p-4">
               <div className="text-xs text-ivory/60">Your registration is sent to the League office and your club manager for approval.</div>
               <Field label="Club">
-                <select name="teamId" className="input" defaultValue="">
+                <select name="teamId" className="input" value={teamId} onChange={(e) => setTeamId(e.target.value)} disabled={!!intakeClub}>
                   <option value="" disabled>
                     Select your club
                   </option>
                   {teams.map((t) => (
                     <option key={t.id} value={t.id}>
                       {t.name}
+                      {t.intakeYear ? ` (${t.intakeYear} intake)` : ""}
                     </option>
                   ))}
                 </select>
+                {intakeClub && <input type="hidden" name="teamId" value={intakeClub.id} />}
               </Field>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Position">

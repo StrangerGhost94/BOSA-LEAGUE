@@ -21,7 +21,7 @@ export function CompetitionHero({
   stats: { label: string; value: number }[];
 }) {
   return (
-    <section className="relative overflow-hidden pb-16 pt-36">
+    <section className="relative overflow-hidden pb-12 pt-28 sm:pb-16 sm:pt-36">
       <StadiumBackdrop intensity={type === "CHAMPIONS" ? 1.2 : 1} />
       {type === "CHAMPIONS" && <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_20%,rgba(214,182,118,.18),transparent)]" />}
       {type === "SUPER" && <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_20%,rgba(30,140,107,.22),transparent)]" />}

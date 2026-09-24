@@ -52,7 +52,7 @@ export default async function TeamPage({ params }: { params: { slug: string } })
 
   return (
     <>
-      <section className="relative overflow-hidden pb-16 pt-36">
+      <section className="relative overflow-hidden pb-12 pt-28 sm:pb-16 sm:pt-36">
         <HeroParallax className="absolute inset-0">
           <div className="absolute inset-0" style={{ background: `radial-gradient(90% 90% at 80% 20%, ${t.primaryColor} 0%, #0A0F1E 60%, #060913 100%)` }} />
           <div className="absolute -right-24 top-10 opacity-[0.12] sm:-right-10">
@@ -65,7 +65,7 @@ export default async function TeamPage({ params }: { params: { slug: string } })
           <FadeIn className="flex flex-col gap-8 sm:flex-row sm:items-end">
             <Crest team={t} size={160} className="max-sm:!h-28 max-sm:!w-28" />
             <div>
-              <div className="eyebrow">{t.campus}</div>
+              <div className="eyebrow">{t.intakeYear ? `${t.intakeYear} intake` : t.campus}</div>
               <h1 className="headline mt-3 text-6xl sm:text-8xl">{t.name}</h1>
               {t.motto && <p className="mt-3 font-serif text-xl italic text-ivory/70">&ldquo;{t.motto}&rdquo;</p>}
               <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -101,7 +101,7 @@ export default async function TeamPage({ params }: { params: { slug: string } })
               <div className="eyebrow mb-5">Club profile</div>
               <dl className="grid grid-cols-2 gap-6 text-sm">
                 {[
-                  ["Year group", t.campus || "-"],
+                  ["Intake", t.intakeYear ? `Joined Bilal Institute in ${t.intakeYear}` : "-"],
                   ["Head coach", t.coachName ?? "To be confirmed"],
                   ["Captain", t.captainName ?? "To be confirmed"],
                   ["Home ground", t.homeVenue ?? "Henry's Pitch"],
@@ -138,7 +138,7 @@ export default async function TeamPage({ params }: { params: { slug: string } })
         </div>
       </section>
 
-      <section className="container-x pt-20">
+      <section className="container-x pt-14 sm:pt-20">
         <SectionHeading eyebrow={`${squad.length} registered players`} title={<>The <em className="gold-text">squad</em></>} />
         <div className="space-y-10">
           {positions.map((p) => {
@@ -174,7 +174,7 @@ export default async function TeamPage({ params }: { params: { slug: string } })
       </section>
 
       {results.length > 0 && (
-        <section className="container-x pt-20">
+        <section className="container-x pt-14 sm:pt-20">
           <SectionHeading eyebrow="All competitions" title={<>Recent <em className="gold-text">results</em></>} />
           <Stagger className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {results.slice(0, 6).map((m) => (
@@ -187,7 +187,7 @@ export default async function TeamPage({ params }: { params: { slug: string } })
       )}
 
       {news.length > 0 && (
-        <section className="container-x pt-20">
+        <section className="container-x pt-14 sm:pt-20">
           <SectionHeading eyebrow="Newsroom" title={<>{t.name} <em className="gold-text">stories</em></>} />
           <div className="grid gap-5 md:grid-cols-3">
             {news.map((a) => (

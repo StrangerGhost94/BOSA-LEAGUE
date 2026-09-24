@@ -11,11 +11,12 @@ import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS, HISTORY } from "
  *
  * DATA_VERSION lets a deployment replace older demo data exactly once.
  */
-const DATA_VERSION = "6";
+const DATA_VERSION = "7";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool, { schema: s });
 const eat = (date: string, time: string) => new Date(`${date}T${time}:00+03:00`);
+const ELIGIBILITY = "BOSA League is for old students of Bilal Islamic Institute. Each club is made up of the old students who joined the Institute in the same year, so players register with the year they joined and play for that year's club. Every player must be approved by the League office before they are eligible to play.";
 const CL_TAGLINE = "The top eight. Three Sundays.";
 const CL_DESC = "When the league ends, the top eight clubs in the BOSA League go into a knock-out: quarter-finals, semi-finals and a final, one round each Sunday. Draws are seeded by league position.";
 const CL_RULE = "The top eight clubs in the final BOSA League table qualify. Ties are single matches seeded by league position (1 v 8, 4 v 5, 2 v 7, 3 v 6). A level tie goes straight to penalties.";
@@ -88,6 +89,12 @@ async function main() {
       // Non-destructive update from version 5: Champions League is the top-eight knock-out, and the season calendar rules.
       await pool.query("update competitions set tagline=$1, description=$2 where slug='champions-league'", [CL_TAGLINE, CL_DESC]);
       await addCalendarRules();
+      v.rows[0].value = "6";
+    }
+    if (v.rows[0]?.value === "6" && !process.argv.includes("--force")) {
+      // Non-destructive update from version 6: each club is the intake of old students who joined Bilal Institute in one year.
+      for (const t of TEAMS) await pool.query("update teams set intake_year=$2 where slug=$1 and intake_year is null", [t.slug, t.intake]);
+      await pool.query("update rules set body=$1 where title='Eligibility'", [ELIGIBILITY]);
       await pool.query("insert into settings (key, value) values ('data_version', $1) on conflict (key) do update set value=excluded.value", [DATA_VERSION]);
       console.log("Updated data to version " + DATA_VERSION + " (no results or accounts removed).");
       await pool.end();
@@ -130,6 +137,7 @@ async function main() {
         secondaryColor: t.secondary,
         campus: "",
         founded: 2023,
+        intakeYear: t.intake,
         homeVenue: "Henry's Pitch, Kabalagala",
       })),
     )
@@ -232,7 +240,7 @@ async function main() {
     { competitionId: league.id, order: 1, title: "Points and ranking", body: "Three points for a win, one for a draw and none for a defeat. Teams level on points are separated by goal difference, then goals scored." },
     { competitionId: league.id, order: 2, title: "Venue", body: "BOSA League matches are played at Henry's Pitch, Kabalagala, behind Shell Kabalagala, unless the League office announces otherwise." },
     { competitionId: superLeague.id, order: 1, title: "Who plays", body: SUPER_RULE },
-    { competitionId: null, order: 1, title: "Eligibility", body: "BOSA League is for old students of Bilal Islamic Institute. Players register with the year they completed at the Institute, and must be approved by the League office before they are eligible to play." },
+    { competitionId: null, order: 1, title: "Eligibility", body: ELIGIBILITY },
     { competitionId: null, order: 2, title: "Discipline", body: "A red card carries an automatic one-match suspension. Accumulated yellow cards may also lead to a suspension, as set by the League office." },
   ]);
 

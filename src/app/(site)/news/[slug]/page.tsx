@@ -87,7 +87,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
         )}
       </section>
       {more.length > 0 && (
-        <section className="container-x pt-24">
+        <section className="container-x pt-14 sm:pt-24">
           <div className="eyebrow mb-6">More from the Newsroom</div>
           <div className="grid gap-6 md:grid-cols-3">
             {more.map((x) => (

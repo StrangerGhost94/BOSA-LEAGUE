@@ -52,7 +52,7 @@ export default async function PlayerPage({ params }: { params: { id: string } })
               {p.completionYear && (
                 <>
                   <span className="h-1 w-1 rounded-full bg-gold/60" />
-                  <span>Class of {p.completionYear}</span>
+                  <span>{p.completionYear} intake</span>
                 </>
               )}
               {statusPill}
@@ -86,7 +86,7 @@ export default async function PlayerPage({ params }: { params: { id: string } })
               <div className="eyebrow mb-5">Profile</div>
               <dl className="grid grid-cols-2 gap-6 text-sm">
                 <div><dt className="text-[10px] uppercase tracking-[0.2em] text-ivory/40">Club</dt><dd className="mt-1">{t.name}</dd></div>
-                <div><dt className="text-[10px] uppercase tracking-[0.2em] text-ivory/40">Completed Bilal Institute</dt><dd className="mt-1">{p.completionYear ?? "-"}</dd></div>
+                <div><dt className="text-[10px] uppercase tracking-[0.2em] text-ivory/40">Joined Bilal Institute</dt><dd className="mt-1">{p.completionYear ?? "-"}</dd></div>
                 <div><dt className="text-[10px] uppercase tracking-[0.2em] text-ivory/40">Position</dt><dd className="mt-1">{POSITION_LABEL[p.position]}</dd></div>
                 <div><dt className="text-[10px] uppercase tracking-[0.2em] text-ivory/40">Starts</dt><dd className="mt-1">{stats?.starts ?? 0}</dd></div>
                 <div><dt className="text-[10px] uppercase tracking-[0.2em] text-ivory/40">Born</dt><dd className="mt-1">{p.birthYear ?? "-"}</dd></div>
