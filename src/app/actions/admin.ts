@@ -76,10 +76,10 @@ export async function savePlayerAction(_: ActionResult, fd: FormData): A {
       const firstName = str(fd, "firstName");
       const lastName = str(fd, "lastName");
       const number = num(fd, "number");
-      const position = str(fd, "position") as s.Position;
+      const position = (str(fd, "position") || null) as s.Position | null;
       if (!teamId || !firstName || !lastName) return fail("Club, first name and last name are required.");
       if (number == null || number < 0 || number > 99) return fail("Shirt number must be between 1 and 99 (or 0 if not yet known).");
-      if (!["GK", "DEF", "MID", "FWD"].includes(position)) return fail("Choose a position.");
+      if (position && !["GK", "DEF", "MID", "FWD"].includes(position)) return fail("Choose a position.");
       const clash = await db.query.players.findFirst({ where: and(eq(s.players.teamId, teamId), eq(s.players.number, number)) });
       if (number > 0 && clash && clash.id !== id && clash.status !== "REJECTED") return fail(`Number ${number} is already worn by ${clash.firstName} ${clash.lastName}.`);
       const values = {

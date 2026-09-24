@@ -32,7 +32,8 @@ export function PlayerForm({ player, teams, fixedTeam, admin }: { player?: Playe
         <input name="number" type="number" min={0} max={99} className="input" defaultValue={player?.number ?? ""} placeholder="0 if not known" required />
       </Field>
       <Field label="Position">
-        <select name="position" className="input" defaultValue={player?.position ?? "MID"}>
+        <select name="position" className="input" defaultValue={player ? (player.position ?? "") : "MID"}>
+          <option value="">Not confirmed yet</option>
           <option value="GK">Goalkeeper</option>
           <option value="DEF">Defender</option>
           <option value="MID">Midfielder</option>

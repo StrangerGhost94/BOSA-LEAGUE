@@ -47,7 +47,7 @@ export default async function TeamPage({ params }: { params: { slug: string } })
   const current = entries.filter((e) => e.season.isCurrent);
   const groups = await Promise.all(current.filter((e) => e.season.competition.type === "CHAMPIONS").map((e) => getGroupTables(e.seasonId)));
   const myGroup = groups.flat().find((g) => g.rows.some((r) => r.teamId === t.id));
-  const positions = ["GK", "DEF", "MID", "FWD"] as const;
+  const positions = ["GK", "DEF", "MID", "FWD", null] as const;
   const light = t.primaryColor.toLowerCase() === "#0d0d0d" ? "#F2F2F2" : t.primaryColor;
 
   return (
@@ -142,11 +142,11 @@ export default async function TeamPage({ params }: { params: { slug: string } })
         <SectionHeading eyebrow={`${squad.length} registered players`} title={<>The <em className="gold-text">squad</em></>} />
         <div className="space-y-10">
           {positions.map((p) => {
-            const list = squad.filter((s) => s.position === p).sort((a, b) => a.number - b.number);
+            const list = squad.filter((s) => (s.position ?? null) === p).sort((a, b) => (a.number || 999) - (b.number || 999) || `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`));
             if (!list.length) return null;
             return (
-              <div key={p}>
-                <div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-ivory/45">{POSITION_LABEL[p]}s</div>
+              <div key={p ?? "other"}>
+                <div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-ivory/45">{p ? `${POSITION_LABEL[p]}s` : "Squad players"}</div>
                 <Stagger className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {list.map((pl) => (
                     <StaggerItem key={pl.id}>

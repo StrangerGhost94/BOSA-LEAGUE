@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as s from "./schema";
-import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS, HISTORY } from "./seed-data";
+import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS, HISTORY, SQUADS, PLAYER_RENAMES } from "./seed-data";
 
 /**
  * Seeds BOSA League Season 4 with the official data supplied by the League office:
@@ -11,7 +11,7 @@ import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS, HISTORY } from "
  *
  * DATA_VERSION lets a deployment replace older demo data exactly once.
  */
-const DATA_VERSION = "8";
+const DATA_VERSION = "9";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool, { schema: s });
@@ -27,6 +27,65 @@ const MEMBERSHIP_TITLE = "BOSA League membership: one voucher, the whole season"
 const MEMBERSHIP_EXCERPT = "Buy a one-time membership voucher, enter the code when you sign up, and everything opens up.";
 const MEMBERSHIP_BODY =
   "Old students of Bilal Islamic Institute can now become BOSA League members with a one-time membership voucher.\n\nBuy a voucher from the League office or a club manager at Henry's Pitch. Each voucher carries a code like BOSA-7KQ4-M9XT. Enter it when you create your account, or on the Membership page if you already have one, and your membership starts straight away.\n\nMembership unlocks the live match centre, your digital member card with partner perks, fans' votes, members-only photos and highlights, and early access to fixtures. Each voucher works once.";
+
+/** "kiggundu huzaifa" -> "Kiggundu Huzaifa"; names already mixed-case (AbduSalaam) are kept as written. */
+function tidyName(n: string) {
+  return n
+    .trim()
+    .split(/\s+/)
+    .map((w) => (w === w.toLowerCase() || w === w.toUpperCase() ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w))
+    .join(" ");
+}
+
+/**
+ * Loads the clubs' squad sheets: coach and captain on the club, every player as an approved squad member.
+ * Players already on record with the same name (e.g. from the top scorers list) are updated, not duplicated,
+ * so their goals stay with them. Safe to run more than once.
+ */
+async function applySquads() {
+  for (const [slug, oldName, newName] of PLAYER_RENAMES) {
+    const [first, ...rest] = newName.split(" ");
+    await pool.query(
+      "update players set first_name=$3, last_name=$4 where team_id=(select id from teams where slug=$1) and trim(first_name||' '||last_name)=$2",
+      [slug, oldName, first, rest.join(" ")],
+    );
+  }
+  for (const sq of SQUADS) {
+    const { rows: tr } = await pool.query("select id, name, intake_year from teams where slug=$1", [sq.slug]);
+    if (!tr.length) continue;
+    const team = tr[0];
+    await pool.query("update teams set coach_name=$2, captain_name=coalesce($3, captain_name) where id=$1", [team.id, sq.coach, sq.captain ?? null]);
+    if (sq.assistant) await pool.query("update teams set bio=$2 where id=$1 and (bio is null or bio='')", [team.id, `Manager: ${sq.coach}. Assistant manager: ${sq.assistant}.${sq.captain ? ` Captain: ${sq.captain}.` : ""}`]);
+    // The club's manager login carries the manager's real name instead of "<Club> Manager"
+    await pool.query("update users set name=$2 where team_id=$1 and role='TEAM_MANAGER' and name=$3", [team.id, sq.coach, `${team.name} Manager`]);
+
+    const { rows: existing } = await pool.query("select id, lower(trim(first_name||' '||last_name)) full_name from players where team_id=$1", [team.id]);
+    // Name -> ids already on record (a list, because two players can share a name, e.g. two "Hamza")
+    const before = new Map<string, string[]>();
+    for (const r of existing as { id: string; full_name: string }[]) before.set(r.full_name, [...(before.get(r.full_name) ?? []), r.id]);
+    for (const line of sq.players) {
+      const [rawName, pos, shirt] = line.split("|");
+      const name = tidyName(rawName);
+      const [first, ...rest] = name.split(" ");
+      const position = pos || null;
+      const number = shirt ? Number(shirt) : 0;
+      const key = name.toLowerCase();
+      const match = before.get(key)?.shift();
+      if (match) {
+        await pool.query(
+          "update players set position=coalesce($2::\"position\", position), number=case when $3>0 then $3 else number end, status='ACTIVE', completion_year=coalesce(completion_year,$4) where id=$1",
+          [match, position, number, team.intake_year],
+        );
+        continue;
+      }
+      await pool.query(
+        "insert into players (id, team_id, first_name, last_name, number, position, affiliation, status, completion_year) values (gen_random_uuid()::text, $1, $2, $3, $4, $5::\"position\", 'ALUMNI', 'ACTIVE', $6)",
+        [team.id, first, rest.join(" "), number, position, team.intake_year],
+      );
+    }
+  }
+  console.log(`Loaded squad sheets for ${SQUADS.length} clubs.`);
+}
 
 /** Demo supporter accounts and demo payments were only for testing before launch. Staff accounts stay. */
 async function removeDemoData() {
@@ -129,6 +188,11 @@ async function main() {
       await removeDemoData();
       await launchVouchers();
       await pool.query("update articles set title=$2, excerpt=$3, body=$4 where slug=$1", ["membership-launch", MEMBERSHIP_TITLE, MEMBERSHIP_EXCERPT, MEMBERSHIP_BODY]);
+      v.rows[0].value = "8";
+    }
+    if (v.rows[0]?.value === "8" && !process.argv.includes("--force")) {
+      // Non-destructive update from version 8: official squad sheets for five clubs
+      await applySquads();
       await pool.query("insert into settings (key, value) values ('data_version', $1) on conflict (key) do update set value=excluded.value", [DATA_VERSION]);
       console.log("Updated data to version " + DATA_VERSION + " (no results or accounts removed).");
       await pool.end();
@@ -280,6 +344,7 @@ async function main() {
   await applyHistory();
   await addCalendarRules();
   await launchVouchers();
+  await applySquads();
 
   /* ---------- News ---------- */
   await db.insert(s.articles).values([

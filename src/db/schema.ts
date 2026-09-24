@@ -106,7 +106,8 @@ export const players = pgTable(
     firstName: text("first_name").notNull(),
     lastName: text("last_name").notNull(),
     number: integer("number").notNull(),
-    position: positionEnum("position").notNull(),
+    // Null when the club has not said where the player plays yet
+    position: positionEnum("position"),
     affiliation: affiliationEnum("affiliation").notNull().default("STUDENT"),
     course: text("course"),
     yearOfStudy: text("year_of_study"),

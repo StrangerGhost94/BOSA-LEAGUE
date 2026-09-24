@@ -53,7 +53,7 @@ export default async function AdminPlayers({ searchParams }: { searchParams: Rec
                 <img src={p.team.crest} alt="" className="h-9 w-9 rounded-full bg-white" />
                 <div className="min-w-[200px] flex-1">
                   <div className="font-semibold">
-                    {p.firstName} {p.lastName} <span className="text-ivory/40">#{p.number || "–"} · {p.position}</span>
+                    {p.firstName} {p.lastName} <span className="text-ivory/40">#{p.number || "–"}{p.position ? ` · ${p.position}` : ""}</span>
                   </div>
                   <div className="text-xs text-ivory/50">
                     {p.team.name} · {p.completionYear ? `${p.completionYear} intake` : "Intake year not given"} · submitted {fmtDate(p.createdAt, { day: "numeric", month: "short" })}
@@ -102,7 +102,7 @@ export default async function AdminPlayers({ searchParams }: { searchParams: Rec
                       <img src={p.team.crest} alt="" className="h-6 w-6 rounded-full bg-white" /> {p.team.name}
                     </span>
                   </td>
-                  <td className="text-xs">{p.position}</td>
+                  <td className="text-xs">{p.position ?? "–"}</td>
                   <td className="text-xs text-ivory/60">{p.completionYear ?? "-"}</td>
                   <td>
                     <Pill tone={p.status === "ACTIVE" ? "emerald" : p.status === "INJURED" ? "gold" : p.status === "SUSPENDED" || p.status === "REJECTED" ? "crimson" : "default"}>{p.status}</Pill>

@@ -47,7 +47,7 @@ export default async function PlayerPage({ params }: { params: { id: string } })
             </h1>
             <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-ivory/60">
               <span className="font-display text-2xl text-ivory">#{p.number || "–"}</span>
-              <span>{POSITION_LABEL[p.position]}</span>
+              <span>{p.position ? POSITION_LABEL[p.position] : "Position to be confirmed"}</span>
               <span className="h-1 w-1 rounded-full bg-gold/60" />
               {p.completionYear && (
                 <>
@@ -87,7 +87,7 @@ export default async function PlayerPage({ params }: { params: { id: string } })
               <dl className="grid grid-cols-2 gap-6 text-sm">
                 <div><dt className="text-[10px] uppercase tracking-[0.2em] text-ivory/40">Club</dt><dd className="mt-1">{t.name}</dd></div>
                 <div><dt className="text-[10px] uppercase tracking-[0.2em] text-ivory/40">Joined Bilal Institute</dt><dd className="mt-1">{p.completionYear ?? "-"}</dd></div>
-                <div><dt className="text-[10px] uppercase tracking-[0.2em] text-ivory/40">Position</dt><dd className="mt-1">{POSITION_LABEL[p.position]}</dd></div>
+                <div><dt className="text-[10px] uppercase tracking-[0.2em] text-ivory/40">Position</dt><dd className="mt-1">{p.position ? POSITION_LABEL[p.position] : "Position to be confirmed"}</dd></div>
                 <div><dt className="text-[10px] uppercase tracking-[0.2em] text-ivory/40">Starts</dt><dd className="mt-1">{stats?.starts ?? 0}</dd></div>
                 <div><dt className="text-[10px] uppercase tracking-[0.2em] text-ivory/40">Born</dt><dd className="mt-1">{p.birthYear ?? "-"}</dd></div>
                 <div><dt className="text-[10px] uppercase tracking-[0.2em] text-ivory/40">Goals per app</dt><dd className="mt-1">{stats?.apps ? (stats.goals / stats.apps).toFixed(2) : "0.00"}</dd></div>

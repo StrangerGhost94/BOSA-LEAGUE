@@ -105,7 +105,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Reco
                         <img src={p.crest} alt="" className="h-6 w-6 rounded-full bg-white" /> {p.teamName}
                       </Link>
                     </td>
-                    <td className="text-center text-xs text-ivory/60">{p.position}</td>
+                    <td className="text-center text-xs text-ivory/60">{p.position ?? "–"}</td>
                     <td className="text-center tabular-nums">{p.apps}</td>
                     <td className={clsx("text-center font-display text-base tabular-nums", p.goals > 0 && "text-gold")}>{p.goals}</td>
                     <td className="text-center tabular-nums">{p.assists}</td>

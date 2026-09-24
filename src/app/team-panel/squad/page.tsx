@@ -46,7 +46,7 @@ export default async function Squad() {
                   </div>
                   <div className="text-xs text-ivory/45">{p.completionYear ? `${p.completionYear} intake` : "Intake year not set"}</div>
                 </td>
-                <td className="text-xs">{p.position}</td>
+                <td className="text-xs">{p.position ?? "–"}</td>
                 <td className="text-center">{stats[p.id]?.apps ?? 0}</td>
                 <td className="text-center">{stats[p.id]?.goals ?? 0}</td>
                 <td className="text-center text-xs">

@@ -174,7 +174,7 @@ export type PlayerStat = {
   firstName: string;
   lastName: string;
   number: number;
-  position: s.Position;
+  position: s.Position | null;
   status: s.PlayerStatus;
   statusNote: string | null;
   affiliation: string;

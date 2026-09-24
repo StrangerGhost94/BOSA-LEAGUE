@@ -163,3 +163,66 @@ export const HISTORY: { comp: "bosa-league" | "champions-league" | "super-cup"; 
   { comp: "super-cup", season: "Season 3", year: 2025, champion: "Alnasr", runnerUp: "Karegular", note: "Alnasr 3-1 Karegular" },
   { comp: "super-cup", season: "Season 4", year: 2026, champion: "Golden Jubilee", runnerUp: "Dream Cast", note: "Dream Cast 0-4 Golden Jubilee" },
 ];
+
+/**
+ * Squad sheets supplied by the clubs. Each line: "Name|Position|Shirt".
+ * Position: GK, DEF, MID, FWD, or empty when the club did not give one. Shirt: empty when not given.
+ */
+export const SQUADS: { slug: Slug; coach: string; captain?: string; assistant?: string; players: string[] }[] = [
+  {
+    slug: "los-blancos",
+    coach: "Swaleh Munez",
+    players: [
+      "Kabali Akram", "Kiguli Ramathan", "Katende Ashiraf", "Bulega Sulaiman", "Ssessanga Muzafar", "Muweesi Abdul", "Kakinda Fahim", "Bin Juma", "Shahab Muhammad",
+      "Kateregga Ashiraf", "Kaliika Abdulrahiim", "Nsubuga Abdulrashid", "Kayima Favor", "Idris Affi", "Harrison Hariliki", "Closet", "Hassan Kizza", "Hamza Brater",
+    ],
+  },
+  {
+    slug: "dream-cast",
+    coach: "Kaddu Juma",
+    players: [
+      "Shamran Semujju|GK", "Hamza Katende|GK", "Nyombi Shafic|GK", "Bruhan Sembatya|DEF", "Shabiib Sebagala|DEF", "Juma Seguya|DEF", "Kakembo Shafic|DEF",
+      "Senyomo Juma|MID", "Hasan Wahib|MID", "Adam Nsubuga|MID", "Lwere Hamidu|MID", "Doka Yusuf|FWD", "Semakula Fauzan|FWD", "Kugonza Bashir|FWD",
+      "Magala Farid|MID", "Kasibante Latif|MID", "Kiggundu Huzaifa|MID", "Masimbi Karim|MID", "Kawuki Shafic|FWD", "Hamdan Idris|DEF",
+    ],
+  },
+  {
+    slug: "karegular",
+    coach: "Kintu Hamza",
+    players: [
+      "Sinaan|MID|8", "Abaas Salman|FWD|10", "Mubiru|DEF|55", "Swabur|DEF|3", "Swidiiq|DEF|4", "Swalleh|DEF|16", "Mubarak|DEF|14", "Semakula|MID|21", "Mahad|MID|11",
+      "Umar Musinguzi|MID|5", "Kalyango Haroona|FWD|9", "Wahab Tumkye|GK|1", "Ismael Sebalamu|FWD|25", "Lumansi Wakoli|MID|6", "Ssozi Muhammad|FWD|7", "Kanyana|MID|20",
+      "Ssemanda Bashir|DEF|27", "Nasibu|MID|28", "Muwonge|FWD|12", "Katumba|FWD|15", "Basti Mawanda|MID|16", "Kiwuuwa|DEF|36", "Bahiga|MID|23", "Mansu|MID|17",
+      "Najim|MID|26", "Kaddu|DEF|44", "Mukasa|DEF|43", "Mujib|FWD|18", "Matovu Haroona|DEF|29", "Kabuubi|MID|33", "Lugaizi|DEF|31", "Nsamba|FWD|90",
+      "Saadi Mawazo|FWD|37", "Semuwemba|MID|88", "Miyingo|DEF|61",
+    ],
+  },
+  {
+    slug: "albayan",
+    coach: "Kayizzi Jumah",
+    players: [
+      "Mulindwa Sharif|MID", "Kugonza|DEF", "Seguya Umar|DEF", "Kibirango Umar|FWD", "Mustapha Faris|MID", "Kisitu Hamza|DEF", "Kisegerwa Rashid|DEF",
+      "Mulondo Faiswali|FWD", "Balaba Juma|DEF", "Tamale Shaban|DEF", "Segujja Abduswamaddu Mahrezi|MID", "Luzige Azizi|MID", "Kitooke Abdallah|MID", "Hamza|GK",
+      "Hamza|MID", "Kayiwa Akram|FWD", "Nsambu Arafat|DEF", "Mugerwa Adam|GK", "Kasule Abdul|DEF", "Mutebi Hafidhu|MID", "Kiremye Sadam|DEF", "Senyange Mustapha|FWD",
+      "Wejuli Ramadhan|FWD", "Seremba Umar|DEF", "Muwanika Amin|FWD", "Bakulumpagi Aksam|DEF", "Mukera Hamzah|MID", "Saidina|DEF", "Lukeberwa Mubarak|DEF",
+      "Namwanja|DEF",
+    ],
+  },
+  {
+    slug: "alhilal",
+    coach: "Mujukira Utheimin",
+    captain: "Jagwe Zakaria",
+    assistant: "Rabiibu Ssali",
+    players: [
+      "Jagwe Zakaria", "Ssentamu Ibrahim Mushrifu", "Mahmoud Issa Mamu", "Muhammad Badru Byarufu Medico", "Kawenja Usama", "Kiddu Jamilu", "Umar Nsubuga",
+      "Ashiraf Mubiru", "Mawanda Faisal", "Ssekabira Ishaaq", "Famao Muhammad", "Walugembe Abu", "Kagimu Ibrahim", "Kityamuweesi Ashiraf Mahabuba",
+      "Kikambi AbduSalaam", "Ssempala Abdallah", "Ukasha Luswata", "Ausi Kibowa", "Muwayi Abdallah Waiswa", "Namuyimba Jamiil", "Kiweewa AbdulHakim",
+      "Balijula Farouque", "Jamal Jjemba", "Kanyama Abdulnassir Huzaifa", "Rabiibu Ssali", "Ziwa Saddam", "AbduSwabur Muhammad", "Buraida Twaha", "Jagwe Abdrahman",
+      "Dauda Kisamba", "Huzaifa Adam", "Katongole Ibrahim Bakyase", "Mpanga Kasim", "Mulumba Abdulwahab", "Nkolawano Rashid", "Kayemba Shuaib", "Ssekikubo Mikhdad",
+      "Suphian Kazibwe", "Kasoma Najib",
+    ],
+  },
+];
+
+/** Earlier placeholder entries that are the same person as a squad player: [club, old name, name on the squad sheet]. */
+export const PLAYER_RENAMES: [Slug, string, string][] = [["dream-cast", "Iwere", "Lwere Hamidu"]];
