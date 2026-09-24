@@ -10,6 +10,9 @@ import { homeFor } from "@/lib/roles";
 import { fail, str, optStr } from "@/lib/result";
 import { logActivity } from "@/lib/activity";
 import type { ActionResult } from "@/components/form";
+import { headers } from "next/headers";
+import { normaliseCode, redeemVoucher, tooManyAttempts } from "@/lib/vouchers";
+import { pool } from "@/db";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -39,6 +42,16 @@ export async function signUpAction(_: ActionResult, fd: FormData): Promise<Actio
   if (!["ALUMNI_FAN", "PLAYER"].includes(type)) return fail("Choose whether you are joining as an old student or a player.");
   if (!(completionYear >= 1980 && completionYear <= new Date().getFullYear())) return fail("Select the year you joined Bilal Institute.");
   if (fd.get("terms") !== "on") return fail("Please accept the membership terms to continue.");
+  // Optional membership voucher: checked before the account is created so a wrong code never leaves a half-made account
+  const voucherRaw = str(fd, "voucher");
+  const ip = headers().get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  if (voucherRaw) {
+    if (tooManyAttempts(`ip:${ip}`)) return fail("Too many wrong voucher codes. Please wait 15 minutes and try again.");
+    const code = normaliseCode(voucherRaw);
+    const { rows } = code ? await pool.query("select status from vouchers where code=$1", [code]) : { rows: [] };
+    if (!rows.length) return fail("We could not find that voucher code. Check it, or leave the box empty to activate later.");
+    if (rows[0].status !== "UNUSED") return fail(rows[0].status === "USED" ? "This voucher has already been used. Each voucher works once." : "This voucher has been cancelled. Please contact the League office.");
+  }
   const exists = await db.query.users.findFirst({ where: eq(users.email, email) });
   if (exists) return fail("An account with this email already exists. Try signing in.");
 
@@ -88,6 +101,11 @@ export async function signUpAction(_: ActionResult, fd: FormData): Promise<Actio
     .returning();
   await logActivity(u.id, "Created account", "User", `${name} (${completionYear} intake) registered as ${type === "PLAYER" ? "a player" : "an old student"}`, u.id);
   await startSession(u);
+  if (voucherRaw) {
+    const r = await redeemVoucher(u.id, voucherRaw, `ip:${ip}`);
+    if (r.ok) redirect("/members?welcome=1");
+    redirect(`/membership?welcome=1&voucher=${encodeURIComponent(r.message)}`);
+  }
   redirect("/membership?welcome=1");
 }
 

@@ -302,19 +302,18 @@ export default async function HomePage() {
 
       {/* ---------------- STATS BAND ---------------- */}
       <section className="container-x pt-14 sm:pt-28">
-        <div className="relative overflow-hidden rounded-[2rem] border border-white/[0.07] bg-night-800/60 px-6 py-12 sm:px-12">
+        <div className="relative overflow-hidden rounded-[1.5rem] border border-white/[0.07] bg-night-800/60 px-2 py-6 sm:rounded-[2rem] sm:px-12 sm:py-12">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(214,182,118,.12),transparent)]" />
-          <div className="relative grid grid-cols-2 gap-y-10 md:grid-cols-5">
+          <div className="relative grid grid-cols-4 divide-x divide-white/[0.07]">
             {[
               { v: totals.goals, l: "Goals this season" },
               { v: totals.played, l: "Matches played" },
               { v: teams.length, l: "Registered clubs" },
               { v: (upcoming[0]?.matchday ?? 1) - 1, l: "Matchdays played" },
-              { v: scorers[0]?.goals ?? 0, l: "Top scorer goals" },
             ].map((s) => (
-              <div key={s.l} className="text-center">
-                <CountUp value={s.v} className="gold-text font-display text-5xl font-semibold sm:text-6xl" />
-                <div className="mt-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-ivory/45">{s.l}</div>
+              <div key={s.l} className="px-1 text-center">
+                <CountUp value={s.v} className="gold-text font-display text-3xl font-semibold sm:text-6xl" />
+                <div className="mt-1.5 text-[8.5px] font-semibold uppercase leading-tight tracking-[0.08em] text-ivory/45 sm:mt-2 sm:text-[10px] sm:tracking-[0.24em]">{s.l}</div>
               </div>
             ))}
           </div>
@@ -499,7 +498,7 @@ export default async function HomePage() {
                 One payment. <em className="gold-text">The whole season.</em>
               </h2>
               <p className="mx-auto mt-5 max-w-xl text-ivory/60">
-                Pay once with Mobile Money or card through Pesapal, and it all opens up.
+                Buy a one-time membership voucher, enter the code, and it all opens up.
               </p>
               <div className="mx-auto mt-8 grid max-w-3xl grid-cols-2 gap-2 text-left sm:grid-cols-3">
                 {[

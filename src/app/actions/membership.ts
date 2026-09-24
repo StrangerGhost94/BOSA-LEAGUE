@@ -7,8 +7,9 @@ import { db } from "@/db";
 import { payments } from "@/db/schema";
 import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { getMembershipPrice, getSetting } from "@/lib/data";
-import { submitOrder, pesapalConfigured, demoPaymentsEnabled } from "@/lib/pesapal";
-import { activateMembership } from "@/lib/payments";
+import { submitOrder, pesapalConfigured } from "@/lib/pesapal";
+import { headers } from "next/headers";
+import { redeemVoucher } from "@/lib/vouchers";
 import { fail } from "@/lib/result";
 import type { ActionResult } from "@/components/form";
 
@@ -21,14 +22,7 @@ export async function startPaymentAction(_: ActionResult, fd: FormData): Promise
   const merchantRef = `BOSA-${Date.now().toString(36).toUpperCase()}-${randomUUID().slice(0, 6).toUpperCase()}`;
   const phone = (fd.get("phone") as string | null)?.trim() || user.phone;
 
-  if (!pesapalConfigured()) {
-    if (demoPaymentsEnabled()) {
-      await db.insert(payments).values({ userId: user.id, amount, currency, merchantRef, status: "COMPLETED", provider: "DEMO", method: "Demo mode", confirmationCode: "DEMO" });
-      await activateMembership(user.id, "Demo payment");
-      redirect("/membership?success=1");
-    }
-    return fail("Online payments are not configured yet. Please contact the League office.");
-  }
+  if (!pesapalConfigured()) return fail("Online payment is not available yet. Please use a membership voucher from the League office.");
 
   const [first, ...rest] = user.name.split(" ");
   let redirectUrl: string;
@@ -52,4 +46,18 @@ export async function startPaymentAction(_: ActionResult, fd: FormData): Promise
     return fail("We could not reach Pesapal just now. Please try again in a moment.");
   }
   redirect(redirectUrl);
+}
+
+/** A signed-in old student activates membership with a one-time voucher code. */
+export async function redeemVoucherAction(_: ActionResult, fd: FormData): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/sign-in?next=/membership");
+  if (hasMembership(user)) return fail("Your membership is already active.");
+  const code = String(fd.get("voucher") ?? "").trim();
+  if (!code) return fail("Enter the voucher code printed on your card.");
+  // Wrong guesses are limited per account and per connection
+  const ip = headers().get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const r = await redeemVoucher(user.id, code, `ip:${ip}`);
+  if (!r.ok) return fail(r.message);
+  redirect("/members?welcome=1");
 }

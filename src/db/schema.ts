@@ -394,6 +394,22 @@ export const settings = pgTable("settings", {
 
 const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
 
+/** One-time membership vouchers sold by the League office. Each code activates one membership, once. */
+export const vouchers = pgTable(
+  "vouchers",
+  {
+    id: id(),
+    code: text("code").notNull().unique(),
+    batch: text("batch").notNull(),
+    status: text("status").notNull().default("UNUSED"), // UNUSED, USED, VOID
+    usedById: text("used_by_id").references(() => users.id, { onDelete: "set null" }),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    note: text("note"),
+    createdAt: created(),
+  },
+  (t) => [index("vouchers_status_idx").on(t.status), index("vouchers_batch_idx").on(t.batch)],
+);
+
 export const perks = pgTable("perks", {
   id: id(),
   sponsor: text("sponsor").notNull(),
@@ -561,6 +577,8 @@ export const honoursRelations = relations(honours, ({ one }) => ({
 export const activityRelations = relations(activityLogs, ({ one }) => ({
   user: one(users, { fields: [activityLogs.userId], references: [users.id] }),
 }));
+
+export const vouchersRelations = relations(vouchers, ({ one }) => ({ usedBy: one(users, { fields: [vouchers.usedById], references: [users.id] }) }));
 
 export const albumsRelations = relations(albums, ({ many, one }) => ({
   media: many(media),

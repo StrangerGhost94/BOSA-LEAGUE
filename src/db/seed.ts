@@ -11,7 +11,7 @@ import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS, HISTORY } from "
  *
  * DATA_VERSION lets a deployment replace older demo data exactly once.
  */
-const DATA_VERSION = "7";
+const DATA_VERSION = "8";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool, { schema: s });
@@ -22,6 +22,33 @@ const CL_DESC = "When the league ends, the top eight clubs in the BOSA League go
 const CL_RULE = "The top eight clubs in the final BOSA League table qualify. Ties are single matches seeded by league position (1 v 8, 4 v 5, 2 v 7, 3 v 6). A level tie goes straight to penalties.";
 const SEASON_RULE = "Each season opens with the Super Cup. League Matchday 1 is the following Sunday, and every club plays every other club once. After the league, the top eight play the Champions League. Clubs that join during a season start from the next season. If a club withdraws during the league, all its results are removed and its remaining fixtures cancelled.";
 const SUPER_RULE = "The Super Cup is a single match that opens each season, played between the previous season's BOSA League champion and the previous season's BOSA Champions League winner.";
+
+const MEMBERSHIP_TITLE = "BOSA League membership: one voucher, the whole season";
+const MEMBERSHIP_EXCERPT = "Buy a one-time membership voucher, enter the code when you sign up, and everything opens up.";
+const MEMBERSHIP_BODY =
+  "Old students of Bilal Islamic Institute can now become BOSA League members with a one-time membership voucher.\n\nBuy a voucher from the League office or a club manager at Henry's Pitch. Each voucher carries a code like BOSA-7KQ4-M9XT. Enter it when you create your account, or on the Membership page if you already have one, and your membership starts straight away.\n\nMembership unlocks the live match centre, your digital member card with partner perks, fans' votes, members-only photos and highlights, and early access to fixtures. Each voucher works once.";
+
+/** Demo supporter accounts and demo payments were only for testing before launch. Staff accounts stay. */
+async function removeDemoData() {
+  await pool.query("delete from payments where provider='DEMO'");
+  await pool.query("delete from users where email in ('fan@bosaleague.com','alumni@bosaleague.com')");
+}
+
+/** The first 1,000 membership vouchers, created once. */
+async function launchVouchers() {
+  const { rows } = await pool.query("select count(*)::int c from vouchers");
+  if (rows[0].c > 0) return;
+  const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const { randomInt } = await import("crypto");
+  const codes = new Set<string>();
+  while (codes.size < 1000) {
+    let x = "";
+    for (let i = 0; i < 8; i++) x += ALPHABET[randomInt(ALPHABET.length)];
+    codes.add(`BOSA-${x.slice(0, 4)}-${x.slice(4)}`);
+  }
+  await pool.query("insert into vouchers (id, code, batch) select gen_random_uuid()::text, c, 'Launch batch' from unnest($1::text[]) c on conflict do nothing", [[...codes]]);
+  console.log("Created 1,000 membership vouchers (Launch batch).");
+}
 
 /** Rules describing the automatic season calendar. Safe to run more than once. */
 async function addCalendarRules() {
@@ -95,6 +122,13 @@ async function main() {
       // Non-destructive update from version 6: each club is the intake of old students who joined Bilal Institute in one year.
       for (const t of TEAMS) await pool.query("update teams set intake_year=$2 where slug=$1 and intake_year is null", [t.slug, t.intake]);
       await pool.query("update rules set body=$1 where title='Eligibility'", [ELIGIBILITY]);
+      v.rows[0].value = "7";
+    }
+    if (v.rows[0]?.value === "7" && !process.argv.includes("--force")) {
+      // Non-destructive update from version 7: memberships are sold as one-time vouchers; demo payments and demo supporter accounts go.
+      await removeDemoData();
+      await launchVouchers();
+      await pool.query("update articles set title=$2, excerpt=$3, body=$4 where slug=$1", ["membership-launch", MEMBERSHIP_TITLE, MEMBERSHIP_EXCERPT, MEMBERSHIP_BODY]);
       await pool.query("insert into settings (key, value) values ('data_version', $1) on conflict (key) do update set value=excluded.value", [DATA_VERSION]);
       console.log("Updated data to version " + DATA_VERSION + " (no results or accounts removed).");
       await pool.end();
@@ -152,8 +186,6 @@ async function main() {
     { name: "Referee One", email: "referee1@bosaleague.com", passwordHash, role: "REFEREE", membership: "ACTIVE" },
     { name: "Referee Two", email: "referee2@bosaleague.com", passwordHash, role: "REFEREE", membership: "ACTIVE" },
     { name: "Referee Three", email: "referee3@bosaleague.com", passwordHash, role: "REFEREE", membership: "ACTIVE" },
-    { name: "Demo Old Student", email: "fan@bosaleague.com", passwordHash, role: "ALUMNI_FAN", membership: "ACTIVE", completionYear: 2015 },
-    { name: "Demo Old Student (no membership)", email: "alumni@bosaleague.com", passwordHash, role: "ALUMNI_FAN", membership: "NONE", completionYear: 2018 },
     ...teamRows.map((t) => ({
       name: `${t.name} Manager`,
       email: `coach.${t.slug}@bosaleague.com`,
@@ -247,6 +279,7 @@ async function main() {
   /* ---------- Past champions ---------- */
   await applyHistory();
   await addCalendarRules();
+  await launchVouchers();
 
   /* ---------- News ---------- */
   await db.insert(s.articles).values([
@@ -264,9 +297,9 @@ async function main() {
     },
     {
       slug: "membership-launch",
-      title: "BOSA League membership: one payment, the whole season",
-      excerpt: "A one-time payment unlocks full match centres, player profiles and members-only stories.",
-      body: "Supporters can now become BOSA League members with a single one-time payment.\n\nMembership unlocks the full match centre, including line-ups and event timelines, complete player profiles and members-only stories from the BOSA Newsroom.\n\nPayment is processed securely through Pesapal, with Mobile Money and card options.",
+      title: MEMBERSHIP_TITLE,
+      excerpt: MEMBERSHIP_EXCERPT,
+      body: MEMBERSHIP_BODY,
       category: "ANNOUNCEMENT",
       publishedAt: new Date("2026-09-23T18:00:00+03:00"),
       readMinutes: 1,

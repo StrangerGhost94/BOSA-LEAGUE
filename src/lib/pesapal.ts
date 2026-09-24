@@ -11,10 +11,6 @@ export function pesapalConfigured() {
   return !!(process.env.PESAPAL_CONSUMER_KEY && process.env.PESAPAL_CONSUMER_SECRET);
 }
 
-export function demoPaymentsEnabled() {
-  return !pesapalConfigured() && process.env.PAYMENTS_DEMO_MODE === "true";
-}
-
 let tokenCache: { token: string; expires: number } | null = null;
 let ipnCache: string | null = null;
 

@@ -48,7 +48,7 @@ export function SignUpForm({ teams }: { teams: { id: string; name: string; intak
         <Field label="Email">
           <input name="email" type="email" required className="input" placeholder="you@example.com" autoComplete="email" />
         </Field>
-        <Field label="Phone (for Mobile Money)">
+        <Field label="Phone number">
           <input name="phone" className="input" placeholder="07XX XXX XXX" autoComplete="tel" />
         </Field>
       </div>
@@ -121,6 +121,12 @@ export function SignUpForm({ teams }: { teams: { id: string; name: string; intak
           </motion.div>
         )}
       </AnimatePresence>
+      <div className="rounded-2xl border border-gold/25 bg-gold/[0.05] p-4">
+        <Field label="Membership voucher (optional)">
+          <input name="voucher" className="input text-center font-mono uppercase tracking-[0.16em]" placeholder="BOSA-XXXX-XXXX" autoComplete="off" autoCapitalize="characters" spellCheck={false} />
+        </Field>
+        <p className="mt-2 text-xs text-ivory/55">Bought a voucher? Enter it here and your account opens as a full member. No voucher yet? Leave it empty and add it later.</p>
+      </div>
       <Field label="Password">
         <input name="password" type="password" minLength={8} required className="input" placeholder="At least 8 characters" autoComplete="new-password" />
       </Field>

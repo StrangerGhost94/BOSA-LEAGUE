@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { getMembershipPrice } from "@/lib/data";
-import { pesapalConfigured, demoPaymentsEnabled } from "@/lib/pesapal";
+import { pesapalConfigured } from "@/lib/pesapal";
 import { ugx, fmtLong } from "@/lib/format";
 import { StadiumBackdrop } from "@/components/site/stadium";
 import { FadeIn, RevealText } from "@/components/motion";
 import { ActionForm, Field, Submit } from "@/components/form";
-import { startPaymentAction } from "@/app/actions/membership";
+import { redeemVoucherAction, startPaymentAction } from "@/app/actions/membership";
 import { BosaLogo, Icon } from "@/components/ui";
 
 export const metadata = { title: "Membership" };
@@ -20,11 +20,10 @@ const BENEFITS = [
   "Full match timelines, line-ups, reports and player profiles",
 ];
 
-export default async function MembershipPage({ searchParams }: { searchParams: { success?: string; welcome?: string } }) {
+export default async function MembershipPage({ searchParams }: { searchParams: { success?: string; welcome?: string; voucher?: string } }) {
   const [user, price] = await Promise.all([getCurrentUser(), getMembershipPrice()]);
   const member = hasMembership(user);
   const live = pesapalConfigured();
-  const demo = demoPaymentsEnabled();
 
   return (
     <section className="relative min-h-screen overflow-hidden pb-16 pt-28 sm:pb-24 sm:pt-36">
@@ -54,8 +53,8 @@ export default async function MembershipPage({ searchParams }: { searchParams: {
           </FadeIn>
         </div>
 
-        <FadeIn delay={0.3}>
-          <div className="glass relative overflow-hidden rounded-[2rem] p-8 shadow-[0_50px_120px_-40px_rgba(0,0,0,.9)] sm:p-10">
+        <FadeIn delay={0.3} className="order-first lg:order-none">
+          <div className="glass relative overflow-hidden rounded-[2rem] p-6 sm:p-8 shadow-[0_50px_120px_-40px_rgba(0,0,0,.9)] sm:p-10">
             <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[radial-gradient(closest-side,rgba(204,38,84,0.39),rgba(204,38,84,0))]" />
             <div className="relative flex items-center justify-between">
               <BosaLogo size={56} />
@@ -66,7 +65,7 @@ export default async function MembershipPage({ searchParams }: { searchParams: {
               <div className="relative mt-8">
                 <div className="font-serif text-4xl">You are a member.</div>
                 <p className="mt-3 text-ivory/60">
-                  {searchParams.success ? "Payment confirmed. " : ""}
+                  {searchParams.success ? "Membership activated. " : ""}
                   {user?.membershipPaidAt ? `Active since ${fmtLong(user.membershipPaidAt)}.` : "Your account has full access."}
                 </p>
                 <div className="mt-8 flex gap-3">
@@ -80,25 +79,42 @@ export default async function MembershipPage({ searchParams }: { searchParams: {
                 <div className="mt-2 font-display text-6xl">
                   <span className="gold-text">{ugx(price)}</span>
                 </div>
-                <div className="mt-2 text-sm text-ivory/55">Paid once. No renewals, no hidden fees.</div>
+                <div className="mt-2 text-sm text-ivory/55">Paid once with a membership voucher. No renewals, no hidden fees.</div>
                 {user ? (
-                  <ActionForm action={startPaymentAction} className="mt-8 space-y-4" toast={false}>
-                    <Field label="Mobile Money number (optional)">
-                      <input name="phone" defaultValue={user.phone ?? ""} className="input" placeholder="07XX XXX XXX" />
-                    </Field>
-                    <Submit className="btn-primary w-full py-3.5" pendingText="Connecting to Pesapal">
-                      {live ? "Pay securely with Pesapal" : demo ? "Activate (demo payment)" : "Pay securely with Pesapal"}
-                    </Submit>
-                    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] uppercase tracking-[0.16em] text-ivory/40">
-                      <span>MTN MoMo</span>
-                      <span>Airtel Money</span>
-                      <span>Visa</span>
-                      <span>Mastercard</span>
-                    </div>
-                    {!live && demo && <p className="text-center text-xs text-gold/80">Demo mode: Pesapal keys are not set, so this activates membership without charging.</p>}
-                  </ActionForm>
+                  <div className="mt-8 space-y-6">
+                    {searchParams.voucher && <p className="rounded-xl border border-crimson/30 bg-crimson/10 px-4 py-3 text-sm text-crimson-400">Your account was created, but the voucher did not work: {searchParams.voucher}</p>}
+                    <ActionForm action={redeemVoucherAction} className="space-y-4" toast={false}>
+                      <Field label="Membership voucher code">
+                        <input
+                          name="voucher"
+                          className="input text-center font-mono text-lg uppercase tracking-[0.18em]"
+                          placeholder="BOSA-XXXX-XXXX"
+                          autoComplete="off"
+                          autoCapitalize="characters"
+                          spellCheck={false}
+                          required
+                        />
+                      </Field>
+                      <Submit className="btn-primary w-full py-3.5" pendingText="Checking your voucher">
+                        Activate membership
+                      </Submit>
+                      <p className="text-center text-xs text-ivory/50">Buy a voucher for {ugx(price)} from the League office or a club manager at Henry&apos;s Pitch. Each code works once.</p>
+                    </ActionForm>
+                    {live && (
+                      <ActionForm action={startPaymentAction} className="space-y-4 border-t border-white/[0.08] pt-6" toast={false}>
+                        <div className="text-center text-[11px] uppercase tracking-[0.2em] text-ivory/45">Or pay online</div>
+                        <Field label="Mobile Money number (optional)">
+                          <input name="phone" defaultValue={user.phone ?? ""} className="input" placeholder="07XX XXX XXX" />
+                        </Field>
+                        <Submit className="btn-ghost w-full py-3.5" pendingText="Connecting to Pesapal">
+                          Pay securely with Pesapal
+                        </Submit>
+                      </ActionForm>
+                    )}
+                  </div>
                 ) : (
                   <div className="mt-8 space-y-3">
+                    <p className="text-sm text-ivory/60">Have a voucher? Enter it when you create your account and your membership starts straight away.</p>
                     <Link href="/sign-up" className="btn-primary w-full py-3.5">Create an account</Link>
                     <Link href="/sign-in?next=/membership" className="btn-ghost w-full py-3.5">I already have an account</Link>
                   </div>

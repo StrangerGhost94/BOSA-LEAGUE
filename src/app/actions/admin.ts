@@ -883,3 +883,43 @@ export async function deletePerkAction(_: ActionResult, fd: FormData): A {
     return ok("Perk removed.");
   });
 }
+
+/* ============================== VOUCHERS ============================== */
+
+export async function generateVouchersAction(_: ActionResult, fd: FormData): A {
+  return guarded("payments", async (u) => {
+    const count = num(fd, "count") ?? 0;
+    if (count < 1 || count > 5000) return fail("Generate between 1 and 5,000 vouchers at a time.");
+    const batch = str(fd, "batch") || `Batch ${new Date().toISOString().slice(0, 10)}`;
+    const { generateVouchers } = await import("@/lib/vouchers");
+    const codes = await generateVouchers(count, batch);
+    await logActivity(u.id, "Generated vouchers", "Voucher", `${codes.length} in "${batch}"`);
+    return ok(`${codes.length} vouchers created in "${batch}". Download or print them below.`);
+  });
+}
+
+export async function voidVoucherAction(_: ActionResult, fd: FormData): A {
+  return guarded("payments", async (u) => {
+    const { normaliseCode } = await import("@/lib/vouchers");
+    const code = normaliseCode(str(fd, "code"));
+    if (!code) return fail("Enter a voucher code.");
+    const { rows } = await pool.query("update vouchers set status='VOID', note=$2 where code=$1 and status='UNUSED' returning code", [code, optStr(fd, "note")]);
+    if (!rows.length) {
+      const r = await pool.query("select status from vouchers where code=$1", [code]);
+      return fail(r.rows[0] ? `That voucher is already ${String(r.rows[0].status).toLowerCase()}.` : "No voucher with that code.");
+    }
+    await logActivity(u.id, "Cancelled voucher", "Voucher", code);
+    return ok(`${code} cancelled. It can no longer be used.`);
+  });
+}
+
+export async function markVouchersIssuedAction(_: ActionResult, fd: FormData): A {
+  return guarded("payments", async (u) => {
+    const batch = str(fd, "batch");
+    const note = str(fd, "note");
+    if (!batch || !note) return fail("Choose a batch and say who it was given to.");
+    const { rowCount } = await pool.query("update vouchers set note=$2 where batch=$1 and status='UNUSED'", [batch, note]);
+    await logActivity(u.id, "Noted voucher batch", "Voucher", `${batch}: ${note}`);
+    return ok(`Noted on ${rowCount} unused vouchers in "${batch}".`);
+  });
+}

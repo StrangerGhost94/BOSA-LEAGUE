@@ -14,16 +14,16 @@ export default async function AdminPayments() {
   await requirePermission("payments");
   const list = await db.query.payments.findMany({ with: { user: true }, orderBy: desc(payments.createdAt), limit: 300 });
   const { rows } = await pool.query(
-    "select coalesce(sum(amount) filter (where status='COMPLETED'),0)::int revenue, count(*) filter (where status='COMPLETED')::int done, count(*) filter (where status='PENDING')::int pending, (select count(*) from users where membership='ACTIVE' and role in ('STUDENT_FAN','ALUMNI_FAN','PLAYER'))::int members from payments",
+    "select coalesce(sum(amount) filter (where status='COMPLETED' and provider<>'DEMO'),0)::int revenue, count(*) filter (where status='COMPLETED' and provider<>'DEMO')::int done, count(*) filter (where status='PENDING')::int pending, (select count(*) from users where membership='ACTIVE' and role in ('STUDENT_FAN','ALUMNI_FAN','PLAYER'))::int members, (select count(*) from vouchers where status='USED')::int vouchers from payments",
   );
   const k = rows[0];
   return (
     <>
-      <PageHeader eyebrow={pesapalConfigured() ? "Pesapal connected" : "Pesapal keys not set: demo mode"} title="Memberships" />
+      <PageHeader eyebrow={pesapalConfigured() ? "Pesapal connected" : "Vouchers only: online payment not connected"} title="Memberships" />
       <div className="mb-8 grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <StatTile label="Revenue" accent="emerald"><span className="text-3xl">UGX <CountUp value={k.revenue} /></span></StatTile>
+        <StatTile label="Vouchers used" accent="emerald"><CountUp value={k.vouchers} /></StatTile>
         <StatTile label="Active members"><CountUp value={k.members} /></StatTile>
-        <StatTile label="Completed payments"><CountUp value={k.done} /></StatTile>
+        <StatTile label="Online payments"><CountUp value={k.done} /></StatTile>
         <StatTile label="Pending" accent="crimson"><CountUp value={k.pending} /></StatTile>
       </div>
       <div className="panel overflow-x-auto p-2 scrollbar-none">
