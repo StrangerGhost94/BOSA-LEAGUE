@@ -27,7 +27,8 @@ export type Permission =
   | "settings"
   | "activity"
   | "exports"
-  | "payments";
+  | "payments"
+  | "perks";
 
 const MATRIX: Record<Permission, Role[]> = {
   teams: ["SUPER_ADMIN", "LEAGUE_ADMIN"],
@@ -39,9 +40,12 @@ const MATRIX: Record<Permission, Role[]> = {
   rules: ["SUPER_ADMIN", "LEAGUE_ADMIN", "COMPETITION_MANAGER"],
   users: ["SUPER_ADMIN", "LEAGUE_ADMIN"],
   settings: ["SUPER_ADMIN"],
-  activity: ["SUPER_ADMIN", "LEAGUE_ADMIN", "COMPETITION_MANAGER"],
+  // Super Admin only: the audit trail of everything staff do
+  activity: ["SUPER_ADMIN"],
   exports: ["SUPER_ADMIN", "LEAGUE_ADMIN", "COMPETITION_MANAGER"],
-  payments: ["SUPER_ADMIN", "LEAGUE_ADMIN"],
+  // Super Admin only: vouchers, membership status, member numbers and revenue
+  payments: ["SUPER_ADMIN"],
+  perks: ["SUPER_ADMIN", "LEAGUE_ADMIN"],
 };
 
 export function can(role: Role | string | undefined | null, perm: Permission) {

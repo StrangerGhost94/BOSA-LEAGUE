@@ -7,7 +7,7 @@ import { FilterBar } from "@/components/filter-bar";
 import { ActionForm, Field, Submit } from "@/components/form";
 import { Pill } from "@/components/ui";
 import { requirePermission } from "@/lib/auth";
-import { ROLE_LABEL, assignableRoles } from "@/lib/roles";
+import { ROLE_LABEL, assignableRoles, can } from "@/lib/roles";
 import { createUserAction, updateUserAction } from "@/app/actions/admin";
 import { getTeams } from "@/lib/data";
 import { timeAgo } from "@/lib/format";
@@ -20,9 +20,10 @@ export default async function AdminUsers({ searchParams }: { searchParams: Recor
   const conds: SQL[] = [];
   if (searchParams.role) conds.push(eq(s.users.role, searchParams.role as s.Role));
   if (searchParams.q) conds.push(or(ilike(s.users.name, `%${searchParams.q}%`), ilike(s.users.email, `%${searchParams.q}%`))!);
-  if (searchParams.member) conds.push(eq(s.users.membership, searchParams.member as "NONE" | "ACTIVE"));
+  if (searchParams.member && can(me.role, "payments")) conds.push(eq(s.users.membership, searchParams.member as "NONE" | "ACTIVE"));
   const users = await db.query.users.findMany({ where: conds.length ? and(...conds) : undefined, with: { team: true }, orderBy: desc(s.users.createdAt), limit: 300 });
   const roles = assignableRoles(me.role);
+  const seesMembership = can(me.role, "payments");
 
   return (
     <>
@@ -66,7 +67,7 @@ export default async function AdminUsers({ searchParams }: { searchParams: Recor
         filters={[
           { name: "q", label: "Search", type: "search", placeholder: "Name or email" },
           { name: "role", label: "Role", type: "select", all: "All roles", options: Object.entries(ROLE_LABEL).map(([value, label]) => ({ value, label })) },
-          { name: "member", label: "Membership", type: "select", all: "Any", options: [{ value: "ACTIVE", label: "Active" }, { value: "NONE", label: "Not paid" }] },
+          ...(seesMembership ? [{ name: "member", label: "Membership", type: "select" as const, all: "Any", options: [{ value: "ACTIVE", label: "Active" }, { value: "NONE", label: "Not paid" }] }] : []),
         ]}
       />
       <div className="panel overflow-x-auto p-2 scrollbar-none">
@@ -76,7 +77,7 @@ export default async function AdminUsers({ searchParams }: { searchParams: Recor
               <th>User</th>
               <th>Role</th>
               <th>Club</th>
-              <th>Membership</th>
+              {seesMembership && <th>Membership</th>}
               <th>Last sign-in</th>
               <th />
             </tr>
@@ -95,7 +96,7 @@ export default async function AdminUsers({ searchParams }: { searchParams: Recor
                 </td>
                 <td className="text-sm">{ROLE_LABEL[u.role]}</td>
                 <td className="text-sm text-ivory/60">{u.team?.name ?? "-"}</td>
-                <td>{u.membership === "ACTIVE" ? <Pill tone="emerald">Active</Pill> : <Pill>Not paid</Pill>}</td>
+                {seesMembership && <td>{u.membership === "ACTIVE" ? <Pill tone="emerald">Active</Pill> : <Pill>Not paid</Pill>}</td>}
                 <td className="text-xs text-ivory/45">{u.lastLoginAt ? timeAgo(u.lastLoginAt) : "Never"}</td>
                 <td className="text-right">
                   <Drawer label="Manage" title={u.name} description={u.email} buttonClass="btn-ghost btn-sm" side="center">
@@ -120,12 +121,14 @@ export default async function AdminUsers({ searchParams }: { searchParams: Recor
                           ))}
                         </select>
                       </Field>
-                      <Field label="Membership">
-                        <select name="membership" className="input" defaultValue={u.membership === "ACTIVE" ? "ACTIVE" : "NONE"}>
-                          <option value="ACTIVE">Active (manual approval records a zero-value payment)</option>
-                          <option value="NONE">Not active</option>
-                        </select>
-                      </Field>
+                      {seesMembership && (
+                        <Field label="Membership">
+                          <select name="membership" className="input" defaultValue={u.membership === "ACTIVE" ? "ACTIVE" : "NONE"}>
+                            <option value="ACTIVE">Active (manual approval records a zero-value payment)</option>
+                            <option value="NONE">Not active</option>
+                          </select>
+                        </Field>
+                      )}
                       <label className="flex items-center gap-3 text-sm text-ivory/70">
                         <input type="checkbox" name="active" defaultChecked={u.active} className="accent-[#CC2654]" /> Account enabled
                       </label>

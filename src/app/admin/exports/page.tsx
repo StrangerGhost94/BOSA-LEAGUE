@@ -2,11 +2,12 @@ import { PageHeader } from "@/components/panel-shell";
 import { Icon } from "@/components/ui";
 import { getSeasonsForAdmin } from "@/lib/data";
 import { requirePermission } from "@/lib/auth";
+import { can } from "@/lib/roles";
 
 export const metadata = { title: "Reports & exports" };
 
 export default async function Exports() {
-  await requirePermission("exports");
+  const u = await requirePermission("exports");
   const seasons = (await getSeasonsForAdmin()).filter((s) => s.isCurrent);
   const card = (href: string, title: string, body: string) => (
     <a key={href} href={href} className="panel group flex items-start gap-4 p-5 transition hover:border-gold/30">
@@ -26,8 +27,8 @@ export default async function Exports() {
         {seasons.map((s) => card(`/api/export/standings?season=${s.id}`, `${s.competition.name} standings`, `${s.name} table with form, goals and points`))}
         {seasons.map((s) => card(`/api/export/fixtures?season=${s.id}`, `${s.competition.name} fixtures and results`, `Every match in ${s.name}`))}
         {card("/api/export/players", "Player statistics", "All registered players with goals, assists, cards and appearances")}
-        {card("/api/export/members", "Members and payments", "Accounts with membership status and payment dates")}
-        {card("/api/export/activity", "Activity history", "Full audit trail of administrative actions")}
+        {can(u.role, "payments") && card("/api/export/members", "Members and payments", "Accounts with membership status and payment dates")}
+        {can(u.role, "activity") && card("/api/export/activity", "Activity history", "Full audit trail of administrative actions")}
       </div>
     </>
   );

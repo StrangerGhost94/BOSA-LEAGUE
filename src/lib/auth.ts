@@ -73,7 +73,7 @@ export async function requireRole(roles: Role[], next = "/") {
 
 export async function requirePermission(perm: Permission) {
   const u = await requireUser("/admin");
-  if (!can(u.role, perm)) throw new Error("You do not have permission to do that.");
+  if (!can(u.role, perm)) redirect("/unauthorised");
   return u;
 }
 

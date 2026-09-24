@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/panel-shell";
 import { CountUp, Stagger, StaggerItem } from "@/components/motion";
 import { Crest, Icon, StatTile, StatusBadge, Pill } from "@/components/ui";
 import { fmtDate, fmtTime, timeAgo, ugx } from "@/lib/format";
-import { ROLE_LABEL } from "@/lib/roles";
+import { ROLE_LABEL, can } from "@/lib/roles";
 import { db } from "@/db";
 import { desc } from "drizzle-orm";
 import { activityLogs } from "@/db/schema";
@@ -14,18 +14,22 @@ import { activityLogs } from "@/db/schema";
 export default async function AdminHome() {
   const u = await requireUser();
   const lg = await getCurrentSeason("bosa-league");
+  const owner = can(u.role, "payments");
   const [{ rows }, upcoming, table, activity, price, pendingPlayers] = await Promise.all([
     pool.query(`select
       (select count(*) from users where membership='ACTIVE' and role in ('STUDENT_FAN','ALUMNI_FAN','PLAYER'))::int members,
       (select count(*) from users)::int users,
-      (select coalesce(sum(amount),0) from payments where status='COMPLETED')::int revenue,
+      (select coalesce(sum(amount),0) from payments where status='COMPLETED' and provider not in ('DEMO','MANUAL'))::int online,
+      (select count(*) from vouchers where status='USED')::int vouchers,
+      (select count(*) from teams where active)::int clubs,
+      (select count(*) from players where status<>'REJECTED')::int players,
       (select count(*) from players where status='PENDING')::int pending,
       (select count(*) from players where status in ('INJURED','SUSPENDED'))::int unavailable,
       (select count(*) from matches where status in ('LIVE','HALF_TIME'))::int live,
       (select count(*) from matches where status='SCHEDULED' and kickoff < now() + interval '7 days' and kickoff > now() - interval '1 day')::int week`),
     getMatches({ status: "upcoming", limit: 8, from: new Date(Date.now() - 1000 * 60 * 60 * 24) }),
     lg ? getSeasonTable(lg.id) : Promise.resolve([]),
-    db.query.activityLogs.findMany({ with: { user: true }, orderBy: desc(activityLogs.createdAt), limit: 8 }),
+    owner ? db.query.activityLogs.findMany({ with: { user: true }, orderBy: desc(activityLogs.createdAt), limit: 8 }) : Promise.resolve([]),
     getMembershipPrice(),
     pool.query("select p.id, p.first_name, p.last_name, p.position, p.number, t.name team, t.crest from players p join teams t on t.id=p.team_id where p.status='PENDING' order by p.created_at desc limit 5"),
   ]);
@@ -44,10 +48,19 @@ export default async function AdminHome() {
       </PageHeader>
 
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <StatTile label="Active members" hint={`${k.users} accounts in total`}><CountUp value={k.members} /></StatTile>
-        <StatTile label="Membership revenue" hint={`Price ${ugx(price)}`} accent="emerald">
-          <span className="text-3xl sm:text-4xl">UGX <CountUp value={k.revenue} /></span>
-        </StatTile>
+        {owner ? (
+          <>
+            <StatTile label="Active members" hint={`${k.users} accounts in total`}><CountUp value={k.members} /></StatTile>
+            <StatTile label="Membership revenue" hint={`${k.vouchers} vouchers at ${ugx(price)}`} accent="emerald">
+              <span className="text-3xl sm:text-4xl">UGX <CountUp value={k.vouchers * price + k.online} /></span>
+            </StatTile>
+          </>
+        ) : (
+          <>
+            <StatTile label="Clubs"><CountUp value={k.clubs} /></StatTile>
+            <StatTile label="Registered players" accent="emerald"><CountUp value={k.players} /></StatTile>
+          </>
+        )}
         <StatTile label="Matches this week" hint={`${k.live} live now`} accent="crimson"><CountUp value={k.week} /></StatTile>
         <StatTile label="Awaiting approval" hint={`${k.unavailable} injured or suspended`}><CountUp value={k.pending} /></StatTile>
       </div>
@@ -131,7 +144,7 @@ export default async function AdminHome() {
         </div>
       </div>
 
-      <div className="panel mt-6 p-5">
+      {owner && <div className="panel mt-6 p-5">
         <div className="mb-4 flex items-center justify-between">
           <div className="eyebrow">Recent activity</div>
           <Link href="/admin/activity" className="text-xs text-ivory/50 hover:text-gold">Full history</Link>
@@ -147,7 +160,7 @@ export default async function AdminHome() {
             </li>
           ))}
         </ul>
-      </div>
+      </div>}
     </>
   );
 }

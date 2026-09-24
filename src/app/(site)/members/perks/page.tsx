@@ -76,7 +76,7 @@ export default async function PerksPage() {
                 </span>
               ))}
             </div>
-            {u && can(u.role, "payments") && (
+            {u && can(u.role, "perks") && (
               <Link href="/admin/perks" className="btn-ghost btn-sm mt-6">
                 Add an offer in the Control Room
               </Link>

@@ -35,7 +35,7 @@ function PerkForm({ perk }: { perk?: typeof perks.$inferSelect }) {
 }
 
 export default async function AdminPerks() {
-  await requirePermission("payments");
+  await requirePermission("perks");
   const list = await db.query.perks.findMany({ orderBy: asc(perks.order) });
   return (
     <>

@@ -42,9 +42,11 @@ export async function GET(req: Request, { params }: { params: { kind: string } }
     const ps = await getPlayerStats({ includePending: true });
     rows = [["Club", "Number", "First name", "Last name", "Position", "Intake year", "Status", "Apps", "Goals", "Assists", "Clean sheets", "Yellow", "Red", "POTM"], ...ps.map((p) => [p.teamName, p.number, p.firstName, p.lastName, p.position, p.completionYear ?? "", p.status, p.apps, p.goals, p.assists, p.cleanSheets, p.yellows, p.reds, p.potm])];
   } else if (params.kind === "members") {
+    if (!can(u.role, "payments")) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
     const { rows: r } = await pool.query("select name, email, phone, role, membership, membership_paid_at, created_at from users order by created_at desc");
     rows = [["Name", "Email", "Phone", "Role", "Membership", "Paid at", "Joined"], ...r.map((x: Record<string, string | Date | null>) => [x.name as string, x.email as string, x.phone as string, x.role as string, x.membership as string, x.membership_paid_at ? fmtDateTime(x.membership_paid_at as Date) : "", fmtDateTime(x.created_at as Date)])];
   } else if (params.kind === "activity") {
+    if (!can(u.role, "activity")) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
     const list = await db.query.activityLogs.findMany({ with: { user: true }, orderBy: desc(s.activityLogs.createdAt), limit: 5000 });
     rows = [["When", "User", "Action", "Area", "Details"], ...list.map((a) => [fmtDateTime(a.createdAt), a.user?.name ?? "System", a.action, a.entity, a.details])];
   } else return NextResponse.json({ error: "Unknown export" }, { status: 404 });

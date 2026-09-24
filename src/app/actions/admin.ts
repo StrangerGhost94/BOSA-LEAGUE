@@ -720,7 +720,8 @@ export async function updateUserAction(_: ActionResult, fd: FormData): A {
     if (target.role === "SUPER_ADMIN" && u.role !== "SUPER_ADMIN") throw new Denied("Only a Super Admin can change another Super Admin.");
     if (role !== target.role && !assignableRoles(u.role).includes(role)) throw new Denied("You cannot assign that role.");
     if (target.id === u.id && role !== u.role) return fail("You cannot change your own role.");
-    const membership = str(fd, "membership") as "NONE" | "ACTIVE";
+    // Only the Super Admin can switch a membership on or off; for anyone else it stays as it is
+    const membership = can(u.role, "payments") ? (str(fd, "membership") as "NONE" | "ACTIVE") : target.membership === "ACTIVE" ? "ACTIVE" : "NONE";
     await db
       .update(s.users)
       .set({
@@ -863,7 +864,7 @@ export async function releaseRoundAction(_: ActionResult, fd: FormData): A {
 /* ============================== MEMBER PERKS ============================== */
 
 export async function savePerkAction(_: ActionResult, fd: FormData): A {
-  return guarded("payments", async (u) => {
+  return guarded("perks", async (u) => {
     const id = str(fd, "id");
     const sponsor = str(fd, "sponsor");
     const offer = str(fd, "offer");
@@ -877,7 +878,7 @@ export async function savePerkAction(_: ActionResult, fd: FormData): A {
 }
 
 export async function deletePerkAction(_: ActionResult, fd: FormData): A {
-  return guarded("payments", async (u) => {
+  return guarded("perks", async (u) => {
     const [p] = await db.delete(s.perks).where(eq(s.perks.id, str(fd, "id"))).returning();
     await logActivity(u.id, "Deleted member perk", "Perk", p?.sponsor);
     return ok("Perk removed.");
