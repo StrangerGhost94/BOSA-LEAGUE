@@ -22,14 +22,6 @@ export const NAV = [
 
 type HeaderUser = { name: string; role: string; roleLabel: string; member: boolean; home: string } | null;
 
-const MEMBER_LINKS = [
-  { href: "/live", label: "Live", icon: "activity" as const },
-  { href: "/members/card", label: "Card", icon: "card" as const },
-  { href: "/vote", label: "Vote", icon: "trophy" as const },
-  { href: "/gallery", label: "Gallery", icon: "grid" as const },
-  { href: "/members/perks", label: "Perks", icon: "sparkle" as const },
-];
-
 export function SiteHeader({ user, liveCount = 0 }: { user: HeaderUser; liveCount?: number }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -201,6 +193,20 @@ export function SiteHeader({ user, liveCount = 0 }: { user: HeaderUser; liveCoun
               animate="s"
               variants={{ h: {}, s: { transition: { staggerChildren: 0.05, delayChildren: 0.1 } } }}
             >
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  window.dispatchEvent(new Event("bosa:install"));
+                }}
+                className="mb-2 mt-3 flex items-center gap-3 rounded-2xl border border-gold/25 bg-gold/[0.06] px-4 py-3 text-left"
+              >
+                <BosaLogo size={32} />
+                <span className="flex-1">
+                  <span className="block text-sm font-semibold">Get the BOSA app</span>
+                  <span className="block text-xs text-ivory/55">Add it to your home screen</span>
+                </span>
+                <Icon name="download" size={18} className="text-gold" />
+              </button>
               {NAV.map((n, i) => (
                 <motion.div
                   key={n.href}
@@ -219,29 +225,6 @@ export function SiteHeader({ user, liveCount = 0 }: { user: HeaderUser; liveCoun
                   </Link>
                 </motion.div>
               ))}
-              <div className="mt-6 text-[10px] uppercase tracking-[0.24em] text-gold/80">Members</div>
-              <div className="mt-3 grid grid-cols-5 gap-2">
-                {MEMBER_LINKS.map((m) => (
-                  <Link key={m.href} href={m.href} className={clsx("flex flex-col items-center gap-1.5 rounded-xl border px-1 py-3 text-[11px]", active(m.href) ? "border-gold/50 text-gold" : "border-white/10 text-ivory/70")}>
-                    <Icon name={m.icon} size={18} />
-                    {m.label}
-                  </Link>
-                ))}
-              </div>
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  window.dispatchEvent(new Event("bosa:install"));
-                }}
-                className="mt-6 flex items-center gap-3 rounded-2xl border border-gold/25 bg-gold/[0.06] px-4 py-3 text-left"
-              >
-                <BosaLogo size={32} />
-                <span className="flex-1">
-                  <span className="block text-sm font-semibold">Get the BOSA app</span>
-                  <span className="block text-xs text-ivory/55">Add it to your home screen</span>
-                </span>
-                <Icon name="download" size={18} className="text-gold" />
-              </button>
               <div className="mt-6 flex gap-3">
                 {user ? (
                   <Link href={user.home} className="btn-gold flex-1">
