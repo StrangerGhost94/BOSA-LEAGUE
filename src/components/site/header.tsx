@@ -61,9 +61,17 @@ export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: He
           scrolled ? "border-b border-white/[0.06] bg-night-900/90 backdrop-blur-md" : "bg-transparent",
         )}
       >
-        <div className="container-x flex h-[68px] items-center gap-6 lg:h-[76px]">
+        <div className="container-x flex h-[64px] items-center gap-3 sm:h-[68px] sm:gap-6 lg:h-[76px]">
+          {/* Phones and tablets: menu on the left, account on the far right */}
+          <button
+            className="-ml-1 grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 active:bg-white/5 xl:hidden"
+            onClick={() => setOpen(true)}
+            aria-label="Open menu"
+          >
+            <Icon name="menu" />
+          </button>
           <Link href="/" className="group flex items-center gap-3" aria-label="BOSA League home">
-            <BosaLogo size={38} className="transition-transform duration-500 group-hover:scale-105" />
+            <BosaLogo size={36} className="transition-transform duration-500 group-hover:scale-105" />
             <span className="hidden whitespace-nowrap leading-none sm:block xl:hidden 2xl:block">
               <span className="block font-display text-[17px] font-semibold tracking-[0.12em] text-ivory">BOSA LEAGUE</span>
               <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.34em] text-gold/80">{seasonLabel}</span>
@@ -85,9 +93,9 @@ export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: He
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
             {liveCount > 0 && (
-              <Link href="/live" className="flex items-center gap-2 whitespace-nowrap rounded-full border border-crimson/50 bg-crimson/15 px-3 py-1.5 text-xs font-semibold text-crimson-400">
+              <Link href="/live" className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-crimson/50 bg-crimson/15 px-2.5 py-1.5 text-xs font-semibold text-crimson-400 sm:gap-2 sm:px-3">
                 <span className="h-1.5 w-1.5 animate-pulseDot rounded-full bg-crimson-400" /> Live{liveCount > 1 ? ` (${liveCount})` : ""}
               </Link>
             )}
@@ -103,10 +111,11 @@ export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: He
               <div className="relative">
                 <button
                   onClick={() => setMenu((m) => !m)}
-                  className="flex items-center gap-2 rounded-full border border-white/10 py-1 pl-1 pr-3 text-sm transition hover:border-gold/40"
+                  className="flex items-center gap-2 rounded-full border border-white/10 p-1 text-sm transition hover:border-gold/40 sm:pr-3 xl:pr-1 2xl:pr-3"
+                  aria-label="Account menu"
                   aria-expanded={menu}
                 >
-                  <span className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-gold-300 to-gold-600 font-display text-sm font-semibold text-night-900">
+                  <span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-gold-300 to-gold-600 font-display text-sm font-semibold text-night-900">
                     {user.name.split(" ").map((x) => x[0]).slice(0, 2).join("")}
                   </span>
                   <span className="hidden max-w-[120px] truncate text-ivory/80 sm:block xl:hidden 2xl:block">{user.name.split(" ")[0]}</span>
@@ -118,7 +127,7 @@ export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: He
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -6, scale: 0.98 }}
                       transition={{ duration: 0.25 }}
-                      className="glass absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl p-2 shadow-2xl"
+                      className="glass absolute right-0 mt-3 w-[min(16rem,calc(100vw-2rem))] overflow-hidden rounded-2xl bg-night-900/95 p-2 shadow-2xl"
                     >
                       <div className="px-3 py-3">
                         <div className="truncate text-sm font-semibold">{user.name}</div>
@@ -145,18 +154,12 @@ export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: He
                 </Link>
                 <Magnetic>
                   <Link href="/sign-up" className="btn-primary btn-sm">
-                    Join the League
+                    <span className="sm:hidden">Join</span>
+                    <span className="hidden sm:inline">Join the League</span>
                   </Link>
                 </Magnetic>
               </>
             )}
-            <button
-              className="ml-1 grid h-10 w-10 place-items-center rounded-full border border-white/10 xl:hidden"
-              onClick={() => setOpen(true)}
-              aria-label="Open menu"
-            >
-              <Icon name="menu" />
-            </button>
           </div>
         </div>
       </header>
@@ -164,7 +167,7 @@ export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: He
       <AnimatePresence>
         {open && (
           <motion.div
-            className="fixed inset-0 z-[70] overflow-y-auto overscroll-contain bg-night-900/97 pb-[max(2rem,env(safe-area-inset-bottom))] backdrop-blur-2xl xl:hidden"
+            className="fixed inset-0 z-[70] overflow-y-auto overscroll-contain bg-night-900 pb-[max(2rem,env(safe-area-inset-bottom))] backdrop-blur-2xl xl:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -172,11 +175,12 @@ export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: He
           >
             <div className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-crimson/20 blur-[120px]" />
             <div className="pointer-events-none absolute -right-40 bottom-10 h-96 w-96 rounded-full bg-gold/10 blur-[120px]" />
-            <div className="container-x sticky top-0 z-10 flex h-[68px] items-center justify-between bg-night-900/80 backdrop-blur">
-              <BosaLogo size={36} />
-              <button className="grid h-10 w-10 place-items-center rounded-full border border-white/10" onClick={() => setOpen(false)} aria-label="Close menu">
+            <div className="container-x sticky top-0 z-10 flex h-[64px] items-center gap-3 bg-night-900/80 backdrop-blur sm:h-[68px]">
+              <button className="-ml-1 grid h-11 w-11 place-items-center rounded-full border border-white/10" onClick={() => setOpen(false)} aria-label="Close menu">
                 <Icon name="close" />
               </button>
+              <BosaLogo size={36} />
+              <span className="font-display text-sm tracking-[0.14em]">BOSA LEAGUE</span>
             </div>
             <motion.nav
               className="container-x relative mt-2 flex flex-col"

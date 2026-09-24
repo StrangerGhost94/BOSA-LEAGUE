@@ -159,10 +159,16 @@ export function HeroParallax({ children, className }: { children: ReactNode; cla
   );
 }
 
+/**
+ * Word-by-word reveal. Gradient ("gold-text") styling is applied to each word rather than the wrapper:
+ * iPhone Safari cannot paint a background-clip text gradient through moving child elements, which made the words vanish.
+ */
 export function RevealText({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) {
   const words = text.split(" ");
+  const gold = className?.split(" ").includes("gold-text");
+  const outer = gold ? className!.split(" ").filter((c) => c !== "gold-text").join(" ") : className;
   return (
-    <span className={className} aria-label={text}>
+    <span className={outer} aria-label={text}>
       {words.map((w, i) => (
         <span key={i} className="inline-block overflow-hidden pb-[0.08em] align-bottom" aria-hidden>
           <motion.span
@@ -171,8 +177,8 @@ export function RevealText({ text, className, delay = 0 }: { text: string; class
             animate={{ y: "0%" }}
             transition={{ duration: 1.05, delay: delay + i * 0.08, ease: EASE }}
           >
-            {w}
-            {i < words.length - 1 ? " " : ""}
+            {gold ? <span className="gold-text">{w}</span> : w}
+            {i < words.length - 1 ? "\u00a0" : ""}
           </motion.span>
         </span>
       ))}
