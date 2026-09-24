@@ -67,7 +67,7 @@ export function SiteHeader({ user, liveCount = 0 }: { user: HeaderUser; liveCoun
           <Link href="/" className="group flex items-center gap-3" aria-label="BOSA League home">
             <BosaLogo size={36} className="transition-transform duration-500 group-hover:scale-105" />
             <span className="block whitespace-nowrap leading-none xl:hidden 2xl:block">
-              <span className="block font-display text-[15px] font-semibold tracking-[0.12em] text-ivory sm:text-[17px]">BOSA LEAGUE</span>
+              <span className="block font-display text-[13px] font-semibold tracking-[0.1em] text-ivory min-[380px]:text-[15px] min-[380px]:tracking-[0.12em] sm:text-[17px]">BOSA LEAGUE</span>
             </span>
           </Link>
 
@@ -150,13 +150,25 @@ export function SiteHeader({ user, liveCount = 0 }: { user: HeaderUser; liveCoun
               </div>
             ) : (
               <>
+                {/* Phones: Sign in and Join side by side in one pill, right where the thumb is */}
+                <div className="flex items-center overflow-hidden rounded-full border border-white/15 sm:hidden">
+                  <Link href="/sign-in" className="flex min-h-[40px] items-center whitespace-nowrap px-2.5 text-xs font-semibold text-ivory/85 active:bg-white/5 min-[360px]:px-3">
+                    Sign in
+                  </Link>
+                  <Link
+                    href="/sign-up"
+                    className="flex min-h-[40px] items-center whitespace-nowrap rounded-full px-3 text-xs font-semibold text-white min-[360px]:px-3.5"
+                    style={{ background: "linear-gradient(135deg, #e04a74 0%, #cc2654 45%, #a91c44 100%)" }}
+                  >
+                    Join
+                  </Link>
+                </div>
                 <Link href="/sign-in" className="btn-quiet btn-sm hidden sm:inline-flex">
                   Sign in
                 </Link>
-                <Magnetic>
+                <Magnetic className="hidden sm:inline-block">
                   <Link href="/sign-up" className="btn-primary btn-sm">
-                    <span className="sm:hidden">Join</span>
-                    <span className="hidden sm:inline">Join the League</span>
+                    Join the League
                   </Link>
                 </Magnetic>
               </>
