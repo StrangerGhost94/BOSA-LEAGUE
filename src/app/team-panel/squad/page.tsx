@@ -39,7 +39,7 @@ export default async function Squad() {
           <tbody>
             {players.map((p) => (
               <tr key={p.id}>
-                <td className="font-display text-gold">{p.number}</td>
+                <td className="font-display text-gold">{p.number || "–"}</td>
                 <td>
                   <div className="font-semibold">
                     {p.firstName} {p.lastName}

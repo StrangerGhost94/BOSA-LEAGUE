@@ -44,8 +44,8 @@ export default async function PlayersPage({ searchParams }: { searchParams: Reco
         stats={[
           { label: "Registered players", value: all.length },
           { label: "Goals scored", value: all.reduce((a, p) => a + p.goals, 0) },
-          { label: "Students", value: all.filter((p) => p.affiliation === "STUDENT").length },
-          { label: "Alumni", value: all.filter((p) => p.affiliation === "ALUMNI").length },
+          { label: "Clubs", value: teams.length },
+          { label: "Top scorer goals", value: Math.max(0, ...all.map((p) => p.goals)) },
         ]}
       />
       <section className="container-x">
@@ -89,13 +89,13 @@ export default async function PlayersPage({ searchParams }: { searchParams: Reco
                     <td>
                       <Link href={`/players/${p.id}`} className="flex items-center gap-3">
                         <span className="grid h-9 w-9 place-items-center rounded-full font-display text-sm" style={{ background: `${p.primaryColor}33`, color: p.primaryColor === "#0D0D0D" ? "#F2F2F2" : p.primaryColor }}>
-                          {p.number}
+                          {p.number || "–"}
                         </span>
                         <span>
                           <span className="block font-semibold group-hover:text-gold">
                             {p.firstName} {p.lastName}
                           </span>
-                          <span className="text-[10px] uppercase tracking-[0.14em] text-ivory/40">{p.affiliation === "ALUMNI" ? "Alumni" : "Student"}</span>
+
                         </span>
                       </Link>
                     </td>

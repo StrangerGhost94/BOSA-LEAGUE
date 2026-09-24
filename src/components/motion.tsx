@@ -32,10 +32,10 @@ export function FadeIn({
   return (
     <Comp
       className={className}
-      initial={{ opacity: 0, y, filter: "blur(6px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
+      initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.9, delay, ease: EASE }}
+      transition={{ duration: 0.6, delay, ease: EASE }}
     >
       {children}
     </Comp>
@@ -44,11 +44,11 @@ export function FadeIn({
 
 const staggerParent: Variants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+  show: { transition: { staggerChildren: 0.04 } },
 };
 const staggerChild: Variants = {
-  hidden: { opacity: 0, y: 22, filter: "blur(4px)" },
-  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.75, ease: EASE }, transitionEnd: { filter: "none" } },
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
 };
 
 export function Stagger({ children, className, as = "div" }: { children: ReactNode; className?: string; as?: "div" | "ul" | "tbody" | "ol" }) {
@@ -151,11 +151,9 @@ export function Parallax({ children, speed = 0.25, className }: { children: Reac
 export function HeroParallax({ children, className }: { children: ReactNode; className?: string }) {
   const reduce = useReducedMotion();
   const { scrollY } = useScroll();
-  const y = useTransform(scrollY, (v) => (reduce ? 0 : Math.min(v, 800) * 0.275));
-  const opacity = useTransform(scrollY, (v) => (reduce ? 1 : 1 - Math.min(v, 600) / 750));
-  const scale = useTransform(scrollY, (v) => (reduce ? 1 : 1 + Math.min(v, 800) / 10000));
+  const y = useTransform(scrollY, (v) => (reduce ? 0 : Math.min(v, 900) * 0.2));
   return (
-    <motion.div className={className} style={{ y, opacity, scale }}>
+    <motion.div className={className} style={{ y, willChange: "transform" }}>
       {children}
     </motion.div>
   );

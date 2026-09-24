@@ -49,7 +49,7 @@ export default async function TeamSheet({ params }: { params: { id: string } }) 
           {players.map((p) => (
             <div key={p.id} className="grid grid-cols-[1fr_72px_72px] items-center rounded-lg px-2 py-2 text-sm hover:bg-white/[0.03]">
               <span className={clsx(p.status === "SUSPENDED" && "text-crimson-400 line-through", p.status === "INJURED" && "text-gold")}>
-                <span className="mr-2 inline-block w-6 font-display text-ivory/50">{p.number}</span>
+                <span className="mr-2 inline-block w-6 font-display text-ivory/50">{p.number || "–"}</span>
                 {p.firstName} {p.lastName} <span className="text-[10px] text-ivory/35">{p.position}</span>
                 {p.status !== "ACTIVE" && <span className="ml-2 text-[10px] uppercase">{p.status.toLowerCase()}</span>}
               </span>

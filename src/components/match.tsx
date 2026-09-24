@@ -24,7 +24,7 @@ export type MatchCardData = {
 const isPlayed = (s: string) => ["FULL_TIME", "LIVE", "HALF_TIME"].includes(s);
 
 export function MatchCard({ m, variant = "dark", showComp = true }: { m: MatchCardData; variant?: "dark" | "ivory"; showComp?: boolean }) {
-  const played = isPlayed(m.status);
+  const played = isPlayed(m.status) && m.homeScore != null;
   const light = variant === "ivory";
   const hWin = m.status === "FULL_TIME" && (m.homeScore! > m.awayScore! || (m.homeScore === m.awayScore && (m.homePens ?? 0) > (m.awayPens ?? 0)));
   const aWin = m.status === "FULL_TIME" && (m.awayScore! > m.homeScore! || (m.homeScore === m.awayScore && (m.awayPens ?? 0) > (m.homePens ?? 0)));
@@ -60,6 +60,8 @@ export function MatchCard({ m, variant = "dark", showComp = true }: { m: MatchCa
               <span className={light ? "mx-1.5 text-night-800/25" : "mx-1.5 text-ivory/25"}>:</span>
               {m.awayScore}
             </div>
+          ) : m.status === "FULL_TIME" ? (
+            <div className={clsx("rounded-full border px-3.5 py-1.5 font-display text-lg", light ? "border-night-800/15" : "border-white/15 text-ivory/60")}>FT</div>
           ) : (
             <div className={clsx("rounded-full border px-3.5 py-1.5 font-display text-lg tabular-nums", light ? "border-night-800/15" : "border-gold/25 text-gold")}>
               {fmtTime(m.kickoff)}
@@ -102,7 +104,7 @@ function TeamSide({ team, win, light }: { team: T; win: boolean; light: boolean;
 
 /** Compact one-line fixture row used in timelines */
 export function FixtureRow({ m }: { m: MatchCardData }) {
-  const played = isPlayed(m.status);
+  const played = isPlayed(m.status) && m.homeScore != null;
   return (
     <Link
       href={`/matches/${m.id}`}
@@ -114,7 +116,7 @@ export function FixtureRow({ m }: { m: MatchCardData }) {
         <Crest team={m.homeTeam} size={30} />
       </span>
       <span className={clsx("min-w-[64px] rounded-lg px-2 py-1 text-center font-display text-lg tabular-nums", played ? "bg-white/[0.06]" : "text-ivory/35")}>
-        {played ? `${m.homeScore} - ${m.awayScore}` : "vs"}
+        {played ? `${m.homeScore} - ${m.awayScore}` : m.status === "FULL_TIME" ? "FT" : "vs"}
       </span>
       <span className="flex min-w-0 items-center gap-2.5">
         <Crest team={m.awayTeam} size={30} />

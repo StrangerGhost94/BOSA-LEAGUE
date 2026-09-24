@@ -34,6 +34,7 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
   const member = hasMembership(user);
   const live = m.status === "LIVE" || m.status === "HALF_TIME";
   const played = live || m.status === "FULL_TIME";
+  const hasScore = m.homeScore != null && m.awayScore != null;
   const h = m.homeTeam;
   const a = m.awayTeam;
 
@@ -92,7 +93,12 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
               </div>
             </FadeIn>
             <FadeIn delay={0.2} className="text-center">
-              {played ? (
+              {played && !hasScore ? (
+                <div>
+                  <div className="font-display text-5xl text-ivory/60 sm:text-7xl">FT</div>
+                  <div className="mt-2 text-[11px] uppercase tracking-[0.2em] text-ivory/50">Score included in the official table</div>
+                </div>
+              ) : played ? (
                 <div className="flex items-center gap-3 font-display text-6xl font-semibold tabular-nums sm:text-8xl lg:text-9xl">
                   <AnimatedScore value={m.homeScore} />
                   <span className="text-ivory/25">:</span>
@@ -189,7 +195,7 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
                                 {lineup(t?.id).map((l) => (
                                   <li key={l.playerId}>
                                     <Link href={`/players/${l.playerId}`} className="flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm transition hover:bg-white/[0.04]">
-                                      <span className="w-6 font-display text-gold">{l.player.number}</span>
+                                      <span className="w-6 font-display text-gold">{l.player.number || "–"}</span>
                                       <span className="flex-1">
                                         {l.player.firstName} {l.player.lastName}
                                       </span>
@@ -280,7 +286,7 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
                   {m.potm.firstName} {m.potm.lastName}
                 </div>
                 <div className="mt-1 text-sm text-ivory/55">
-                  #{m.potm.number} · {m.potm.teamId === h?.id ? h?.name : a?.name}
+                  #{m.potm.number || "–"} · {m.potm.teamId === h?.id ? h?.name : a?.name}
                 </div>
               </Link>
             )}

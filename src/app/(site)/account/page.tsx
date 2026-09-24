@@ -53,7 +53,7 @@ export default async function AccountPage() {
             <div className="panel p-6">
               <div className="eyebrow mb-4">My player registration</div>
               <div className="flex items-center gap-4">
-                <span className="grid h-14 w-14 place-items-center rounded-full bg-gold/15 font-display text-2xl text-gold">{u.player.number}</span>
+                <span className="grid h-14 w-14 place-items-center rounded-full bg-gold/15 font-display text-2xl text-gold">{u.player.number || "–"}</span>
                 <div className="flex-1">
                   <div className="font-serif text-2xl">
                     {u.player.firstName} {u.player.lastName}

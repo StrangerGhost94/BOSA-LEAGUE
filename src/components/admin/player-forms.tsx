@@ -28,7 +28,7 @@ export function PlayerForm({ player, teams, fixedTeam, admin }: { player?: Playe
         <input name="lastName" className="input" defaultValue={player?.lastName} required />
       </Field>
       <Field label="Shirt number">
-        <input name="number" type="number" min={1} max={99} className="input" defaultValue={player?.number} required />
+        <input name="number" type="number" min={0} max={99} className="input" defaultValue={player?.number ?? ""} placeholder="0 if not known" required />
       </Field>
       <Field label="Position">
         <select name="position" className="input" defaultValue={player?.position ?? "MID"}>
@@ -56,6 +56,20 @@ export function PlayerForm({ player, teams, fixedTeam, admin }: { player?: Playe
       <Field label="Short bio" className="sm:col-span-2">
         <textarea name="bio" rows={3} className="input" defaultValue={player?.bio ?? ""} />
       </Field>
+      {admin && (
+        <div className="grid grid-cols-3 gap-3 rounded-xl border border-white/[0.07] p-3 sm:col-span-2">
+          <div className="col-span-3 text-xs text-ivory/50">Earlier this season (before match-by-match recording)</div>
+          <Field label="Goals">
+            <input name="baseGoals" type="number" min={0} className="input" defaultValue={player?.baseGoals ?? 0} />
+          </Field>
+          <Field label="Assists">
+            <input name="baseAssists" type="number" min={0} className="input" defaultValue={player?.baseAssists ?? 0} />
+          </Field>
+          <Field label="Appearances">
+            <input name="baseApps" type="number" min={0} className="input" defaultValue={player?.baseApps ?? 0} />
+          </Field>
+        </div>
+      )}
       {!player && admin && (
         <label className="flex items-center gap-3 text-sm text-ivory/70 sm:col-span-2">
           <input type="checkbox" name="approve" defaultChecked className="accent-[#CC2654]" /> Approve immediately

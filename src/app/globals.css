@@ -43,9 +43,8 @@ body {
   position: fixed;
   inset: -50%;
   z-index: 60;
-  opacity: 0.055;
+  opacity: 0.04;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  animation: grain 8s steps(10) infinite;
 }
 @keyframes grain {
   0%, 100% { transform: translate(0, 0); }
@@ -75,8 +74,8 @@ body {
   .glass {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
     border: 1px solid rgba(214, 182, 118, 0.14);
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
   .panel {
     @apply rounded-2xl border bg-night-800/80;
@@ -202,9 +201,7 @@ body {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
-  .grain {
-    animation: none;
-  }
+
 }
 
 .form-pill {
@@ -238,11 +235,11 @@ body {
   to { transform: scaleY(0); visibility: hidden; }
 }
 .route-content {
-  animation: routeIn 0.85s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: routeIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @keyframes routeIn {
-  from { opacity: 0; transform: translateY(18px); filter: blur(8px); }
-  to { opacity: 1; transform: none; filter: none; }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .route-curtain { display: none; }

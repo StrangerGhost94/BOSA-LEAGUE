@@ -53,8 +53,8 @@ export default async function SuperLeaguePage({ searchParams }: { searchParams: 
         <div className="grid gap-6 lg:grid-cols-3">
           {[
             { t: "Students and alumni", d: "Every matchday squad blends current students with the graduates who built these clubs. At least six registered students must be named." },
-            { t: "Single round-robin", d: `Eight invited sides, ${total} rounds, one champion. Every match counts and there is no second chance.` },
-            { t: "Saturday afternoons", d: "Super League fixtures are staged on Saturdays at the BOSA Floodlit Ground, Kansanga, leaving Sundays to the League." },
+            { t: "One table", d: "Every result updates the Super League standings automatically, with three points for a win and one for a draw." },
+            { t: "Open to apply", d: "University sides can apply to enter using the registration form below. The Competitions Desk reviews every application." },
           ].map((x, i) => (
             <FadeIn key={x.t} delay={i * 0.08}>
               <div className="panel h-full p-7">

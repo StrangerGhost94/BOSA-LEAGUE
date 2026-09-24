@@ -49,7 +49,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
       <header
         className={clsx(
           "fixed inset-x-0 top-0 z-50 transition-all duration-500",
-          scrolled ? "border-b border-white/[0.06] bg-night-900/75 backdrop-blur-xl" : "bg-transparent",
+          scrolled ? "border-b border-white/[0.06] bg-night-900/90 backdrop-blur-md" : "bg-transparent",
         )}
       >
         <div className="container-x flex h-[68px] items-center gap-6 lg:h-[76px]">

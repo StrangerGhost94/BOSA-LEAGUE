@@ -34,7 +34,7 @@ export default async function PlayerPage({ params }: { params: { id: string } })
     <>
       <section className="relative overflow-hidden pb-14 pt-36">
         <div className="absolute inset-0" style={{ background: `radial-gradient(80% 90% at 85% 30%, ${t.primaryColor} 0%, #0A0F1E 55%, #060913 100%)` }} />
-        <div className="pointer-events-none absolute -right-10 top-16 select-none font-display text-[340px] font-bold leading-none text-white/[0.05] sm:text-[460px]">{p.number}</div>
+        <div className="pointer-events-none absolute -right-10 top-16 select-none font-display text-[340px] font-bold leading-none text-white/[0.05] sm:text-[460px]">{p.number || "–"}</div>
         <div className="container-x relative">
           <FadeIn>
             <Link href={`/teams/${t.slug}`} className="inline-flex items-center gap-3 text-sm text-ivory/70 hover:text-ivory">
@@ -46,7 +46,7 @@ export default async function PlayerPage({ params }: { params: { id: string } })
               <em className="gold-text">{p.lastName}</em>
             </h1>
             <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-ivory/60">
-              <span className="font-display text-2xl text-ivory">#{p.number}</span>
+              <span className="font-display text-2xl text-ivory">#{p.number || "–"}</span>
               <span>{POSITION_LABEL[p.position]}</span>
               <span className="h-1 w-1 rounded-full bg-gold/60" />
               <span>{p.affiliation === "ALUMNI" ? "Alumni" : "Student"}</span>

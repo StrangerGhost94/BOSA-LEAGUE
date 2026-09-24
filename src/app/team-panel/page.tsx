@@ -55,7 +55,7 @@ export default async function TeamHome() {
           <ul className="space-y-2.5">
             {[...unavailable, ...pending].map((p) => (
               <li key={p.id} className="flex items-center gap-3 text-sm">
-                <span className="w-6 font-display text-gold">{p.number}</span>
+                <span className="w-6 font-display text-gold">{p.number || "–"}</span>
                 <span className="flex-1">
                   {p.firstName} {p.lastName}
                   {p.statusNote && <span className="block text-xs text-ivory/45">{p.statusNote}</span>}

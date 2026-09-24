@@ -212,7 +212,7 @@ export async function MatchConsole({ id, mode }: { id: string; mode: "admin" | "
                   {t.players.map((p) => (
                     <div key={p.id} className="grid grid-cols-[1fr_64px_64px] items-center rounded-lg px-2 py-1.5 text-sm hover:bg-white/[0.03]">
                       <span className={clsx(p.status === "SUSPENDED" && "text-crimson-400 line-through", p.status === "INJURED" && "text-gold")}>
-                        <span className="mr-2 inline-block w-6 font-display text-ivory/50">{p.number}</span>
+                        <span className="mr-2 inline-block w-6 font-display text-ivory/50">{p.number || "–"}</span>
                         {p.firstName} {p.lastName} <span className="text-[10px] text-ivory/35">{p.position}</span>
                       </span>
                       <input type="checkbox" name="starter" value={p.id} defaultChecked={lu.get(p.id) === true} disabled={p.status === "SUSPENDED"} className="mx-auto accent-[#D6B676]" aria-label={`Start ${p.firstName}`} />
@@ -238,7 +238,7 @@ export async function MatchConsole({ id, mode }: { id: string; mode: "admin" | "
                 <optgroup key={t.id} label={t.name}>
                   {t.players.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.number}. {p.firstName} {p.lastName}
+                      {p.number ? `${p.number}. ` : ""}{p.firstName} {p.lastName}
                     </option>
                   ))}
                 </optgroup>

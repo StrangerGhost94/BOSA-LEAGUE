@@ -27,6 +27,7 @@ export default async function SeasonAdmin({ params }: { params: { seasonId: stri
   const [teams, venues] = await Promise.all([getTeams(), getVenues()]);
   const entered = new Set(season.teams.map((t) => t.teamId));
   const adj = Object.fromEntries(season.teams.map((t) => [t.teamId, t.pointsAdjustment]));
+  const base = Object.fromEntries(season.teams.map((t) => [t.teamId, t]));
   const isCup = season.competition.type === "CHAMPIONS";
   const table = isCup ? [] : await getSeasonTable(season.id);
   const groupTables = isCup ? await getGroupTables(season.id) : [];
@@ -99,7 +100,52 @@ export default async function SeasonAdmin({ params }: { params: { seasonId: stri
                 </li>
               ))}
             </ul>
-            <Submit className="btn-gold btn-sm mt-5">Save entries</Submit>
+            {!isCup && season.teams.length > 0 && (
+              <div className="mt-6 border-t border-white/[0.06] pt-5">
+                <div className="eyebrow mb-1">Opening balance</div>
+                <p className="mb-3 text-xs text-ivory/50">Results from before match-by-match recording (for example, copied from an official table). Recorded results are added on top automatically.</p>
+                <div className="overflow-x-auto scrollbar-none">
+                  <table className="table-luxe min-w-[560px] text-xs">
+                    <thead>
+                      <tr>
+                        <th>Club</th>
+                        {["P", "W", "D", "L", "GF", "GA"].map((h) => (
+                          <th key={h} className="text-center">{h}</th>
+                        ))}
+                        <th>Form</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {teams
+                        .filter((t) => entered.has(t.id))
+                        .map((t) => (
+                          <tr key={t.id}>
+                            <td className="whitespace-nowrap">{t.name}</td>
+                            {(
+                              [
+                                ["bp", base[t.id]?.basePlayed],
+                                ["bw", base[t.id]?.baseWon],
+                                ["bd", base[t.id]?.baseDrawn],
+                                ["bl", base[t.id]?.baseLost],
+                                ["bf", base[t.id]?.baseGoalsFor],
+                                ["ba", base[t.id]?.baseGoalsAgainst],
+                              ] as const
+                            ).map(([k, v]) => (
+                              <td key={k} className="px-1">
+                                <input name={`${k}_${t.id}`} type="number" min={0} defaultValue={v ?? 0} className="input w-14 px-1 py-1 text-center" aria-label={`${t.name} ${k}`} />
+                              </td>
+                            ))}
+                            <td className="px-1">
+                              <input name={`form_${t.id}`} defaultValue={base[t.id]?.baseForm ?? ""} className="input w-24 px-2 py-1 uppercase" placeholder="WDLW" aria-label={`${t.name} form`} />
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+            <Submit className="btn-gold btn-sm mt-5">Save</Submit>
           </ActionForm>
         </div>
 

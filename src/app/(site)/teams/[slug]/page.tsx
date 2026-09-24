@@ -27,7 +27,7 @@ export default async function TeamPage({ params }: { params: { slug: string } })
     db.query.seasonTeams.findMany({ where: eq(seasonTeams.teamId, t.id), with: { season: { with: { competition: true } } } }),
   ]);
   const row = table.find((r) => r.teamId === t.id);
-  const results = matches.filter((m) => m.status === "FULL_TIME").reverse();
+  const results = matches.filter((m) => m.status === "FULL_TIME" && m.homeScore != null).reverse();
   const upcoming = matches.filter((m) => m.status !== "FULL_TIME" && m.status !== "CANCELLED").slice(0, 4);
   const all = results.reduce(
     (acc, m) => {
@@ -86,9 +86,9 @@ export default async function TeamPage({ params }: { params: { slug: string } })
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
           <StatTile label="League position">{row ? <CountUp value={row.position} /> : "-"}</StatTile>
           <StatTile label="Points">{row ? <CountUp value={row.points} /> : "-"}</StatTile>
-          <StatTile label="Goals scored" hint="All competitions" accent="crimson"><CountUp value={all.gf} /></StatTile>
-          <StatTile label="Goals conceded" hint="All competitions"><CountUp value={all.ga} /></StatTile>
-          <StatTile label="Clean sheets" hint="All competitions" accent="emerald"><CountUp value={all.cs} /></StatTile>
+          <StatTile label="Goals scored" hint="BOSA League" accent="crimson"><CountUp value={row?.goalsFor ?? all.gf} /></StatTile>
+          <StatTile label="Goals conceded" hint="BOSA League"><CountUp value={row?.goalsAgainst ?? all.ga} /></StatTile>
+          <StatTile label="Record" hint="Won · drawn · lost" accent="emerald">{row ? `${row.won}-${row.drawn}-${row.lost}` : "-"}</StatTile>
         </div>
       </section>
 
@@ -99,7 +99,6 @@ export default async function TeamPage({ params }: { params: { slug: string } })
               <div className="eyebrow mb-5">Club profile</div>
               <dl className="grid grid-cols-2 gap-6 text-sm">
                 {[
-                  ["Founded", t.founded],
                   ["Campus", t.campus],
                   ["Head coach", t.coachName ?? "To be confirmed"],
                   ["Captain", t.captainName ?? "To be confirmed"],
@@ -151,7 +150,7 @@ export default async function TeamPage({ params }: { params: { slug: string } })
                     <StaggerItem key={pl.id}>
                       <Link href={`/players/${pl.id}`} className="group flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-night-800/60 p-4 transition hover:-translate-y-0.5 hover:border-gold/30">
                         <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full font-display text-xl" style={{ background: `${light}22`, color: light }}>
-                          {pl.number}
+                          {pl.number || "–"}
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block truncate font-semibold group-hover:text-gold">

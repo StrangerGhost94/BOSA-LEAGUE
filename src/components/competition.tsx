@@ -184,6 +184,12 @@ export function TeamGoalsChart({ rows }: { rows: TableRow[] }) {
 }
 
 export function HonoursList({ honours, teams }: { honours: { id: string; seasonName: string; year: number; champion: string; runnerUp: string | null; topScorer: string | null; note: string | null }[]; teams: { name: string; crest: string; primaryColor: string }[] }) {
+  if (!honours.length)
+    return (
+      <div className="rounded-2xl border border-dashed border-gold/20 px-6 py-10 text-center text-sm text-ivory/50">
+        The roll of honour will appear here once past champions are added by the League office.
+      </div>
+    );
   return (
     <Stagger className="divide-y divide-white/[0.06] overflow-hidden rounded-2xl border border-white/[0.07]">
       {honours.map((h) => {

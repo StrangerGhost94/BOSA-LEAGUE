@@ -27,7 +27,7 @@ export function EventForm({ matchId, teams, minute }: { matchId: string; teams: 
   const scorerPool = type === "OWN_GOAL" ? other?.players ?? [] : team?.players ?? [];
   const opt = (p: P) => (
     <option key={p.id} value={p.id} disabled={p.status === "SUSPENDED"}>
-      {p.number}. {p.name}
+      {p.number ? `${p.number}. ` : ""}{p.name}
       {p.status !== "ACTIVE" ? ` (${p.status.toLowerCase()})` : ""}
     </option>
   );

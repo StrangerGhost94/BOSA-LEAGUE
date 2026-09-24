@@ -72,10 +72,10 @@ export async function savePlayerAction(_: ActionResult, fd: FormData): A {
       const number = num(fd, "number");
       const position = str(fd, "position") as s.Position;
       if (!teamId || !firstName || !lastName) return fail("Club, first name and last name are required.");
-      if (!number || number < 1 || number > 99) return fail("Shirt number must be between 1 and 99.");
+      if (number == null || number < 0 || number > 99) return fail("Shirt number must be between 1 and 99 (or 0 if not yet known).");
       if (!["GK", "DEF", "MID", "FWD"].includes(position)) return fail("Choose a position.");
       const clash = await db.query.players.findFirst({ where: and(eq(s.players.teamId, teamId), eq(s.players.number, number)) });
-      if (clash && clash.id !== id && clash.status !== "REJECTED") return fail(`Number ${number} is already worn by ${clash.firstName} ${clash.lastName}.`);
+      if (number > 0 && clash && clash.id !== id && clash.status !== "REJECTED") return fail(`Number ${number} is already worn by ${clash.firstName} ${clash.lastName}.`);
       const values = {
         teamId,
         firstName,
@@ -87,6 +87,9 @@ export async function savePlayerAction(_: ActionResult, fd: FormData): A {
         yearOfStudy: optStr(fd, "yearOfStudy"),
         birthYear: num(fd, "birthYear"),
         bio: optStr(fd, "bio"),
+        ...(can(u.role, "players") && fd.has("baseGoals")
+          ? { baseGoals: num(fd, "baseGoals") ?? 0, baseAssists: num(fd, "baseAssists") ?? 0, baseApps: num(fd, "baseApps") ?? 0 }
+          : {}),
       };
       if (id) {
         await db.update(s.players).set(values).where(eq(s.players.id, id));
@@ -500,12 +503,30 @@ export async function setSeasonTeamsAction(_: ActionResult, fd: FormData): A {
     const seasonId = str(fd, "seasonId");
     const teamIds = fd.getAll("teamId").map(String);
     const existing = await db.query.seasonTeams.findMany({ where: eq(s.seasonTeams.seasonId, seasonId) });
-    const adj: Record<string, number> = {};
-    for (const e of existing) adj[e.teamId] = num(fd, `adj_${e.teamId}`) ?? e.pointsAdjustment;
+    const prev = Object.fromEntries(existing.map((e) => [e.teamId, e]));
+    const val = (teamId: string, key: string, fallback: number) => num(fd, `${key}_${teamId}`) ?? fallback;
     await pool.query("delete from season_teams where season_id=$1", [seasonId]);
-    if (teamIds.length) await db.insert(s.seasonTeams).values(teamIds.map((teamId) => ({ seasonId, teamId, pointsAdjustment: adj[teamId] ?? 0 })));
+    if (teamIds.length)
+      await db.insert(s.seasonTeams).values(
+        teamIds.map((teamId) => {
+          const e = prev[teamId];
+          const form = fd.has(`form_${teamId}`) ? str(fd, `form_${teamId}`).toUpperCase().replace(/[^WDL]/g, "").slice(-5) : e?.baseForm ?? "";
+          return {
+            seasonId,
+            teamId,
+            pointsAdjustment: val(teamId, "adj", e?.pointsAdjustment ?? 0),
+            basePlayed: val(teamId, "bp", e?.basePlayed ?? 0),
+            baseWon: val(teamId, "bw", e?.baseWon ?? 0),
+            baseDrawn: val(teamId, "bd", e?.baseDrawn ?? 0),
+            baseLost: val(teamId, "bl", e?.baseLost ?? 0),
+            baseGoalsFor: val(teamId, "bf", e?.baseGoalsFor ?? 0),
+            baseGoalsAgainst: val(teamId, "ba", e?.baseGoalsAgainst ?? 0),
+            baseForm: form,
+          };
+        }),
+      );
     await logActivity(u.id, "Updated season entries", "Season", `${teamIds.length} teams`, seasonId);
-    return ok(`${teamIds.length} teams entered. Points adjustments saved.`);
+    return ok(`${teamIds.length} teams saved. The table has been recalculated.`);
   });
 }
 

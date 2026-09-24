@@ -4,9 +4,9 @@ export function StadiumBackdrop({ intensity = 1, className = "" }: { intensity?:
     <div className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`} aria-hidden>
       <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_0%,#1B2033_0%,#0A0F1E_45%,#060913_100%)]" />
       {/* moving light blooms */}
-      <div className="absolute -left-[10%] top-[-20%] h-[70%] w-[60%] animate-drift rounded-full bg-crimson/25 blur-[140px]" style={{ opacity: 0.8 * intensity }} />
-      <div className="absolute -right-[15%] top-[10%] h-[60%] w-[55%] animate-drift rounded-full bg-gold/15 blur-[140px] [animation-delay:-6s]" style={{ opacity: intensity }} />
-      <div className="absolute bottom-[-30%] left-[20%] h-[60%] w-[60%] animate-drift rounded-full bg-emerald/15 blur-[160px] [animation-delay:-12s]" />
+      <div className="absolute -left-[10%] top-[-20%] h-[70%] w-[60%] rounded-full bg-crimson/25 blur-[100px]" style={{ opacity: 0.8 * intensity }} />
+      <div className="absolute -right-[15%] top-[10%] h-[60%] w-[55%] rounded-full bg-gold/15 blur-[100px]" style={{ opacity: intensity }} />
+      <div className="absolute bottom-[-30%] left-[20%] h-[60%] w-[60%] rounded-full bg-emerald/15 blur-[100px]" />
 
       {/* floodlight beams */}
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
@@ -27,10 +27,10 @@ export function StadiumBackdrop({ intensity = 1, className = "" }: { intensity?:
             <stop offset="1" stopColor="#FFE9B8" stopOpacity="0" />
           </radialGradient>
         </defs>
-        <g className="animate-beam" style={{ transformOrigin: "200px 60px" }}>
+        <g>
           <path d="M180 60 L40 1000 L620 1000 Z" fill="url(#beam)" opacity=".35" />
         </g>
-        <g className="animate-beam [animation-delay:-3s]" style={{ transformOrigin: "1400px 60px" }}>
+        <g>
           <path d="M1420 60 L980 1000 L1560 1000 Z" fill="url(#beam)" opacity=".35" />
         </g>
         <circle cx="180" cy="60" r="60" fill="url(#lamp)" />

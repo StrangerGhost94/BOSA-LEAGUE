@@ -9,7 +9,10 @@ export type ResultLike = {
   awayScore: number | null;
   status: string;
   kickoff: Date | string;
+  countsInTable?: boolean;
 };
+
+export type Baseline = { played: number; won: number; drawn: number; lost: number; goalsFor: number; goalsAgainst: number; form: string };
 
 export type StandingRow = {
   teamId: string;
@@ -29,23 +32,24 @@ export type StandingRow = {
 export function computeStandings(
   teamIds: string[],
   matches: ResultLike[],
-  opts: { win?: number; draw?: number; includeLive?: boolean; adjustments?: Record<string, number> } = {},
+  opts: { win?: number; draw?: number; includeLive?: boolean; adjustments?: Record<string, number>; baselines?: Record<string, Baseline> } = {},
 ): StandingRow[] {
   const win = opts.win ?? 3;
   const draw = opts.draw ?? 1;
   const rows = new Map<string, StandingRow>();
   for (const id of teamIds) {
+    const b = opts.baselines?.[id];
     rows.set(id, {
       teamId: id,
-      played: 0,
-      won: 0,
-      drawn: 0,
-      lost: 0,
-      goalsFor: 0,
-      goalsAgainst: 0,
+      played: b?.played ?? 0,
+      won: b?.won ?? 0,
+      drawn: b?.drawn ?? 0,
+      lost: b?.lost ?? 0,
+      goalsFor: b?.goalsFor ?? 0,
+      goalsAgainst: b?.goalsAgainst ?? 0,
       goalDifference: 0,
-      points: opts.adjustments?.[id] ?? 0,
-      form: [],
+      points: (opts.adjustments?.[id] ?? 0) + (b ? b.won * win + b.drawn * draw : 0),
+      form: (b?.form ?? "").split("").filter((c): c is "W" | "D" | "L" => c === "W" || c === "D" || c === "L"),
       position: 0,
       live: false,
     });
@@ -55,6 +59,7 @@ export function computeStandings(
       (m) =>
         m.homeTeamId &&
         m.awayTeamId &&
+        m.countsInTable !== false &&
         m.homeScore != null &&
         m.awayScore != null &&
         (m.status === "FULL_TIME" || (opts.includeLive && (m.status === "LIVE" || m.status === "HALF_TIME"))),

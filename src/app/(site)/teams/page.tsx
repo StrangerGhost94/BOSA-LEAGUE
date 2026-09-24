@@ -28,8 +28,8 @@ export default async function TeamsPage() {
         stats={[
           { label: "Registered clubs", value: teams.length },
           { label: "Registered players", value: Object.values(squadSize).reduce((a, b) => a + b, 0) },
-          { label: "Campuses", value: new Set(teams.map((t) => t.campus)).size },
-          { label: "Years of history", value: new Date().getFullYear() - Math.min(...teams.map((t) => t.founded)) },
+          { label: "Competitions", value: 3 },
+          { label: "Matchdays played", value: table[0]?.played ?? 0 },
         ]}
       />
       <section className="container-x">
@@ -62,8 +62,8 @@ export default async function TeamsPage() {
                   </div>
                   <dl className="mt-5 grid grid-cols-3 gap-3 text-center">
                     <div>
-                      <dt className="text-[9px] uppercase tracking-[0.18em] text-ivory/40">Founded</dt>
-                      <dd className="font-display text-lg">{t.founded}</dd>
+                      <dt className="text-[9px] uppercase tracking-[0.18em] text-ivory/40">Played</dt>
+                      <dd className="font-display text-lg">{pos[t.id]?.played ?? 0}</dd>
                     </div>
                     <div>
                       <dt className="text-[9px] uppercase tracking-[0.18em] text-ivory/40">Squad</dt>

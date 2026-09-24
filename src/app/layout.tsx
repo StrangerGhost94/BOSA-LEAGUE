@@ -5,7 +5,6 @@ import "@fontsource-variable/manrope";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { CommandMenu } from "@/components/site/command-menu";
-import { SmoothScroll } from "@/components/site/smooth-scroll";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +25,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           {children}
           <CommandMenu />
-          <SmoothScroll />
         </Providers>
         <div className="grain" aria-hidden />
       </body>

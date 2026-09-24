@@ -1,5 +1,6 @@
 import "server-only";
-import { and, asc, desc, eq, inArray, or, sql, gte, lte } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, or, sql, gte, lte } from "drizzle-orm";
+import { cache } from "react";
 import { db, pool } from "@/db";
 import * as s from "@/db/schema";
 import { computeStandings, type StandingRow } from "./standings";
@@ -31,9 +32,7 @@ export async function getCurrentSeason(slug: string) {
   return r?.season ?? null;
 }
 
-export async function getTeams() {
-  return db.query.teams.findMany({ orderBy: asc(s.teams.name) });
-}
+export const getTeams = cache(async () => db.query.teams.findMany({ orderBy: asc(s.teams.name) }));
 
 export async function teamMap() {
   const all = await getTeams();
@@ -50,10 +49,16 @@ export async function getSeasonTable(seasonId: string, includeLive = true): Prom
     .from(s.matches)
     .where(and(eq(s.matches.seasonId, seasonId), inArray(s.matches.stage, ["LEAGUE"])));
   const adj = Object.fromEntries(season.teams.map((t) => [t.teamId, t.pointsAdjustment]));
+  const baselines = Object.fromEntries(
+    season.teams.map((t) => [
+      t.teamId,
+      { played: t.basePlayed, won: t.baseWon, drawn: t.baseDrawn, lost: t.baseLost, goalsFor: t.baseGoalsFor, goalsAgainst: t.baseGoalsAgainst, form: t.baseForm },
+    ]),
+  );
   const rows = computeStandings(
     season.teams.map((t) => t.teamId),
     ms,
-    { win: season.pointsWin, draw: season.pointsDraw, includeLive, adjustments: adj },
+    { win: season.pointsWin, draw: season.pointsDraw, includeLive, adjustments: adj, baselines },
   );
   const tm = await teamMap();
   return rows.map((r) => ({ ...r, team: tm[r.teamId] }));
@@ -151,7 +156,7 @@ export async function getNextMatches(limit = 7) {
 
 export async function getRecentResults(limit = 6, seasonIds?: string[]) {
   return db.query.matches.findMany({
-    where: and(eq(s.matches.status, "FULL_TIME"), seasonIds?.length ? inArray(s.matches.seasonId, seasonIds) : undefined),
+    where: and(eq(s.matches.status, "FULL_TIME"), isNotNull(s.matches.homeScore), seasonIds?.length ? inArray(s.matches.seasonId, seasonIds) : undefined),
     with: matchWith,
     orderBy: desc(s.matches.kickoff),
     limit,
@@ -221,7 +226,9 @@ export async function getPlayerStats(opts: { seasonId?: string | null; teamId?: 
     )
     select p.id, p.first_name "firstName", p.last_name "lastName", p.number, p.position, p.status, p.status_note "statusNote",
       p.affiliation, p.team_id "teamId", t.name "teamName", t.slug "teamSlug", t.crest, t.primary_color "primaryColor",
-      coalesce(ev.goals,0) goals, coalesce(asx.assists,0) assists, coalesce(ap.apps,0) apps, coalesce(ap.starts,0) starts,
+      (coalesce(ev.goals,0) + case when $1::text is null or exists (select 1 from seasons cs join competitions cc on cc.id = cs.competition_id where cs.id = $1 and cs.is_current and cc.type = 'LEAGUE') then p.base_goals else 0 end)::int goals,
+      (coalesce(asx.assists,0) + case when $1::text is null or exists (select 1 from seasons cs join competitions cc on cc.id = cs.competition_id where cs.id = $1 and cs.is_current and cc.type = 'LEAGUE') then p.base_assists else 0 end)::int assists,
+      (coalesce(ap.apps,0) + case when $1::text is null or exists (select 1 from seasons cs join competitions cc on cc.id = cs.competition_id where cs.id = $1 and cs.is_current and cc.type = 'LEAGUE') then p.base_apps else 0 end)::int apps, coalesce(ap.starts,0) starts,
       coalesce(ev.yellows,0) yellows, coalesce(ev.reds,0) reds, coalesce(ap.clean_sheets,0) "cleanSheets", coalesce(pm.potm,0) potm
     from players p
     join teams t on t.id = p.team_id
@@ -232,7 +239,7 @@ export async function getPlayerStats(opts: { seasonId?: string | null; teamId?: 
     where ($2::text is null or p.team_id = $2)
       and ($3::text is null or p.id = $3)
       and ($4::boolean or p.status not in ('PENDING','REJECTED'))
-    order by goals desc, assists desc, p.last_name asc
+    order by 14 desc, 15 desc, p.last_name asc
     `,
     [opts.seasonId ?? null, opts.teamId ?? null, opts.playerId ?? null, !!opts.includePending],
   );
@@ -265,7 +272,16 @@ export async function getSeasonTotals(seasonId: string) {
      from matches where season_id=$1`,
     [seasonId],
   );
-  return rows[0] as { played: number; total: number; goals: number; attendance: number; yellows: number; reds: number; clean_sheets: number };
+  const { rows: b } = await pool.query(
+    "select coalesce(sum(base_played),0)::int played, coalesce(sum(base_goals_for),0)::int goals from season_teams where season_id=$1",
+    [seasonId],
+  );
+  const { rows: c } = await pool.query(
+    "select count(*)::int played, coalesce(sum(home_score + away_score),0)::int goals from matches where season_id=$1 and status='FULL_TIME' and counts_in_table and home_score is not null",
+    [seasonId],
+  );
+  const r = rows[0] as { played: number; total: number; goals: number; attendance: number; yellows: number; reds: number; clean_sheets: number };
+  return { ...r, played: Math.round(b[0].played / 2) + c[0].played, goals: b[0].goals + c[0].goals };
 }
 
 export async function getTeamRecord(teamId: string, seasonId?: string) {

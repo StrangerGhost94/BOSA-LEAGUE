@@ -110,7 +110,7 @@ export default async function AdminHome() {
                 <li key={p.id} className="flex items-center gap-3 text-sm">
                   <img src={p.crest} alt="" className="h-7 w-7 rounded-full bg-white" />
                   <span className="flex-1">
-                    {p.first_name} {p.last_name} <span className="text-ivory/40">#{p.number} {p.position}</span>
+                    {p.first_name} {p.last_name} <span className="text-ivory/40">#{p.number || "–"} {p.position}</span>
                   </span>
                   <Pill tone="gold">Pending</Pill>
                 </li>

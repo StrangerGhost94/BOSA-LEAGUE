@@ -53,7 +53,7 @@ export default async function AdminPlayers({ searchParams }: { searchParams: Rec
                 <img src={p.team.crest} alt="" className="h-9 w-9 rounded-full bg-white" />
                 <div className="min-w-[200px] flex-1">
                   <div className="font-semibold">
-                    {p.firstName} {p.lastName} <span className="text-ivory/40">#{p.number} · {p.position}</span>
+                    {p.firstName} {p.lastName} <span className="text-ivory/40">#{p.number || "–"} · {p.position}</span>
                   </div>
                   <div className="text-xs text-ivory/50">
                     {p.team.name} · {p.affiliation === "ALUMNI" ? "Alumni" : "Student"} · {p.course ?? "Course not given"} · submitted {fmtDate(p.createdAt, { day: "numeric", month: "short" })}
@@ -93,7 +93,7 @@ export default async function AdminPlayers({ searchParams }: { searchParams: Rec
             <tbody>
               {rest.map((p) => (
                 <tr key={p.id} className="hover:bg-white/[0.03]">
-                  <td className="font-display text-gold">{p.number}</td>
+                  <td className="font-display text-gold">{p.number || "–"}</td>
                   <td className="font-semibold">
                     {p.firstName} {p.lastName}
                   </td>

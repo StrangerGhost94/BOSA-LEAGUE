@@ -108,6 +108,9 @@ export const players = pgTable(
     statusNote: text("status_note"),
     statusUntil: timestamp("status_until", { withTimezone: true }),
     bio: text("bio"),
+    baseGoals: integer("base_goals").notNull().default(0),
+    baseAssists: integer("base_assists").notNull().default(0),
+    baseApps: integer("base_apps").notNull().default(0),
     createdAt: created(),
   },
   (t) => [index("players_team_idx").on(t.teamId)],
@@ -188,6 +191,14 @@ export const seasonTeams = pgTable(
       .notNull()
       .references(() => teams.id, { onDelete: "cascade" }),
     pointsAdjustment: integer("points_adjustment").notNull().default(0),
+    // Opening balance: results played before match-by-match tracking began (e.g. imported from the official table)
+    basePlayed: integer("base_played").notNull().default(0),
+    baseWon: integer("base_won").notNull().default(0),
+    baseDrawn: integer("base_drawn").notNull().default(0),
+    baseLost: integer("base_lost").notNull().default(0),
+    baseGoalsFor: integer("base_goals_for").notNull().default(0),
+    baseGoalsAgainst: integer("base_goals_against").notNull().default(0),
+    baseForm: text("base_form").notNull().default(""),
   },
   (t) => [primaryKey({ columns: [t.seasonId, t.teamId] })],
 );
@@ -249,6 +260,7 @@ export const matches = pgTable(
     attendance: integer("attendance"),
     potmId: text("potm_id").references(() => players.id, { onDelete: "set null" }),
     statusNote: text("status_note"),
+    countsInTable: boolean("counts_in_table").notNull().default(true),
     createdAt: created(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

@@ -8,6 +8,13 @@
       "when": 1790239254376,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790247940216,
+      "tag": "0001_opening_balances",
+      "breakpoints": true
     }
   ]
 }

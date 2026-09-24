@@ -64,11 +64,14 @@ export default async function HomePage() {
       { label: "Per game", value: totals.played ? (totals.goals / totals.played).toFixed(2) : "0" },
     ],
   });
-  if (cl?.season) {
-    const groups = await getGroupTables(cl.season.id);
-    const clUp = await getMatches({ seasonId: cl.season.id, status: "upcoming", limit: 3 });
-    const clTot = await getSeasonTotals(cl.season.id);
-    const semis = await getMatches({ seasonId: cl.season.id, stage: "SEMI_FINAL" });
+  const [clData, slData] = await Promise.all([
+    cl?.season
+      ? Promise.all([getGroupTables(cl.season.id), getMatches({ seasonId: cl.season.id, status: "upcoming", limit: 3 }), getSeasonTotals(cl.season.id), getMatches({ seasonId: cl.season.id, stage: "SEMI_FINAL" })])
+      : null,
+    sl?.season ? Promise.all([getSeasonTable(sl.season.id), getMatches({ seasonId: sl.season.id, status: "upcoming", limit: 3 }), getSeasonTotals(sl.season.id)]) : null,
+  ]);
+  if (cl?.season && clData) {
+    const [groups, clUp, clTot, semis] = clData;
     previews.push({
       slug: "champions-league",
       href: "/champions-league",
@@ -77,19 +80,17 @@ export default async function HomePage() {
       tagline: cl.comp.tagline ?? "",
       season: cl.season.name,
       tableTitle: "Group winners",
-      rows: groups.map((g, i) => ({ pos: i + 1, name: `${g.rows[0].team.name}`, crest: g.rows[0].team.crest, primaryColor: g.rows[0].team.primaryColor, pts: g.rows[0].points, played: g.rows[0].played, gd: g.rows[0].goalDifference })),
+      rows: groups.filter((g) => g.rows.length).map((g, i) => ({ pos: i + 1, name: `${g.rows[0].team.name}`, crest: g.rows[0].team.crest, primaryColor: g.rows[0].team.primaryColor, pts: g.rows[0].points, played: g.rows[0].played, gd: g.rows[0].goalDifference })),
       fixtures: clUp.map((m) => ({ id: m.id, home: m.homeTeam, away: m.awayTeam, when: `${fmtDate(m.kickoff, { day: "numeric", month: "short" })} ${fmtTime(m.kickoff)}`, round: m.round })),
       stat: [
         { label: "Goals", value: String(clTot.goals) },
-        { label: "Remaining", value: String(semis.length ? clTot.total - clTot.played : 0) },
-        { label: "Stage", value: semis.some((s) => s.status !== "FULL_TIME") ? "Semis" : "Final" },
+        { label: "Groups", value: String(groups.length) },
+        { label: "Stage", value: !groups.length ? "Draw soon" : semis.length ? (semis.some((s) => s.status !== "FULL_TIME") ? "Semis" : "Final") : "Groups" },
       ],
     });
   }
-  if (sl?.season) {
-    const slTable = await getSeasonTable(sl.season.id);
-    const slUp = await getMatches({ seasonId: sl.season.id, status: "upcoming", limit: 3 });
-    const slTot = await getSeasonTotals(sl.season.id);
+  if (sl?.season && slData) {
+    const [slTable, slUp, slTot] = slData;
     previews.push({
       slug: "super-league",
       href: "/super-league",
@@ -103,7 +104,7 @@ export default async function HomePage() {
       stat: [
         { label: "Goals", value: String(slTot.goals) },
         { label: "Clubs", value: String(slTable.length) },
-        { label: "Rounds", value: "7" },
+        { label: "Played", value: String(slTot.played) },
       ],
     });
   }
@@ -261,8 +262,8 @@ export default async function HomePage() {
               { v: totals.goals, l: "Goals this season" },
               { v: totals.played, l: "Matches played" },
               { v: teams.length, l: "Registered clubs" },
-              { v: totals.attendance, l: "Spectators" },
-              { v: totals.clean_sheets, l: "Clean sheets" },
+              { v: (upcoming[0]?.matchday ?? 1) - 1, l: "Matchdays played" },
+              { v: scorers[0]?.goals ?? 0, l: "Top scorer goals" },
             ].map((s) => (
               <div key={s.l} className="text-center">
                 <CountUp value={s.v} className="gold-text font-display text-5xl font-semibold sm:text-6xl" />
@@ -333,7 +334,7 @@ export default async function HomePage() {
                     <div className="eyebrow text-gold-700">Golden boot</div>
                     <div className="mt-5 flex items-center gap-5">
                       <div className="relative grid h-20 w-20 place-items-center rounded-full font-display text-3xl text-white" style={{ background: topScorer.primaryColor }}>
-                        {topScorer.number}
+                        {topScorer.number || "–"}
                         <img src={topScorer.crest} alt="" className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full border-2 border-white bg-white" />
                       </div>
                       <div>
@@ -413,7 +414,7 @@ export default async function HomePage() {
       </section>
 
       {/* ---------------- HONOURS ---------------- */}
-      <section className="container-x pt-28">
+      {honours.length > 0 && <section className="container-x pt-28">
         <SectionHeading eyebrow="Roll of honour" title={<>Previous <em className="gold-text">champions</em></>} />
         <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {honours.slice(0, 8).map((h) => {
@@ -438,7 +439,7 @@ export default async function HomePage() {
             );
           })}
         </Stagger>
-      </section>
+      </section>}
 
       {/* ---------------- MEMBERSHIP CTA ---------------- */}
       <section className="container-x pt-28">
