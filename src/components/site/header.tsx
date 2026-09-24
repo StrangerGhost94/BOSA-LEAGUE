@@ -196,6 +196,7 @@ export function SiteHeader({ user, liveCount = 0 }: { user: HeaderUser; liveCoun
                 >
                   <Link
                     href={n.href}
+                    onClick={() => setOpen(false)}
                     className={clsx(
                       "flex items-baseline gap-4 border-b border-white/[0.06] py-3 font-serif text-2xl sm:py-4 sm:text-3xl",
                       active(n.href) ? "text-gold" : "text-ivory",

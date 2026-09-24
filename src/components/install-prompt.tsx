@@ -70,12 +70,14 @@ export function InstallPrompt() {
     };
   }, []);
 
-  // Offer it by itself a few seconds after arrival, not on top of the first impression
+  // Offer it by itself a few seconds after arrival, not on top of the first impression.
+  // Never pops up by itself inside the Control Room, coach or referee panels (staff are working there).
+  const inPanel = /^\/(admin|team-panel|referee|print)(\/|$)/.test(pathname ?? "");
   useEffect(() => {
-    if (!mode || recentlyDismissed()) return;
+    if (!mode || inPanel || recentlyDismissed()) return;
     const t = setTimeout(() => setOpen(true), 6000);
     return () => clearTimeout(t);
-  }, [mode]);
+  }, [mode, inPanel]);
 
   const close = useCallback(() => {
     setOpen(false);
@@ -96,7 +98,6 @@ export function InstallPrompt() {
   return (
     <AnimatePresence>
       {open && (
-        <>
           <motion.div
             key="shade"
             className="fixed inset-0 z-[80] bg-black/50 sm:hidden"
@@ -105,6 +106,8 @@ export function InstallPrompt() {
             exit={{ opacity: 0 }}
             onClick={close}
           />
+      )}
+      {open && (
           <motion.div
             key="sheet"
             role="dialog"
@@ -172,7 +175,6 @@ export function InstallPrompt() {
               )}
             </div>
           </motion.div>
-        </>
       )}
     </AnimatePresence>
   );

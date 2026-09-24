@@ -25,18 +25,38 @@ export function PanelShell({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [pathname]);
+  // While the phone menu is open: page behind it does not scroll, and Escape closes it
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
   const isActive = (i: PanelNavItem) => (i.exact ? pathname === i.href : pathname === i.href || pathname.startsWith(i.href + "/"));
 
-  const sidebar = (
+  // `mobile` renders the copy inside the slide-out menu: links close it straight away, and it has its own close button
+  const sidebar = (mobile: boolean) => (
     <div className="flex h-full flex-col">
-      <Link href="/" className="flex items-center gap-3 px-5 py-6">
-        <BosaLogo size={38} />
-        <div className="leading-none">
-          <div className="font-display text-[15px] tracking-[0.14em]">{title}</div>
-          <div className="mt-1 text-[9px] uppercase tracking-[0.3em] text-gold/80">{subtitle}</div>
-        </div>
-      </Link>
-      <nav className="flex-1 space-y-6 overflow-y-auto px-3 pb-6 scrollbar-none">
+      <div className="flex items-center gap-3 px-5 py-6">
+        <Link href="/" className="flex min-w-0 flex-1 items-center gap-3" onClick={() => mobile && setOpen(false)}>
+          <BosaLogo size={38} />
+          <div className="leading-none">
+            <div className="font-display text-[15px] tracking-[0.14em]">{title}</div>
+            <div className="mt-1 text-[9px] uppercase tracking-[0.3em] text-gold/80">{subtitle}</div>
+          </div>
+        </Link>
+        {mobile && (
+          <button className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/10" onClick={() => setOpen(false)} aria-label="Close navigation">
+            <Icon name="close" size={18} />
+          </button>
+        )}
+      </div>
+      <nav className="flex-1 space-y-6 overflow-y-auto overscroll-contain px-3 pb-6 scrollbar-none" data-lenis-prevent>
         {nav.map((g) => (
           <div key={g.section}>
             <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-ivory/30">{g.section}</div>
@@ -47,18 +67,22 @@ export function PanelShell({
                   <li key={i.href}>
                     <Link
                       href={i.href}
+                      onClick={() => mobile && setOpen(false)}
                       className={clsx(
                         "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition",
                         active ? "text-ivory" : "text-ivory/55 hover:bg-white/[0.04] hover:text-ivory",
                       )}
                     >
-                      {active && (
-                        <motion.span
-                          layoutId="panel-active"
-                          className="absolute inset-0 rounded-xl border border-gold/25 bg-gradient-to-r from-gold/15 to-transparent"
-                          transition={{ type: "spring", stiffness: 400, damping: 34 }}
-                        />
-                      )}
+                      {active &&
+                        (mobile ? (
+                          <span className="absolute inset-0 rounded-xl border border-gold/25 bg-gradient-to-r from-gold/15 to-transparent" />
+                        ) : (
+                          <motion.span
+                            layoutId="panel-active"
+                            className="absolute inset-0 rounded-xl border border-gold/25 bg-gradient-to-r from-gold/15 to-transparent"
+                            transition={{ type: "spring", stiffness: 400, damping: 34 }}
+                          />
+                        ))}
                       <Icon name={i.icon} size={17} className={clsx("relative", active && "text-gold")} />
                       <span className="relative flex-1">{i.label}</span>
                       {!!i.badge && <span className="relative rounded-full bg-crimson px-2 py-0.5 text-[10px] font-bold text-white">{i.badge}</span>}
@@ -91,25 +115,34 @@ export function PanelShell({
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[272px_1fr]">
-      <aside className="sticky top-0 hidden h-screen border-r pb-[var(--safe-bottom)] pl-[var(--safe-left)] pt-[var(--safe-top)] border-white/[0.06] bg-night-800/60 backdrop-blur-xl lg:block">{sidebar}</aside>
+      <aside className="sticky top-0 hidden h-screen border-r pb-[var(--safe-bottom)] pl-[var(--safe-left)] pt-[var(--safe-top)] border-white/[0.06] bg-night-800/60 backdrop-blur-xl lg:block">{sidebar(false)}</aside>
+      {/* Phone and tablet menu. Each animated piece is a direct, keyed child of AnimatePresence so it always
+          finishes closing (a wrapping fragment left the dark overlay stuck over the page). */}
       <AnimatePresence>
         {open && (
-          <>
-            <motion.div className="fixed inset-0 z-40 bg-night-900/70 backdrop-blur-sm lg:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)} />
-            <motion.aside
-              className="fixed inset-y-0 left-0 z-50 w-[calc(284px+var(--safe-left))] border-r border-white/[0.08] bg-night-800 pb-[var(--safe-bottom)] pl-[var(--safe-left)] pt-[var(--safe-top)] lg:hidden"
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", stiffness: 320, damping: 34 }}
-              drag="x"
-              dragConstraints={{ left: -300, right: 0 }}
-              dragElastic={0.05}
-              onDragEnd={(_, info) => info.offset.x < -80 && setOpen(false)}
-            >
-              {sidebar}
-            </motion.aside>
-          </>
+          <motion.div
+            key="panel-overlay"
+            className="fixed inset-0 z-40 bg-night-900/75 lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.15 } }}
+            onClick={() => setOpen(false)}
+          />
+        )}
+        {open && (
+          <motion.aside
+            key="panel-menu"
+            role="dialog"
+            aria-modal
+            aria-label="Navigation"
+            className="fixed inset-y-0 left-0 z-50 w-[min(calc(284px+var(--safe-left)),88vw)] border-r border-white/[0.08] bg-night-800 pb-[var(--safe-bottom)] pl-[var(--safe-left)] pt-[var(--safe-top)] lg:hidden"
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%", transition: { duration: 0.2, ease: "easeIn" } }}
+            transition={{ type: "tween", duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {sidebar(true)}
+          </motion.aside>
         )}
       </AnimatePresence>
       <div className="min-w-0">
