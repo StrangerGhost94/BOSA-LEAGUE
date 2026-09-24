@@ -25,7 +25,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         {children}
       </main>
       <MobileTabBar liveCount={live.rows[0].c} />
-      <SiteFooter />
+      <SiteFooter signedIn={!!u} member={hasMembership(u)} />
       <div className="h-[calc(var(--tabbar-h)+var(--safe-bottom))] xl:hidden" aria-hidden />
     </>
   );

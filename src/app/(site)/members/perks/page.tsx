@@ -86,7 +86,7 @@ export default async function PerksPage() {
 
         <div className="mt-14 grid gap-4 sm:grid-cols-3">
           {[
-            { n: "01", t: "Become a member", d: `A single payment of ${ugx(price)} for Bilal Institute old students.` },
+            { n: "01", t: member ? "You're a member" : "Become a member", d: member ? "Your membership is active, so every offer here is yours." : `A single payment of ${ugx(price)} for Bilal Institute old students.` },
             { n: "02", t: "Open your card", d: "Your digital member card is in Members, with your name, intake year and member number." },
             { n: "03", t: "Show it at the counter", d: "The partner scans the QR code to confirm your membership, then applies the offer." },
           ].map((s) => (

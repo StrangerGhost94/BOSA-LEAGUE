@@ -28,7 +28,14 @@ import { fmtDate, fmtLong, fmtTime } from "@/lib/format";
 export default async function HomePage() {
   const [lg, cl, sl, teams] = await Promise.all([getCompetition("bosa-league"), getCompetition("champions-league"), getCompetition("super-cup"), getTeams()]);
   const lgSeason = lg!.season!;
-  const member = hasMembership(await getCurrentUser());
+  const me = await getCurrentUser();
+  const member = hasMembership(me);
+  // What the second hero button offers depends on who is looking
+  const cta = member
+    ? { href: "/members/card", label: "My member card" }
+    : me
+      ? { href: "/membership", label: "Activate membership" }
+      : { href: "/membership", label: "Become a member" };
   const [table, upcomingAll, totals, scorers, news, honours, live, seasonIds] = await Promise.all([
     getSeasonTable(lgSeason.id),
     getMatches({ seasonId: lgSeason.id, status: "upcoming", limit: 14 }),
@@ -191,8 +198,8 @@ export default async function HomePage() {
                   </Link>
                 </Magnetic>
                 <Magnetic className="w-full sm:w-auto">
-                  <Link href="/membership" className="btn-ghost w-full px-4 py-3.5 sm:w-auto sm:px-7">
-                    Become a member
+                  <Link href={cta.href} className="btn-ghost w-full px-4 py-3.5 sm:w-auto sm:px-7">
+                    {cta.label}
                   </Link>
                 </Magnetic>
               </div>
@@ -494,20 +501,31 @@ export default async function HomePage() {
             <StadiumBackdrop intensity={0.7} />
             <div className="relative">
               <BosaLogo size={72} className="mx-auto" />
-              <h2 className="headline mx-auto mt-8 max-w-3xl text-4xl sm:text-6xl">
-                One payment. <em className="gold-text">The whole season.</em>
-              </h2>
-              <p className="mx-auto mt-5 max-w-xl text-ivory/60">
-                Buy a one-time membership voucher, enter the code, and it all opens up.
-              </p>
+              {member ? (
+                <>
+                  <h2 className="headline mx-auto mt-8 max-w-3xl text-4xl sm:text-6xl">
+                    Welcome back, <em className="gold-text">{me?.name.split(" ")[0]}.</em>
+                  </h2>
+                  <p className="mx-auto mt-5 max-w-xl text-ivory/60">Everything your membership unlocks, one tap away.</p>
+                </>
+              ) : (
+                <>
+                  <h2 className="headline mx-auto mt-8 max-w-3xl text-4xl sm:text-6xl">
+                    One payment. <em className="gold-text">The whole season.</em>
+                  </h2>
+                  <p className="mx-auto mt-5 max-w-xl text-ivory/60">
+                    {me ? "You have an account. Enter a membership voucher code and it all opens up." : "Buy a one-time membership voucher, enter the code, and it all opens up."}
+                  </p>
+                </>
+              )}
               <div className="mx-auto mt-8 grid max-w-3xl grid-cols-2 gap-2 text-left sm:grid-cols-3">
                 {[
-                  { icon: "activity" as const, t: "Live match centre", href: "/members" },
-                  { icon: "card" as const, t: "Digital member card", href: "/members" },
+                  { icon: "activity" as const, t: "Live match centre", href: member ? "/live" : "/members" },
+                  { icon: "card" as const, t: "Digital member card", href: member ? "/members/card" : "/members" },
                   { icon: "sparkle" as const, t: "Partner perks", href: "/members/perks" },
-                  { icon: "trophy" as const, t: "Fans' votes", href: "/members" },
-                  { icon: "grid" as const, t: "Photos and highlights", href: "/members" },
-                  { icon: "calendar" as const, t: "Early fixtures", href: "/members" },
+                  { icon: "trophy" as const, t: "Fans' votes", href: member ? "/vote" : "/members" },
+                  { icon: "grid" as const, t: "Photos and highlights", href: member ? "/gallery" : "/members" },
+                  { icon: "calendar" as const, t: "Early fixtures", href: member ? "/fixtures" : "/members" },
                 ].map((b) => (
                   <Link key={b.t} href={b.href} className="flex items-center gap-3 rounded-xl border border-white/[0.08] bg-night-900/50 px-3 py-3 text-sm text-ivory/80 transition hover:border-gold/40">
                     <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gold/10 text-gold">
@@ -519,12 +537,12 @@ export default async function HomePage() {
               </div>
               <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
                 <Magnetic>
-                  <Link href="/membership" className="btn-gold px-8 py-3.5">
-                    Become a member <Arrow />
+                  <Link href={member ? "/members" : "/membership"} className="btn-gold px-8 py-3.5">
+                    {member ? "Open my members' area" : me ? "Activate membership" : "Become a member"} <Arrow />
                   </Link>
                 </Magnetic>
-                <Link href="/members/perks" className="btn-ghost px-6 py-3.5">
-                  See member perks
+                <Link href={member ? "/members/card" : "/members/perks"} className="btn-ghost px-6 py-3.5">
+                  {member ? "My member card" : "See member perks"}
                 </Link>
               </div>
             </div>

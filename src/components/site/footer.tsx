@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { BosaLogo } from "@/components/ui";
 
-export function SiteFooter() {
+export function SiteFooter({ signedIn = false, member = false }: { signedIn?: boolean; member?: boolean }) {
+  const memberLinks: [string, string][] = member
+    ? [["Members' area", "/members"], ["My member card", "/members/card"], ["Member perks", "/members/perks"], ["My account", "/account"]]
+    : signedIn
+      ? [["Activate membership", "/membership"], ["Member perks", "/members/perks"], ["My account", "/account"]]
+      : [["Become a member", "/membership"], ["Member perks", "/members/perks"], ["Sign in", "/sign-in"], ["Create account", "/sign-up"]];
   return (
     <footer className="relative mt-32 overflow-hidden border-t border-white/[0.06] bg-night-900 xl:pb-[var(--safe-bottom)]">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
@@ -23,7 +28,7 @@ export function SiteFooter() {
           </div>
           <FooterCol title="Competitions" links={[["BOSA League", "/league"], ["Champions League", "/champions-league"], ["Super Cup", "/super-cup"], ["Rules", "/rules"]]} />
           <FooterCol title="Matchday" links={[["Fixtures & Results", "/fixtures"], ["Teams", "/teams"], ["Players", "/players"], ["Newsroom", "/news"]]} />
-          <FooterCol title="Members" links={[["Become a member", "/membership"], ["Member perks", "/members/perks"], ["Sign in", "/sign-in"], ["Create account", "/sign-up"], ["My account", "/account"]]} />
+          <FooterCol title="Members" links={memberLinks} />
         </div>
         <div className="mt-14 border-t border-white/[0.06] pt-8">
           <div className="text-[10px] uppercase tracking-[0.3em] text-ivory/30">Official partners</div>
