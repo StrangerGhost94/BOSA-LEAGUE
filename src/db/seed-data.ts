@@ -147,3 +147,19 @@ export const RESULTS: Record<string, [number, number]> = {
   "2:alnasr:ahal-sunnah": [0, 3],
   "2:alhilal:elites": [2, 5],
 };
+
+/**
+ * Past champions supplied by the League office. Exact match dates are not recorded, so these are
+ * kept as roll-of-honour entries rather than dated fixtures. Team names must match TEAMS exactly.
+ */
+export const HISTORY: { comp: "bosa-league" | "champions-league" | "super-cup"; season: string; year: number; champion: string; runnerUp: string | null; note: string | null }[] = [
+  { comp: "bosa-league", season: "Season 1", year: 2023, champion: "Karegular", runnerUp: null, note: null },
+  { comp: "bosa-league", season: "Season 2", year: 2024, champion: "Alnasr", runnerUp: null, note: null },
+  { comp: "bosa-league", season: "Season 3", year: 2025, champion: "Dream Cast", runnerUp: null, note: null },
+  { comp: "champions-league", season: "2023 Edition", year: 2023, champion: "Elites", runnerUp: "Karegular", note: "Final: Karegular 0-0 Elites. Elites won 4-2 on penalties." },
+  { comp: "champions-league", season: "2024 Edition", year: 2024, champion: "Karegular", runnerUp: "Alnasr", note: "Final: Karegular 1-0 Alnasr" },
+  { comp: "champions-league", season: "2025 Edition", year: 2025, champion: "Golden Jubilee", runnerUp: "Alnasr", note: "Final: Golden Jubilee 2-1 Alnasr" },
+  { comp: "super-cup", season: "Season 2", year: 2024, champion: "Elites", runnerUp: "Karegular", note: "Karegular 1-2 Elites" },
+  { comp: "super-cup", season: "Season 3", year: 2025, champion: "Alnasr", runnerUp: "Karegular", note: "Alnasr 3-1 Karegular" },
+  { comp: "super-cup", season: "Season 4", year: 2026, champion: "Golden Jubilee", runnerUp: "Dream Cast", note: "Dream Cast 0-4 Golden Jubilee" },
+];

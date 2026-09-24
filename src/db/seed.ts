@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as s from "./schema";
-import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS } from "./seed-data";
+import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS, HISTORY } from "./seed-data";
 
 /**
  * Seeds BOSA League Season 4 with the official data supplied by the League office:
@@ -11,11 +11,29 @@ import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS } from "./seed-da
  *
  * DATA_VERSION lets a deployment replace older demo data exactly once.
  */
-const DATA_VERSION = "4";
+const DATA_VERSION = "5";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool, { schema: s });
 const eat = (date: string, time: string) => new Date(`${date}T${time}:00+03:00`);
+const SUPER_RULE = "The Super Cup is a single match that opens each season, played between the previous season's BOSA League champion and the previous season's BOSA Champions League winner.";
+
+/** Adds past champions to the roll of honour. Safe to run more than once. */
+async function applyHistory() {
+  for (const h of HISTORY) {
+    await pool.query(
+      `insert into honours (id, competition_id, season_name, year, champion, runner_up, note)
+       select gen_random_uuid()::text, c.id, $2, $3, $4, $5, $6 from competitions c
+       where c.slug=$1 and not exists (select 1 from honours x where x.competition_id=c.id and x.year=$3)`,
+      [h.comp, h.season, h.year, h.champion, h.runnerUp, h.note],
+    );
+  }
+  // The 2026 Super Cup has been played: record its winner on the current season
+  await pool.query(
+    `update seasons set champion_id=(select id from teams where slug='golden-jubilee')
+     where champion_id is null and year=2026 and competition_id=(select id from competitions where slug='super-cup')`,
+  );
+}
 
 async function main() {
   const existing = await db.select().from(s.teams).limit(1);
@@ -40,6 +58,14 @@ async function main() {
         "insert into rules (id, competition_id, title, body, \"order\") select gen_random_uuid()::text, id, 'Who plays', $1, 1 from competitions where slug='super-league' and not exists (select 1 from rules r where r.title='Who plays')",
         ["The Super League is a single match that opens each season, played between the previous season's BOSA League champion and the previous season's BOSA Champions League winner."],
       );
+      v.rows[0].value = "4";
+    }
+    if (v.rows[0]?.value === "4" && !process.argv.includes("--force")) {
+      // Non-destructive update from version 4: the Super League is renamed the Super Cup, and past champions are added.
+      await pool.query("update competitions set slug='super-cup', name='BOSA Super Cup', short_name='Super Cup' where slug='super-league'");
+      await pool.query("update rules set body=$1 where title='Who plays'", [SUPER_RULE]);
+      await pool.query("update matches set round='Super Cup' where round='Super League'");
+      await applyHistory();
       await pool.query("insert into settings (key, value) values ('data_version', $1) on conflict (key) do update set value=excluded.value", [DATA_VERSION]);
       console.log("Updated data to version " + DATA_VERSION + " (no results or accounts removed).");
       await pool.end();
@@ -114,7 +140,7 @@ async function main() {
     .values([
       { slug: "bosa-league", name: "BOSA League", shortName: "League", type: "LEAGUE", order: 1, tagline: "Fourteen clubs. One crown.", description: "The flagship competition. Fourteen clubs of Bilal Islamic Institute old students meet every Sunday at Henry's Pitch, Kabalagala, behind Shell Kabalagala. Three points for a win, one for a draw." },
       { slug: "champions-league", name: "BOSA Champions League", shortName: "Champions League", type: "CHAMPIONS", order: 2, tagline: "Groups, then knockouts.", description: "A group stage followed by knockout rounds. Groups, fixtures and the bracket appear here once the League office publishes the draw." },
-      { slug: "super-league", name: "BOSA Super League", shortName: "Super League", type: "SUPER", order: 3, tagline: "The match that opens every season.", description: "One match opens every season: last season's BOSA League champion against last season's BOSA Champions League winner." },
+      { slug: "super-cup", name: "BOSA Super Cup", shortName: "Super Cup", type: "SUPER", order: 3, tagline: "The match that opens every season.", description: "One match opens every season: last season's BOSA League champion against last season's BOSA Champions League winner." },
     ])
     .returning();
 
@@ -183,10 +209,13 @@ async function main() {
   await db.insert(s.rules).values([
     { competitionId: league.id, order: 1, title: "Points and ranking", body: "Three points for a win, one for a draw and none for a defeat. Teams level on points are separated by goal difference, then goals scored." },
     { competitionId: league.id, order: 2, title: "Venue", body: "BOSA League matches are played at Henry's Pitch, Kabalagala, behind Shell Kabalagala, unless the League office announces otherwise." },
-    { competitionId: superLeague.id, order: 1, title: "Who plays", body: "The Super League is a single match that opens each season, played between the previous season's BOSA League champion and the previous season's BOSA Champions League winner." },
+    { competitionId: superLeague.id, order: 1, title: "Who plays", body: SUPER_RULE },
     { competitionId: null, order: 1, title: "Eligibility", body: "BOSA League is for old students of Bilal Islamic Institute. Players register with the year they completed at the Institute, and must be approved by the League office before they are eligible to play." },
     { competitionId: null, order: 2, title: "Discipline", body: "A red card carries an automatic one-match suspension. Accumulated yellow cards may also lead to a suspension, as set by the League office." },
   ]);
+
+  /* ---------- Past champions ---------- */
+  await applyHistory();
 
   /* ---------- News ---------- */
   await db.insert(s.articles).values([

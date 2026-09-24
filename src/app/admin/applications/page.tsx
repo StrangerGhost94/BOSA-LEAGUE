@@ -13,8 +13,8 @@ export default async function Applications() {
   const list = await db.query.teamApplications.findMany({ orderBy: desc(teamApplications.createdAt) });
   return (
     <>
-      <PageHeader eyebrow="Super League registration" title="Team applications" />
-      {list.length === 0 && <EmptyState title="No applications yet" body="Applications submitted on the Super League page appear here." />}
+      <PageHeader eyebrow="Super Cup registration" title="Team applications" />
+      {list.length === 0 && <EmptyState title="No applications yet" body="Applications submitted on the Super Cup page appear here." />}
       <div className="grid gap-4 lg:grid-cols-2">
         {list.map((a) => (
           <div key={a.id} className="panel p-5">

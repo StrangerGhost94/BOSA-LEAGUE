@@ -21,7 +21,7 @@ export function SiteFooter() {
             </p>
             <div className="mt-6 text-sm text-ivory/40">@bosaleague · #bosaleague</div>
           </div>
-          <FooterCol title="Competitions" links={[["BOSA League", "/league"], ["Champions League", "/champions-league"], ["Super League", "/super-league"], ["Rules", "/rules"]]} />
+          <FooterCol title="Competitions" links={[["BOSA League", "/league"], ["Champions League", "/champions-league"], ["Super Cup", "/super-cup"], ["Rules", "/rules"]]} />
           <FooterCol title="Matchday" links={[["Fixtures & Results", "/fixtures"], ["Teams", "/teams"], ["Players", "/players"], ["Newsroom", "/news"]]} />
           <FooterCol title="Members" links={[["Become a member", "/membership"], ["Sign in", "/sign-in"], ["Create account", "/sign-up"], ["My account", "/account"]]} />
         </div>

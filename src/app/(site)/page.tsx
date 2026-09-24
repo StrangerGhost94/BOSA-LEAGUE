@@ -25,7 +25,7 @@ import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { fmtDate, fmtLong, fmtTime } from "@/lib/format";
 
 export default async function HomePage() {
-  const [lg, cl, sl, teams] = await Promise.all([getCompetition("bosa-league"), getCompetition("champions-league"), getCompetition("super-league"), getTeams()]);
+  const [lg, cl, sl, teams] = await Promise.all([getCompetition("bosa-league"), getCompetition("champions-league"), getCompetition("super-cup"), getTeams()]);
   const lgSeason = lg!.season!;
   const member = hasMembership(await getCurrentUser());
   const [table, upcomingAll, totals, scorers, news, honours, live, seasonIds] = await Promise.all([
@@ -102,15 +102,19 @@ export default async function HomePage() {
         ? opener.homeTeam
         : opener.awayTeam
       : null;
+    const holder = winner ?? teams.find((t) => t.id === sl.season!.championId) ?? null;
+    const lastEdition = honours.find((h) => h.competitionId === sl.comp.id);
     previews.push({
-      slug: "super-league",
-      href: "/super-league",
-      name: "Super League",
+      slug: "super-cup",
+      href: "/super-cup",
+      name: "Super Cup",
       type: "SUPER",
       tagline: sl.comp.tagline ?? "",
       season: sl.season.name,
       tableTitle: "The season opener",
-      emptyText: "One match opens every season: last season's BOSA League champion against last season's Champions League winner.",
+      emptyText: lastEdition?.note
+        ? `${lastEdition.year} Super Cup: ${lastEdition.note}. ${lastEdition.champion} lifted the trophy.`
+        : "One match opens every season: last season's BOSA League champion against last season's Champions League winner.",
       rows: [],
       fixtures: slData.map((m) => ({
         id: m.id,
@@ -123,7 +127,7 @@ export default async function HomePage() {
       stat: [
         { label: "Format", value: "1 match" },
         { label: "Opens", value: "Season" },
-        { label: "Holder", value: winner?.shortName ?? "TBC" },
+        { label: "Holder", value: holder?.shortName ?? "TBC" },
       ],
     });
   }
@@ -436,7 +440,7 @@ export default async function HomePage() {
       {honours.length > 0 && <section className="container-x pt-28">
         <SectionHeading eyebrow="Roll of honour" title={<>Previous <em className="gold-text">champions</em></>} />
         <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {honours.slice(0, 8).map((h) => {
+          {honours.slice(0, 12).map((h) => {
             const t = teams.find((x) => x.name === h.champion);
             return (
               <StaggerItem key={h.id}>
@@ -452,7 +456,7 @@ export default async function HomePage() {
                     {t && <Crest team={t} size={34} />}
                     <span className="font-serif text-2xl">{h.champion}</span>
                   </div>
-                  {h.runnerUp && <div className="mt-3 text-xs text-ivory/45">Runner-up: {h.runnerUp}</div>}
+                  {h.note ? <div className="mt-3 text-xs text-ivory/45">{h.note}</div> : h.runnerUp && <div className="mt-3 text-xs text-ivory/45">Runner-up: {h.runnerUp}</div>}
                 </div>
               </StaggerItem>
             );

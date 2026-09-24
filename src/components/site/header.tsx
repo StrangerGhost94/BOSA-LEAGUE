@@ -12,7 +12,7 @@ export const NAV = [
   { href: "/", label: "Home" },
   { href: "/league", label: "League" },
   { href: "/champions-league", label: "Champions League" },
-  { href: "/super-league", label: "Super League" },
+  { href: "/super-cup", label: "Super Cup" },
   { href: "/fixtures", label: "Fixtures" },
   { href: "/teams", label: "Teams" },
   { href: "/players", label: "Players" },

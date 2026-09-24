@@ -6,14 +6,14 @@ import { seasons } from "@/db/schema";
 import { CompetitionHero, HonoursList } from "@/components/competition";
 import { MatchCard } from "@/components/match";
 import { FadeIn } from "@/components/motion";
-import { EmptyState, SectionHeading } from "@/components/ui";
+import { Crest, EmptyState, SectionHeading } from "@/components/ui";
 import { getCompetition, getHonours, getMatches, getTeams, visibleTo } from "@/lib/data";
 import { getCurrentUser, hasMembership } from "@/lib/auth";
 
-export const metadata = { title: "BOSA Super League" };
+export const metadata = { title: "BOSA Super Cup" };
 
-export default async function SuperLeaguePage() {
-  const c = await getCompetition("super-league");
+export default async function SuperCupPage() {
+  const c = await getCompetition("super-cup");
   if (!c) notFound();
   const [allSeasons, honours, teams] = await Promise.all([
     db.query.seasons.findMany({ where: eq(seasons.competitionId, c.comp.id), with: { champion: true }, orderBy: desc(seasons.year) }),
@@ -34,15 +34,15 @@ export default async function SuperLeaguePage() {
     <>
       <CompetitionHero
         type="SUPER"
-        name="Super League"
-        season={`BOSA Super League${c.season ? ` · ${c.season.name}` : ""}`}
+        name="Super Cup"
+        season={`BOSA Super Cup${c.season ? ` · ${c.season.name}` : ""}`}
         tagline="The match that opens every season."
         description="One match, one trophy. Each season opens with last season's BOSA League champion against last season's BOSA Champions League winner."
         stats={[
           { label: "Matches per season", value: 1 },
           { label: "Editions recorded", value: matches.filter((m) => m.status === "FULL_TIME").length + honours.length },
           { label: "Clubs in the league", value: teams.length },
-          { label: "Seasons", value: allSeasons.length },
+          { label: "Different winners", value: new Set(roll.map((r) => r.champion)).size },
         ]}
       />
 
@@ -51,7 +51,7 @@ export default async function SuperLeaguePage() {
           {[
             { t: "League champion", d: "The club that won the BOSA League last season earns one of the two places." },
             { t: "Champions League winner", d: "The club that won the BOSA Champions League last season takes the other place." },
-            { t: "The season opener", d: "The two meet in a single match that opens the new season, and the winner lifts the Super League trophy." },
+            { t: "The season opener", d: "The two meet in a single match that opens the new season, and the winner lifts the Super Cup trophy." },
           ].map((x, i) => (
             <FadeIn key={x.t} delay={i * 0.06}>
               <div className="panel h-full p-7">
@@ -65,14 +65,18 @@ export default async function SuperLeaguePage() {
       </section>
 
       <section className="container-x pt-20">
-        <SectionHeading eyebrow={current?.status === "FULL_TIME" ? "Latest edition" : "Next edition"} title={<>The <em className="gold-text">match</em></>} />
+        <SectionHeading eyebrow={!current || current.status === "FULL_TIME" ? "Latest edition" : "Next edition"} title={<>The <em className="gold-text">match</em></>} />
         {current ? (
           <FadeIn className="mx-auto max-w-2xl">
             <MatchCard m={current} showComp={false} />
           </FadeIn>
+        ) : roll[0] ? (
+          <FadeIn className="mx-auto max-w-2xl">
+            <LatestEdition h={roll[0]} teams={teams} />
+          </FadeIn>
         ) : (
           <EmptyState
-            title="The next Super League match will appear here"
+            title="The next Super Cup match will appear here"
             body="Once the League office confirms the BOSA League champion and the Champions League winner, the season opener is scheduled here."
             action={<Link href="/league" className="btn-ghost">See the BOSA League race</Link>}
           />
@@ -87,9 +91,37 @@ export default async function SuperLeaguePage() {
       </section>
 
       <section className="container-x pt-24">
-        <SectionHeading eyebrow="Roll of honour" title={<>Super League <em className="gold-text">winners</em></>} />
+        <SectionHeading eyebrow="Roll of honour" title={<>Super Cup <em className="gold-text">winners</em></>} />
         <HonoursList honours={roll} teams={teams} />
       </section>
     </>
+  );
+}
+
+type Team = Awaited<ReturnType<typeof getTeams>>[number];
+
+function LatestEdition({ h, teams }: { h: { year: number; seasonName: string; champion: string; runnerUp: string | null; note: string | null }; teams: Team[] }) {
+  const champ = teams.find((t) => t.name === h.champion);
+  const runner = teams.find((t) => t.name === h.runnerUp);
+  // Show the crests in the same order as the score line
+  const runnerFirst = !!(runner && h.note?.startsWith(runner.name));
+  return (
+    <div className="panel p-7 text-center">
+      <div className="eyebrow">{h.year} · {h.seasonName}</div>
+      <div className="mt-6 flex items-center justify-center gap-6">
+        {(runnerFirst ? [runner, champ] : [champ, runner]).map((t, i) =>
+          t ? (
+            <span key={t.name} className="flex items-center gap-6">
+              {i === 1 && <span className="font-display text-xl text-ivory/30">v</span>}
+              <Crest team={t} size={t === champ ? 72 : 56} />
+            </span>
+          ) : null,
+        )}
+      </div>
+      {h.note && <div className="mt-6 font-display text-3xl tracking-wide">{h.note}</div>}
+      <div className="mt-3 text-sm text-ivory/55">
+        <span className="gold-text font-semibold">{h.champion}</span> lifted the Super Cup
+      </div>
+    </div>
   );
 }

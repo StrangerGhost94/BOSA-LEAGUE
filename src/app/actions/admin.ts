@@ -810,7 +810,7 @@ export async function updateOwnTeamAction(_: ActionResult, fd: FormData): A {
 
 /* ============================== SUPER LEAGUE ============================== */
 
-/** Schedules the single season-opening Super League match. Its winner automatically becomes the season's champion. */
+/** Schedules the single season-opening Super Cup match. Its winner automatically becomes the season's champion. */
 export async function scheduleSuperMatchAction(_: ActionResult, fd: FormData): A {
   return guarded("fixtures", async (u) => {
     const seasonId = str(fd, "seasonId");
@@ -829,12 +829,12 @@ export async function scheduleSuperMatchAction(_: ActionResult, fd: FormData): A
     };
     if (existing) {
       await db.update(s.matches).set({ ...values, updatedAt: new Date() }).where(eq(s.matches.id, existing.id));
-      await logActivity(u.id, "Updated Super League match", "Match", undefined, existing.id);
-      return ok("Super League match updated.");
+      await logActivity(u.id, "Updated Super Cup match", "Match", undefined, existing.id);
+      return ok("Super Cup match updated.");
     }
-    const [m] = await db.insert(s.matches).values({ ...values, seasonId, stage: "FINAL", round: "Super League", bracketSlot: 1 }).returning();
-    await logActivity(u.id, "Scheduled Super League match", "Match", undefined, m.id);
-    return ok("Super League match scheduled.");
+    const [m] = await db.insert(s.matches).values({ ...values, seasonId, stage: "FINAL", round: "Super Cup", bracketSlot: 1 }).returning();
+    await logActivity(u.id, "Scheduled Super Cup match", "Match", undefined, m.id);
+    return ok("Super Cup match scheduled.");
   });
 }
 

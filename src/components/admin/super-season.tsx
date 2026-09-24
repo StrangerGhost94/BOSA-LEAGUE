@@ -111,7 +111,7 @@ export async function SuperSeasonAdmin({ seasonId }: { seasonId: string }) {
             <Link href={`/admin/matches/${match.id}`} className="btn-gold btn-sm mt-5">
               Open match console
             </Link>
-            <p className="mt-4 text-xs text-ivory/45">Record the result in the console. The winner (including on penalties) becomes this season&apos;s Super League champion automatically.</p>
+            <p className="mt-4 text-xs text-ivory/45">Record the result in the console. The winner (including on penalties) becomes this season&apos;s Super Cup champion automatically.</p>
           </div>
         ) : (
           <p className="text-sm text-ivory/50">No match scheduled yet.</p>

@@ -10,7 +10,7 @@ type Result = { type: string; label: string; sub?: string; href: string; crest?:
 const QUICK: Result[] = [
   { type: "Page", label: "BOSA League table", href: "/league" },
   { type: "Page", label: "Champions League bracket", href: "/champions-league" },
-  { type: "Page", label: "Super League", href: "/super-league" },
+  { type: "Page", label: "Super Cup", href: "/super-cup" },
   { type: "Page", label: "Fixtures and results", href: "/fixtures" },
   { type: "Page", label: "Newsroom", href: "/news" },
   { type: "Page", label: "Become a member", href: "/membership" },
