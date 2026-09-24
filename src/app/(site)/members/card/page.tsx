@@ -38,7 +38,7 @@ export default async function CardPage() {
             style={{ background: "linear-gradient(125deg, #A91C44 0%, #6E1230 38%, #1B2033 72%, #0A0F1E 100%)" }}
           >
             <div className="pointer-events-none absolute inset-0 rounded-[1.4rem] ring-1 ring-inset ring-gold/40" />
-            <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-gold/20 blur-3xl" />
+            <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-[radial-gradient(closest-side,rgba(214,182,118,0.26),rgba(214,182,118,0))]" />
             <div className="pointer-events-none absolute -bottom-10 -left-10 opacity-10">
               <BosaLogo size={220} />
             </div>

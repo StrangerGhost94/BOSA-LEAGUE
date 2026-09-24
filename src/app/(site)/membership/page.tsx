@@ -56,7 +56,7 @@ export default async function MembershipPage({ searchParams }: { searchParams: {
 
         <FadeIn delay={0.3}>
           <div className="glass relative overflow-hidden rounded-[2rem] p-8 shadow-[0_50px_120px_-40px_rgba(0,0,0,.9)] sm:p-10">
-            <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-crimson/30 blur-3xl" />
+            <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[radial-gradient(closest-side,rgba(204,38,84,0.39),rgba(204,38,84,0))]" />
             <div className="relative flex items-center justify-between">
               <BosaLogo size={56} />
               <span className="chip border-gold/40 text-gold">One-time</span>

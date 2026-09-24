@@ -52,7 +52,7 @@ export default async function PerksPage() {
             {offers.map((o) => (
               <StaggerItem key={o.id}>
                 <div className="relative h-full overflow-hidden rounded-2xl border border-gold/25 bg-gradient-to-br from-gold/[0.09] via-night-800/60 to-transparent p-6">
-                  <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gold/10 blur-2xl" />
+                  <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[radial-gradient(closest-side,rgba(214,182,118,0.13),rgba(214,182,118,0))]" />
                   <div className="text-[11px] uppercase tracking-[0.2em] text-gold">{o.sponsor}</div>
                   <div className="mt-3 font-serif text-2xl leading-snug">{o.offer}</div>
                   {o.details && <p className="mt-3 text-sm leading-relaxed text-ivory/55">{o.details}</p>}

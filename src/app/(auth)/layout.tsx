@@ -31,7 +31,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
       </aside>
       <section className="relative flex items-center justify-center px-4 py-16 sm:px-8">
-        <div className="pointer-events-none absolute right-0 top-0 h-96 w-96 rounded-full bg-crimson/10 blur-[120px]" />
+        <div className="pointer-events-none absolute right-0 top-0 h-96 w-96 rounded-full bg-[radial-gradient(closest-side,rgba(204,38,84,0.13),rgba(204,38,84,0))]" />
         <div className="relative w-full max-w-md">
           <Link href="/" className="mb-10 flex items-center gap-3 lg:hidden">
             <BosaLogo size={40} />

@@ -162,36 +162,36 @@ export default async function HomePage() {
   return (
     <>
       {/* ---------------- HERO ---------------- */}
-      <section className="relative flex min-h-[100svh] items-end overflow-hidden pb-16 pt-32 lg:pb-24">
+      <section className="relative flex min-h-[92svh] items-end overflow-hidden pb-10 pt-24 sm:min-h-[100svh] sm:pb-16 sm:pt-32 lg:pb-24">
         <HeroParallax className="absolute inset-0">
           <StadiumBackdrop />
         </HeroParallax>
-        <div className="container-x relative z-10 grid items-end gap-12 lg:grid-cols-[1.25fr_1fr]">
+        <div className="container-x relative z-10 grid items-end gap-10 sm:gap-12 lg:grid-cols-[1.25fr_1fr]">
           <div>
-            <FadeIn className="mb-7 flex flex-wrap items-center gap-3">
+            <FadeIn className="mb-5 flex flex-wrap items-center gap-2 sm:mb-7 sm:gap-3">
               <span className="chip border-gold/30 text-gold">
                 <span className="h-1.5 w-1.5 rounded-full bg-gold" /> {lgSeason.name} · {lgSeason.year}
               </span>
               {nextMd && <span className="chip text-ivory/70">Matchday {nextMd} · {fmtDate(matchday[0].kickoff, { weekday: "long", day: "numeric", month: "long" })}</span>}
             </FadeIn>
-            <h1 className="headline text-[13vw] leading-[0.92] sm:text-[72px] lg:text-[84px] xl:text-[96px]">
+            <h1 className="headline text-[13vw] leading-[0.95] sm:text-[72px] lg:text-[84px] xl:text-[96px]">
               <RevealText text={hero.top} className="block" />
               <span className="block">
                 <RevealText text={hero.bottom} className="gold-text italic" delay={0.25} />
               </span>
             </h1>
             <FadeIn delay={0.6}>
-              <p className="mt-8 max-w-xl text-base leading-relaxed text-ivory/65 sm:text-lg">
+              <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-ivory/65 sm:mt-8 sm:text-lg">
                 {seasonLine ?? `${clubsWord} clubs of Bilal Islamic Institute old students. Three competitions. One pitch behind Shell Kabalagala where reputations are made every weekend.`}
               </p>
-              <div className="mt-10 flex flex-wrap items-center gap-4">
-                <Magnetic>
-                  <Link href="/fixtures" className="btn-primary px-7 py-3.5">
-                    Matchday fixtures <Arrow />
+              <div className="mt-7 grid grid-cols-2 gap-3 sm:mt-10 sm:flex sm:flex-wrap sm:items-center sm:gap-4">
+                <Magnetic className="w-full sm:w-auto">
+                  <Link href="/fixtures" className="btn-primary w-full px-4 py-3.5 sm:w-auto sm:px-7">
+                    Fixtures <Arrow />
                   </Link>
                 </Magnetic>
-                <Magnetic>
-                  <Link href="/membership" className="btn-ghost px-7 py-3.5">
+                <Magnetic className="w-full sm:w-auto">
+                  <Link href="/membership" className="btn-ghost w-full px-4 py-3.5 sm:w-auto sm:px-7">
                     Become a member
                   </Link>
                 </Magnetic>

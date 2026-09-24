@@ -66,7 +66,7 @@ export function Drawer({
                   exit={side === "right" ? { x: "100%" } : { opacity: 0, scale: 0.97, y: "-48%", x: "-50%" }}
                   transition={{ type: "spring", stiffness: 300, damping: 34 }}
                 >
-                  <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-crimson/15 blur-3xl" />
+                  <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[radial-gradient(closest-side,rgba(204,38,84,0.20),rgba(204,38,84,0))]" />
                   <div className="relative flex items-start justify-between gap-4 border-b border-white/[0.06] px-6 py-5">
                     <div>
                       <h2 className="font-serif text-2xl">{title}</h2>

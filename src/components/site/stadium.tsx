@@ -3,10 +3,10 @@ export function StadiumBackdrop({ intensity = 1, className = "" }: { intensity?:
   return (
     <div className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`} aria-hidden>
       <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_0%,#1B2033_0%,#0A0F1E_45%,#060913_100%)]" />
-      {/* moving light blooms */}
-      <div className="absolute -left-[10%] top-[-20%] h-[70%] w-[60%] rounded-full bg-crimson/25 blur-[100px]" style={{ opacity: 0.8 * intensity }} />
-      <div className="absolute -right-[15%] top-[10%] h-[60%] w-[55%] rounded-full bg-gold/15 blur-[100px]" style={{ opacity: intensity }} />
-      <div className="absolute bottom-[-30%] left-[20%] h-[60%] w-[60%] rounded-full bg-emerald/15 blur-[100px]" />
+      {/* light blooms: soft radial gradients, not CSS blur (iPhone Safari draws large blurs near the screen edge as dark squares) */}
+      <div className="absolute -left-[10%] top-[-20%] h-[70%] w-[60%] bg-[radial-gradient(closest-side,rgba(204,38,84,.28),rgba(204,38,84,0))]" style={{ opacity: 0.8 * intensity }} />
+      <div className="absolute -right-[15%] top-[10%] h-[60%] w-[55%] bg-[radial-gradient(closest-side,rgba(214,182,118,.16),rgba(214,182,118,0))]" style={{ opacity: intensity }} />
+      <div className="absolute bottom-[-30%] left-[20%] h-[60%] w-[60%] bg-[radial-gradient(closest-side,rgba(30,140,107,.16),rgba(30,140,107,0))]" />
 
       {/* floodlight beams */}
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">

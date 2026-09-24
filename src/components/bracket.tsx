@@ -63,7 +63,7 @@ export function Bracket({ qf, sf, final, championId }: { qf: BracketMatch[]; sf:
               transition={{ delay: 0.9, duration: 0.8 }}
               className="relative w-full overflow-hidden rounded-2xl border border-gold/40 bg-gradient-to-b from-gold/15 to-transparent p-6 text-center"
             >
-              <div className="pointer-events-none absolute -top-10 left-1/2 h-32 w-32 -translate-x-1/2 rounded-full bg-gold/30 blur-3xl" />
+              <div className="pointer-events-none absolute -top-10 left-1/2 h-32 w-32 -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(214,182,118,0.39),rgba(214,182,118,0))]" />
               <div className="relative mx-auto w-fit">
                 <CompetitionBadge type="CHAMPIONS" size={64} />
               </div>

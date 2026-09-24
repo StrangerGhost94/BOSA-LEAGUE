@@ -17,7 +17,7 @@ export default async function NewsPage({ searchParams }: { searchParams: { c?: s
   return (
     <>
       <section className="relative overflow-hidden pb-12 pt-36">
-        <div className="pointer-events-none absolute -left-40 top-0 h-[500px] w-[500px] rounded-full bg-crimson/15 blur-[140px]" />
+        <div className="pointer-events-none absolute -left-40 top-0 h-[500px] w-[500px] rounded-full bg-[radial-gradient(closest-side,rgba(204,38,84,0.20),rgba(204,38,84,0))]" />
         <div className="container-x relative">
           <div className="eyebrow">The BOSA Newsroom</div>
           <h1 className="headline mt-6 text-6xl sm:text-8xl lg:text-[120px]">

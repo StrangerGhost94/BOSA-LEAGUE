@@ -5,7 +5,7 @@ export function SiteFooter() {
   return (
     <footer className="relative mt-32 overflow-hidden border-t border-white/[0.06] bg-night-900">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
-      <div className="pointer-events-none absolute -bottom-40 left-1/2 h-80 w-[800px] -translate-x-1/2 rounded-full bg-crimson/10 blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-40 left-1/2 h-80 w-[800px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(204,38,84,0.13),rgba(204,38,84,0))]" />
       <div className="container-x relative py-16">
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-12">
           <div className="col-span-2 sm:col-span-3 lg:col-span-1">

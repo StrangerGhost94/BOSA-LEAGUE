@@ -62,18 +62,10 @@ export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: He
         )}
       >
         <div className="container-x flex h-[64px] items-center gap-3 sm:h-[68px] sm:gap-6 lg:h-[76px]">
-          {/* Phones and tablets: menu on the left, account on the far right */}
-          <button
-            className="-ml-1 grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 active:bg-white/5 xl:hidden"
-            onClick={() => setOpen(true)}
-            aria-label="Open menu"
-          >
-            <Icon name="menu" />
-          </button>
           <Link href="/" className="group flex items-center gap-3" aria-label="BOSA League home">
             <BosaLogo size={36} className="transition-transform duration-500 group-hover:scale-105" />
-            <span className="hidden whitespace-nowrap leading-none sm:block xl:hidden 2xl:block">
-              <span className="block font-display text-[17px] font-semibold tracking-[0.12em] text-ivory">BOSA LEAGUE</span>
+            <span className="block whitespace-nowrap leading-none xl:hidden 2xl:block">
+              <span className="block font-display text-[15px] font-semibold tracking-[0.12em] text-ivory sm:text-[17px]">BOSA LEAGUE</span>
               <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.34em] text-gold/80">{seasonLabel}</span>
             </span>
           </Link>
@@ -106,6 +98,14 @@ export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: He
             >
               <Icon name="search" size={14} /> <span className="xl:hidden 2xl:inline">Search</span>
               <kbd className="hidden whitespace-nowrap rounded border border-white/10 px-1.5 py-0.5 font-sans text-[10px] text-ivory/40 2xl:inline">Ctrl K</kbd>
+            </button>
+            {/* Phones and tablets: menu sits next to the account button, which stays at the far right */}
+            <button
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 active:bg-white/5 xl:hidden"
+              onClick={() => setOpen(true)}
+              aria-label="Open menu"
+            >
+              <Icon name="menu" />
             </button>
             {user ? (
               <div className="relative">
@@ -173,14 +173,14 @@ export function SiteHeader({ user, liveCount = 0, seasonLabel = "" }: { user: He
             exit={{ opacity: 0 }}
             transition={{ duration: 0.35 }}
           >
-            <div className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-crimson/20 blur-[120px]" />
-            <div className="pointer-events-none absolute -right-40 bottom-10 h-96 w-96 rounded-full bg-gold/10 blur-[120px]" />
-            <div className="container-x sticky top-0 z-10 flex h-[64px] items-center gap-3 bg-night-900/80 backdrop-blur sm:h-[68px]">
-              <button className="-ml-1 grid h-11 w-11 place-items-center rounded-full border border-white/10" onClick={() => setOpen(false)} aria-label="Close menu">
-                <Icon name="close" />
-              </button>
+            <div className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-[radial-gradient(closest-side,rgba(204,38,84,0.26),rgba(204,38,84,0))]" />
+            <div className="pointer-events-none absolute -right-40 bottom-10 h-96 w-96 rounded-full bg-[radial-gradient(closest-side,rgba(214,182,118,0.13),rgba(214,182,118,0))]" />
+            <div className="container-x sticky top-0 z-10 flex h-[64px] items-center gap-3 bg-night-900 sm:h-[68px]">
               <BosaLogo size={36} />
               <span className="font-display text-sm tracking-[0.14em]">BOSA LEAGUE</span>
+              <button className="ml-auto grid h-10 w-10 place-items-center rounded-full border border-white/10" onClick={() => setOpen(false)} aria-label="Close menu">
+                <Icon name="close" />
+              </button>
             </div>
             <motion.nav
               className="container-x relative mt-2 flex flex-col"
