@@ -8,7 +8,7 @@ import { getCurrentSeason, getSeasonTable, getTeams } from "@/lib/data";
 export const metadata = { title: "Teams" };
 
 export default async function TeamsPage() {
-  const teams = await getTeams();
+  const teams = (await getTeams()).filter((t) => t.active);
   const lg = await getCurrentSeason("bosa-league");
   const table = lg ? await getSeasonTable(lg.id) : [];
   const pos = Object.fromEntries(table.map((r) => [r.teamId, r]));

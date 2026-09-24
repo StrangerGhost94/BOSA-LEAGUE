@@ -22,6 +22,7 @@ import {
   visibleTo,
 } from "@/lib/data";
 import { getCurrentUser, hasMembership } from "@/lib/auth";
+import { getSeasonState } from "@/lib/season-engine";
 import { fmtDate, fmtLong, fmtTime } from "@/lib/format";
 
 export default async function HomePage() {
@@ -38,15 +39,38 @@ export default async function HomePage() {
     getLiveMatches(),
     getCurrentSeasonIds(),
   ]);
-  const recent = await getRecentResults(6, seasonIds);
+  const [recent, state, nextAll] = await Promise.all([getRecentResults(6, seasonIds), getSeasonState(), getMatches({ seasonIds, status: "upcoming", limit: 12 })]);
   const upcoming = visibleTo(upcomingAll, member);
+  const nextMatch = visibleTo(nextAll, member).find((m) => m.homeTeamId && m.awayTeamId) ?? visibleTo(nextAll, member)[0];
+  const activeClubs = teams.filter((t) => t.active).length;
+  const WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen", "Twenty"];
+  const clubsWord = WORDS[activeClubs] ?? String(activeClubs);
+  // Headline follows the calendar: this Sunday's competition, or the off season
+  const COMP_TITLE: Record<string, string> = { LEAGUE: "BOSA League.", CHAMPIONS: "Champions League.", SUPER: "Super Cup." };
+  const daysAway = nextMatch ? (nextMatch.kickoff.getTime() - Date.now()) / 86_400_000 : Infinity;
+  const nextWeekday = nextMatch ? fmtDate(nextMatch.kickoff, { weekday: "long" }) : "";
+  const hero =
+    live[0]
+      ? { top: "Live now", bottom: COMP_TITLE[live[0].season.competition.type] ?? "BOSA League." }
+      : state.phase === "OFF_SEASON" || !nextMatch
+        ? { top: "Off season.", bottom: "Back soon." }
+        : { top: daysAway <= 7 ? `This ${nextWeekday}` : `${nextWeekday} ${fmtDate(nextMatch.kickoff, { day: "numeric", month: "long" })}`, bottom: COMP_TITLE[nextMatch.season.competition.type] ?? "BOSA League." };
+  const seasonLine =
+    state.phase === "OFF_SEASON"
+      ? `${state.league?.name} is complete. League champions: ${teams.find((t) => t.id === state.league?.championId)?.name ?? "TBC"}. Champions League winners: ${teams.find((t) => t.id === state.champions?.championId)?.name ?? "TBC"}. The League office will announce the start of the next season.`
+      : state.phase === "CHAMPIONS"
+        ? `The league is complete and ${teams.find((t) => t.id === state.league?.championId)?.name ?? "the champions"} have the title. The top eight are now in the Champions League ${state.clStage?.toLowerCase() ?? "knock-out"}.`
+        : state.phase === "PRESEASON" && state.league?.startsAt
+          ? `${state.league.name} opens on ${fmtDate(state.league.startsAt, { weekday: "long", day: "numeric", month: "long" })} with the Super Cup. League Matchday 1 is the Sunday after.`
+          : null;
 
   const nextMd = upcoming[0]?.matchday;
   const matchday = upcoming.filter((m) => m.matchday === nextMd);
   const rank = Object.fromEntries(table.map((r) => [r.teamId, r.position]));
   const featured =
     live[0] ??
-    [...matchday].sort((a, b) => (rank[a.homeTeamId!] + rank[a.awayTeamId!]) - (rank[b.homeTeamId!] + rank[b.awayTeamId!]))[0];
+    [...matchday].sort((a, b) => (rank[a.homeTeamId!] + rank[a.awayTeamId!]) - (rank[b.homeTeamId!] + rank[b.awayTeamId!]))[0] ??
+    (nextMatch?.homeTeamId && nextMatch.awayTeamId ? nextMatch : undefined);
   const leader = table[0];
   const topScorer = scorers[0];
 
@@ -150,15 +174,15 @@ export default async function HomePage() {
               </span>
               {nextMd && <span className="chip text-ivory/70">Matchday {nextMd} · {fmtDate(matchday[0].kickoff, { weekday: "long", day: "numeric", month: "long" })}</span>}
             </FadeIn>
-            <h1 className="headline text-[15vw] leading-[0.88] sm:text-[88px] lg:text-[112px] xl:text-[128px]">
-              <RevealText text="The Sunday" className="block" />
+            <h1 className="headline text-[13vw] leading-[0.92] sm:text-[72px] lg:text-[84px] xl:text-[96px]">
+              <RevealText text={hero.top} className="block" />
               <span className="block">
-                <RevealText text="Institution." className="gold-text italic" delay={0.25} />
+                <RevealText text={hero.bottom} className="gold-text italic" delay={0.25} />
               </span>
             </h1>
             <FadeIn delay={0.6}>
               <p className="mt-8 max-w-xl text-base leading-relaxed text-ivory/65 sm:text-lg">
-                Fourteen clubs of Bilal Islamic Institute old students. Three competitions. One pitch behind Shell Kabalagala where reputations are made every weekend.
+                {seasonLine ?? `${clubsWord} clubs of Bilal Islamic Institute old students. Three competitions. One pitch behind Shell Kabalagala where reputations are made every weekend.`}
               </p>
               <div className="mt-10 flex flex-wrap items-center gap-4">
                 <Magnetic>

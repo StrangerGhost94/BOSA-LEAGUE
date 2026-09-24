@@ -11,12 +11,28 @@ import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS, HISTORY } from "
  *
  * DATA_VERSION lets a deployment replace older demo data exactly once.
  */
-const DATA_VERSION = "5";
+const DATA_VERSION = "6";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool, { schema: s });
 const eat = (date: string, time: string) => new Date(`${date}T${time}:00+03:00`);
+const CL_TAGLINE = "The top eight. Three Sundays.";
+const CL_DESC = "When the league ends, the top eight clubs in the BOSA League go into a knock-out: quarter-finals, semi-finals and a final, one round each Sunday. Draws are seeded by league position.";
+const CL_RULE = "The top eight clubs in the final BOSA League table qualify. Ties are single matches seeded by league position (1 v 8, 4 v 5, 2 v 7, 3 v 6). A level tie goes straight to penalties.";
+const SEASON_RULE = "Each season opens with the Super Cup. League Matchday 1 is the following Sunday, and every club plays every other club once. After the league, the top eight play the Champions League. Clubs that join during a season start from the next season. If a club withdraws during the league, all its results are removed and its remaining fixtures cancelled.";
 const SUPER_RULE = "The Super Cup is a single match that opens each season, played between the previous season's BOSA League champion and the previous season's BOSA Champions League winner.";
+
+/** Rules describing the automatic season calendar. Safe to run more than once. */
+async function addCalendarRules() {
+  await pool.query(
+    "insert into rules (id, competition_id, title, body, \"order\") select gen_random_uuid()::text, id, 'Who qualifies', $1, 1 from competitions where slug='champions-league' and not exists (select 1 from rules r where r.title='Who qualifies')",
+    [CL_RULE],
+  );
+  await pool.query(
+    "insert into rules (id, competition_id, title, body, \"order\") select gen_random_uuid()::text, null, 'The season calendar', $1, 3 where not exists (select 1 from rules r where r.title='The season calendar')",
+    [SEASON_RULE],
+  );
+}
 
 /** Adds past champions to the roll of honour. Safe to run more than once. */
 async function applyHistory() {
@@ -66,6 +82,12 @@ async function main() {
       await pool.query("update rules set body=$1 where title='Who plays'", [SUPER_RULE]);
       await pool.query("update matches set round='Super Cup' where round='Super League'");
       await applyHistory();
+      v.rows[0].value = "5";
+    }
+    if (v.rows[0]?.value === "5" && !process.argv.includes("--force")) {
+      // Non-destructive update from version 5: Champions League is the top-eight knock-out, and the season calendar rules.
+      await pool.query("update competitions set tagline=$1, description=$2 where slug='champions-league'", [CL_TAGLINE, CL_DESC]);
+      await addCalendarRules();
       await pool.query("insert into settings (key, value) values ('data_version', $1) on conflict (key) do update set value=excluded.value", [DATA_VERSION]);
       console.log("Updated data to version " + DATA_VERSION + " (no results or accounts removed).");
       await pool.end();
@@ -139,7 +161,7 @@ async function main() {
     .insert(s.competitions)
     .values([
       { slug: "bosa-league", name: "BOSA League", shortName: "League", type: "LEAGUE", order: 1, tagline: "Fourteen clubs. One crown.", description: "The flagship competition. Fourteen clubs of Bilal Islamic Institute old students meet every Sunday at Henry's Pitch, Kabalagala, behind Shell Kabalagala. Three points for a win, one for a draw." },
-      { slug: "champions-league", name: "BOSA Champions League", shortName: "Champions League", type: "CHAMPIONS", order: 2, tagline: "Groups, then knockouts.", description: "A group stage followed by knockout rounds. Groups, fixtures and the bracket appear here once the League office publishes the draw." },
+      { slug: "champions-league", name: "BOSA Champions League", shortName: "Champions League", type: "CHAMPIONS", order: 2, tagline: CL_TAGLINE, description: CL_DESC },
       { slug: "super-cup", name: "BOSA Super Cup", shortName: "Super Cup", type: "SUPER", order: 3, tagline: "The match that opens every season.", description: "One match opens every season: last season's BOSA League champion against last season's BOSA Champions League winner." },
     ])
     .returning();
@@ -216,6 +238,7 @@ async function main() {
 
   /* ---------- Past champions ---------- */
   await applyHistory();
+  await addCalendarRules();
 
   /* ---------- News ---------- */
   await db.insert(s.articles).values([

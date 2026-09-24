@@ -7,13 +7,24 @@ import { getCompetition, getHonours, getMatches, getPlayerStats, getSeasonTable,
 import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { MembersLock } from "@/components/members-lock";
 import { fmtLong } from "@/lib/format";
+import { CL_PLACES, getSeasonState } from "@/lib/season-engine";
+import { and, desc, eq } from "drizzle-orm";
+import { db } from "@/db";
+import * as sc from "@/db/schema";
+import Link from "next/link";
 
 export const metadata = { title: "BOSA League" };
 
-export default async function LeaguePage({ searchParams }: { searchParams: { md?: string } }) {
+export default async function LeaguePage({ searchParams }: { searchParams: { md?: string; season?: string } }) {
   const c = await getCompetition("bosa-league");
   if (!c?.season) notFound();
-  const season = c.season;
+  const seasons = await db.query.seasons.findMany({ where: eq(sc.seasons.competitionId, c.comp.id), orderBy: [desc(sc.seasons.year), desc(sc.seasons.createdAt)] });
+  const picked = searchParams.season ? await db.query.seasons.findFirst({ where: and(eq(sc.seasons.id, searchParams.season), eq(sc.seasons.competitionId, c.comp.id)) }) : null;
+  const season = picked ?? c.season;
+  const isCurrent = season.id === c.season.id;
+  const state = await getSeasonState();
+  const finished = !isCurrent || (state.phase !== "LEAGUE" && state.phase !== "PRESEASON");
+  const qs = isCurrent ? "" : `season=${season.id}`;
   const user = await getCurrentUser();
   const member = hasMembership(user);
   const [table, totals, allMatches, stats, honours, teams] = await Promise.all([
@@ -58,13 +69,32 @@ export default async function LeaguePage({ searchParams }: { searchParams: { md?
       <SubNav items={[{ href: "#table", label: "Standings" }, { href: "#fixtures", label: "Fixtures & Results" }, { href: "#stats", label: "Statistics" }, { href: "#history", label: "Champions" }]} />
 
       <section id="table" className="container-x scroll-mt-40 pt-20">
-        <SectionHeading eyebrow="Updated automatically after every result" title={<>League <em className="gold-text">standings</em></>} />
+        {seasons.length > 1 && (
+          <div className="mb-8 flex flex-wrap gap-2">
+            {seasons.map((x) => (
+              <Link key={x.id} href={x.id === c.season!.id ? "/league#table" : `/league?season=${x.id}#table`} scroll={false} className={x.id === season.id ? "chip border-gold/40 bg-gold/10 text-gold" : "chip text-ivory/60 hover:text-gold"}>
+                {x.name} · {x.year}
+              </Link>
+            ))}
+          </div>
+        )}
+        {finished && season.championId && (
+          <FadeIn className="mb-8">
+            <div className="panel flex flex-wrap items-center gap-4 border-gold/30 p-5">
+              <span className="eyebrow">{season.name} champions</span>
+              <span className="font-serif text-2xl">{teams.find((t) => t.id === season.championId)?.name}</span>
+              <span className="text-sm text-ivory/55">{isCurrent && state.phase === "CHAMPIONS" ? `The top ${CL_PLACES} are now in the Champions League knock-out.` : ""}</span>
+            </div>
+          </FadeIn>
+        )}
+        <SectionHeading eyebrow={finished ? "Final table" : "Updated automatically after every result"} title={<>League <em className="gold-text">standings</em></>} />
         <FadeIn>
           <div className="panel p-2 sm:p-4">
-            <StandingsTable rows={table} />
+            <StandingsTable rows={table} qualify={CL_PLACES} />
           </div>
           <div className="mt-4 flex flex-wrap gap-5 text-xs text-ivory/45">
             <span className="flex items-center gap-2"><span className="h-3 w-[3px] rounded bg-gold" /> Title position</span>
+            <span className="flex items-center gap-2"><span className="h-3 w-[3px] rounded bg-emerald" /> Top {CL_PLACES}: Champions League</span>
             <span>Three points for a win, one for a draw. Tie-breakers: goal difference, goals scored, head-to-head.</span>
           </div>
         </FadeIn>
@@ -72,7 +102,7 @@ export default async function LeaguePage({ searchParams }: { searchParams: { md?
 
       <section id="fixtures" className="container-x scroll-mt-40 pt-24">
         <SectionHeading eyebrow={mdMatches[0] ? fmtLong(mdMatches[0].kickoff) : "Matchweek"} title={<>Matchday <em className="gold-text">{md}</em></>} />
-        <MatchdayNav base="/league" current={md} total={totalMd} played={playedMd} />
+        <MatchdayNav base={qs ? `/league?${qs}` : "/league"} current={md} total={totalMd} played={playedMd} />
         {lockedUntil && (
           <div className="mt-6">
             <MembersLock

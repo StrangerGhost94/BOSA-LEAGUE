@@ -7,6 +7,8 @@ import { EmptyState, SectionHeading } from "@/components/ui";
 import { getCompetition, getGroupTables, getHonours, getMatches, getPlayerStats, getSeasonTotals, getTeams, visibleTo } from "@/lib/data";
 import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { toBracket } from "@/lib/bracket-data";
+import { getSeasonTable } from "@/lib/data";
+import { CL_PLACES, getSeasonState } from "@/lib/season-engine";
 
 export const metadata = { title: "BOSA Champions League" };
 
@@ -30,7 +32,11 @@ export default async function ChampionsLeaguePage() {
   const scorers = stats.filter((p) => p.goals > 0).slice(0, 6);
   const assists = [...stats].filter((p) => p.assists > 0).sort((a, b) => b.assists - a.assists).slice(0, 6);
   const potm = [...stats].filter((p) => p.potm > 0).sort((a, b) => b.potm - a.potm).slice(0, 6);
-  const remaining = all.filter((m) => m.status !== "FULL_TIME").length;
+  const remaining = all.filter((m) => m.status !== "FULL_TIME" && m.status !== "CANCELLED").length;
+  const state = await getSeasonState();
+  // Before the draw: the live race for the top places in the league
+  const race = !all.length && state.league ? (await getSeasonTable(state.league.id)).slice(0, CL_PLACES + 2) : [];
+  const qualified = all.length ? new Set(all.filter((m) => m.stage === all[0].stage).flatMap((m) => [m.homeTeamId, m.awayTeamId]).filter(Boolean)).size : CL_PLACES;
 
   return (
     <>
@@ -41,22 +47,32 @@ export default async function ChampionsLeaguePage() {
         tagline={c.comp.tagline}
         description={c.comp.description}
         stats={[
-          { label: "Clubs", value: teams.length },
-          { label: "Groups", value: groups.length },
+          { label: "Clubs qualify", value: qualified },
+          { label: "Knock-out rounds", value: qualified >= 8 ? 3 : qualified >= 4 ? 2 : 1 },
           { label: "Goals", value: totals.goals },
           { label: "Matches remaining", value: remaining },
         ]}
       />
-      <SubNav items={[{ href: "#bracket", label: "Knockout bracket" }, { href: "#groups", label: "Group stage" }, { href: "#upcoming", label: "Upcoming" }, { href: "#performers", label: "Best performers" }, { href: "#winners", label: "Previous winners" }]} />
+      <SubNav items={[{ href: "#bracket", label: "Knockout bracket" }, { href: "#groups", label: groups.length ? "Group stage" : "Qualification" }, { href: "#upcoming", label: "Upcoming" }, { href: "#performers", label: "Best performers" }, { href: "#winners", label: "Previous winners" }]} />
 
       <section id="bracket" className="container-x scroll-mt-40 pt-20">
         <SectionHeading eyebrow="Hover a club to trace its path" title={<>The road to the <em className="gold-text">final</em></>} />
         <div className="glass rounded-3xl p-6 sm:p-8">
-          {qf.length ? <Bracket qf={qf} sf={sf} final={finalM ? toBracket(finalM) : null} championId={season.championId} /> : <EmptyState title="Knockout rounds not drawn yet" body="The bracket appears here once the group stage is complete." />}
+          {qf.length ? <Bracket qf={qf} sf={sf} final={finalM ? toBracket(finalM) : null} championId={season.championId} /> : <EmptyState title="The draw is made when the league ends" body={`The top ${CL_PLACES} in the BOSA League go through, seeded by league position: 1 v 8, 4 v 5, 2 v 7, 3 v 6. The quarter-finals are played the Sunday after the last league matchday.`} />}
         </div>
       </section>
 
-      <section id="groups" className="container-x scroll-mt-40 pt-24">
+      {!groups.length && race.length > 0 && (
+        <section id="groups" className="container-x scroll-mt-40 pt-24">
+          <SectionHeading eyebrow={`Top ${CL_PLACES} in the league qualify`} title={<>Race for the <em className="gold-text">top {CL_PLACES}</em></>} action={{ href: "/league#table", label: "Full table" }} />
+          <FadeIn>
+            <div className="panel p-2 sm:p-4">
+              <StandingsTable rows={race} compact qualify={CL_PLACES} />
+            </div>
+          </FadeIn>
+        </section>
+      )}
+      {groups.length > 0 && <section id="groups" className="container-x scroll-mt-40 pt-24">
         <SectionHeading eyebrow="Top two advance" title={<>Group <em className="gold-text">stage</em></>} />
         <Stagger className="grid gap-6 lg:grid-cols-2">
           {groups.map((g) => (
@@ -71,10 +87,10 @@ export default async function ChampionsLeaguePage() {
             </StaggerItem>
           ))}
         </Stagger>
-      </section>
+      </section>}
 
       <section id="upcoming" className="container-x scroll-mt-40 pt-24">
-        <SectionHeading eyebrow="Midweek nights" title={<>Upcoming <em className="gold-text">matches</em></>} action={{ href: "/fixtures?comp=champions-league", label: "All fixtures" }} />
+        <SectionHeading eyebrow="One round each Sunday" title={<>Upcoming <em className="gold-text">matches</em></>} action={{ href: "/fixtures?comp=champions-league", label: "All fixtures" }} />
         {upcoming.length ? (
           <Stagger className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {upcoming.map((m) => (
@@ -84,7 +100,7 @@ export default async function ChampionsLeaguePage() {
             ))}
           </Stagger>
         ) : (
-          <EmptyState title="Season complete" body="Every Champions League tie has been played." />
+          all.length ? <EmptyState title="Edition complete" body="Every Champions League tie has been played." /> : <EmptyState title="Fixtures follow the league" body="The knock-out ties are scheduled automatically once the last league match is played." />
         )}
       </section>
 

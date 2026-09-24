@@ -15,6 +15,11 @@ export async function guarded(perm: Permission | ((u: CurrentUser) => boolean), 
     const allowed = typeof perm === "function" ? perm(u) : can(u.role, perm);
     if (!allowed) return fail("You do not have permission to do that.");
     const r = await fn(u);
+    // Any change in the control room (a result, a new club, a schedule edit) may move the season on
+    if (r?.ok) {
+      const { runSeasonEngine } = await import("./season-engine");
+      await runSeasonEngine().catch((e) => console.error("Season engine:", e));
+    }
     revalidatePath("/", "layout");
     return r;
   } catch (e) {

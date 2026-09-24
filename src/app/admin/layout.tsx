@@ -3,19 +3,21 @@ import { requireRole } from "@/lib/auth";
 import { CONTROL_ROOM_ROLES, ROLE_LABEL, can, type Permission } from "@/lib/roles";
 import { pool } from "@/db";
 import { expireStatuses } from "@/lib/data";
+import { tickSeasonEngine } from "@/lib/season-engine";
 
 export const metadata = { title: { default: "Control Room", template: "%s · BOSA Control Room" } };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const u = await requireRole(CONTROL_ROOM_ROLES, "/admin");
   await expireStatuses();
+  await tickSeasonEngine();
   const { rows } = await pool.query(
     "select (select count(*) from players where status='PENDING')::int pending, (select count(*) from team_applications where status='PENDING')::int apps, (select count(*) from matches where status in ('LIVE','HALF_TIME'))::int live",
   );
   const c = rows[0] as { pending: number; apps: number; live: number };
   const item = (perm: Permission, i: PanelNavItem) => (can(u.role, perm) ? [i] : []);
   const nav = [
-    { section: "Matchday", items: [{ href: "/admin", label: "Overview", icon: "grid" as const, exact: true }, ...item("fixtures", { href: "/admin/fixtures", label: "Fixtures & results", icon: "calendar", badge: c.live })] },
+    { section: "Matchday", items: [{ href: "/admin", label: "Overview", icon: "grid" as const, exact: true }, ...item("fixtures", { href: "/admin/fixtures", label: "Fixtures & results", icon: "calendar", badge: c.live }), ...item("competitions", { href: "/admin/season", label: "Season control", icon: "trophy" })] },
     {
       section: "Competition",
       items: [
