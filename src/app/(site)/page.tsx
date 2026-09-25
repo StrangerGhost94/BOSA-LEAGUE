@@ -333,6 +333,8 @@ export default async function HomePage() {
         <CompetitionSwitcher items={previews} />
       </section>
 
+      {/* Members only: the summit (leader, golden boot, scoring chart) and recent results */}
+      {member && (<>
       {/* ---------------- LEADER + TOP SCORER (ivory) ---------------- */}
       <section className="relative mt-28 bg-ivory py-24 text-night-800">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold to-transparent" />
@@ -446,6 +448,8 @@ export default async function HomePage() {
           ))}
         </Stagger>
       </section>
+
+      </>)}
 
       {/* ---------------- NEWS ---------------- */}
       <section className="container-x pt-14 sm:pt-28">
