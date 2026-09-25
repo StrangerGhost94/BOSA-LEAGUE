@@ -11,7 +11,7 @@ import {
   animate,
   type Variants,
 } from "framer-motion";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Children, isValidElement, useEffect, useRef, useState, type ReactNode } from "react";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -53,8 +53,13 @@ const staggerChild: Variants = {
 
 export function Stagger({ children, className, as = "div" }: { children: ReactNode; className?: string; as?: "div" | "ul" | "tbody" | "ol" }) {
   const Comp = motion[as];
+  // When the items change (another matchday, filter or page), start the list afresh. Otherwise new items join
+  // a list whose one-time reveal has already played, and they can stay invisible.
+  const sig = Children.toArray(children)
+    .map((c) => (isValidElement(c) ? String(c.key) : ""))
+    .join("|");
   return (
-    <Comp className={className} variants={staggerParent} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-40px" }}>
+    <Comp key={sig} className={className} variants={staggerParent} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-40px" }}>
       {children}
     </Comp>
   );
