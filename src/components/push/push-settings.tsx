@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { ActionForm, Submit } from "@/components/form";
 import { Icon, Pill } from "@/components/ui";
-import { saveNotificationPrefsAction, sendTestPushAction } from "@/app/actions/notifications";
+import { saveNotificationPrefsAction } from "@/app/actions/notifications";
 import { currentSubscription, pushEnv, subscribeDevice, unsubscribeDevice, type PushEnv } from "@/lib/push-client";
 
 export type Prefs = {
@@ -137,16 +137,9 @@ export function PushSettings({ publicKey, prefs }: { publicKey: string | null; p
       )}
 
       {state === "on" && (
-        <div className="flex flex-wrap gap-2">
-          <ActionForm action={sendTestPushAction}>
-            <Submit className="btn-ghost btn-sm" pendingText="Sending...">
-              Send me a test
-            </Submit>
-          </ActionForm>
-          <button type="button" onClick={disable} disabled={busy} className="btn-quiet btn-sm">
-            Turn off on this device
-          </button>
-        </div>
+        <button type="button" onClick={disable} disabled={busy} className="btn-quiet btn-sm">
+          Turn off on this device
+        </button>
       )}
 
       {error && <p className="mt-3 text-sm text-crimson-400">{error}</p>}

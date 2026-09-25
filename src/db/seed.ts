@@ -11,7 +11,7 @@ import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS, HISTORY, SQUADS,
  *
  * DATA_VERSION lets a deployment replace older demo data exactly once.
  */
-const DATA_VERSION = "9";
+const DATA_VERSION = "10";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool, { schema: s });
@@ -42,6 +42,35 @@ function tidyName(n: string) {
  * Players already on record with the same name (e.g. from the top scorers list) are updated, not duplicated,
  * so their goals stay with them. Safe to run more than once.
  */
+/**
+ * Matchdays 1-4 as real results: every score is stored and counted, instead of a table snapshot.
+ * The snapshot figures are cleared so nothing is counted twice. Only touches matches still at the
+ * stored snapshot (no score yet, or the earlier Matchday 1-2 figures).
+ */
+async function applyResults() {
+  const { rows } = await pool.query(
+    "select s.id from seasons s join competitions c on c.id=s.competition_id where c.slug='bosa-league' and s.year=2026 and s.name='Season 4'",
+  );
+  const seasonId = rows[0]?.id;
+  if (!seasonId) return;
+  let n = 0;
+  for (const [key, [hs, as]] of Object.entries(RESULTS)) {
+    const [md, home, away] = key.split(":");
+    const r = await pool.query(
+      `update matches m set home_score=$4, away_score=$5, status='FULL_TIME', counts_in_table=true, updated_at=now()
+         from teams h, teams a
+        where m.season_id=$1 and m.matchday=$2 and h.id=m.home_team_id and a.id=m.away_team_id and h.slug=$3 and a.slug=$6`,
+      [seasonId, Number(md), home, hs, as, away],
+    );
+    n += r.rowCount ?? 0;
+  }
+  await pool.query(
+    "update season_teams set base_played=0, base_won=0, base_drawn=0, base_lost=0, base_goals_for=0, base_goals_against=0, base_form='' where season_id=$1",
+    [seasonId],
+  );
+  console.log(`Stored ${n} results for Matchdays 1-4; the table is now built from the matches.`);
+}
+
 async function applySquads() {
   for (const [slug, oldName, newName] of PLAYER_RENAMES) {
     const [first, ...rest] = newName.split(" ");
@@ -193,6 +222,11 @@ async function main() {
     if (v.rows[0]?.value === "8" && !process.argv.includes("--force")) {
       // Non-destructive update from version 8: official squad sheets for five clubs
       await applySquads();
+      v.rows[0].value = "9";
+    }
+    if (v.rows[0]?.value === "9" && !process.argv.includes("--force")) {
+      // Non-destructive update from version 9: Matchdays 1-4 stored as real results
+      await applyResults();
       await pool.query("insert into settings (key, value) values ('data_version', $1) on conflict (key) do update set value=excluded.value", [DATA_VERSION]);
       console.log("Updated data to version " + DATA_VERSION + " (no results or accounts removed).");
       await pool.end();
@@ -345,6 +379,7 @@ async function main() {
   await addCalendarRules();
   await launchVouchers();
   await applySquads();
+  await applyResults();
 
   /* ---------- News ---------- */
   await db.insert(s.articles).values([

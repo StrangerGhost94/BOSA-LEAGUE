@@ -130,10 +130,14 @@ export const FIXTURES: [number, string, [Slug, Slug, string][]][] = [
   ]],
 ];
 
-/** Scores for Matchdays 1 and 2, worked out from the official week 1 and week 2 tables. */
+/**
+ * Scores for Matchdays 1-4, worked out from the official week 1-4 tables (every club's totals match).
+ * Matchday 1 Los Blancos v Osasuna: the week 1-2 tables showed 5-0 to Los Blancos, but the week 3 and 4
+ * tables only add up with Osasuna winning 3-0, so the latest official figure is used.
+ */
 export const RESULTS: Record<string, [number, number]> = {
   "1:alnasr:alhilal": [8, 1],
-  "1:los-blancos:osasuna": [5, 0],
+  "1:los-blancos:osasuna": [0, 3],
   "1:elites:karegular": [5, 2],
   "1:ittihad:la-masia": [3, 0],
   "1:albayan:hbm": [3, 0],
@@ -146,6 +150,20 @@ export const RESULTS: Record<string, [number, number]> = {
   "2:karegular:golden-jubilee": [0, 4],
   "2:alnasr:ahal-sunnah": [0, 3],
   "2:alhilal:elites": [2, 5],
+  "3:albayan:osasuna": [3, 1],
+  "3:sc-m19:ittihad": [1, 2],
+  "3:dream-cast:la-masia": [2, 4],
+  "3:karegular:los-blancos": [4, 3],
+  "3:alnasr:hbm": [3, 3],
+  "3:alhilal:golden-jubilee": [0, 3],
+  "3:elites:ahal-sunnah": [1, 3],
+  "4:sc-m19:albayan": [2, 2],
+  "4:dream-cast:osasuna": [1, 0],
+  "4:karegular:ittihad": [1, 4],
+  "4:alnasr:la-masia": [3, 1],
+  "4:alhilal:los-blancos": [2, 5],
+  "4:elites:hbm": [0, 2],
+  "4:ahal-sunnah:golden-jubilee": [1, 1],
 };
 
 /**
