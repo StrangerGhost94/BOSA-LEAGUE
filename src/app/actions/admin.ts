@@ -221,6 +221,8 @@ export async function updateScheduleAction(_: ActionResult, fd: FormData): A {
       })
       .where(eq(s.matches.id, id));
     await logActivity(u.id, moved ? "Rescheduled match" : "Updated match details", "Match", m.round, id);
+    if (status === "POSTPONED" && m.status !== "POSTPONED") inBackground("status", async () => (await import("@/lib/push")).notifyMatchStatus(id, "POSTPONED"));
+    else if (moved && status === "SCHEDULED") inBackground("rescheduled", async () => (await import("@/lib/push")).notifyRescheduled(id));
     return ok(moved ? "Match rescheduled." : "Match details saved.");
   });
 }
@@ -329,6 +331,10 @@ export async function setMatchStatusAction(_: ActionResult, fd: FormData): A {
     await logActivity(u.id, `Match status: ${status.replace("_", " ").toLowerCase()}`, "Match", m.round, m.id);
     // Push the result to members (once per person, even if full time is recorded twice)
     if (status === "FULL_TIME") inBackground("result", async () => (await import("@/lib/push")).notifyResult(m.id));
+    // Kick-off (only when a match starts, not when the second half resumes), half-time, postponed, cancelled
+    const kickOff = status === "LIVE" && m.status === "SCHEDULED";
+    if ((kickOff || ["HALF_TIME", "POSTPONED", "CANCELLED"].includes(status)) && status !== m.status)
+      inBackground("status", async () => (await import("@/lib/push")).notifyMatchStatus(m.id, status));
     return ok(status === "FULL_TIME" ? "Full-time recorded. Standings updated." : `Status set to ${status.replace("_", " ").toLowerCase()}.`);
   });
 }
@@ -391,6 +397,9 @@ export async function addEventAction(_: ActionResult, fd: FormData): A {
     if (m.status === "SCHEDULED") await db.update(s.matches).set({ status: "LIVE", minute, clockAt: new Date(), homeScore: m.homeScore ?? 0, awayScore: m.awayScore ?? 0 }).where(eq(s.matches.id, m.id));
     if (["GOAL", "PENALTY_GOAL", "OWN_GOAL"].includes(type) && m.status === "SCHEDULED") await recalcScore(m.id);
     await logActivity(u.id, `Added ${type.replace("_", " ").toLowerCase()}`, "Match", `${m.round} ${minute}'`, m.id);
+    // Recording the first event starts the match: that's the kick-off alert
+    if (m.status === "SCHEDULED") inBackground("status", async () => (await import("@/lib/push")).notifyMatchStatus(m.id, "LIVE"));
+    if (["RED", "SECOND_YELLOW"].includes(type) && m.status !== "FULL_TIME") inBackground("red card", async () => (await import("@/lib/push")).notifyRedCard(e.id));
     // Goal alert while the match is on (goals added after full time are corrections, not news)
     if (["GOAL", "PENALTY_GOAL", "OWN_GOAL"].includes(type) && m.status !== "FULL_TIME") inBackground("goal", async () => (await import("@/lib/push")).notifyGoal(e.id));
     return ok(`Event added.${extra}`);

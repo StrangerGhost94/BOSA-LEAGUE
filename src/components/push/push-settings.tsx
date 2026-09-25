@@ -16,12 +16,12 @@ export type Prefs = {
 };
 
 const PREF_LABELS: [keyof Prefs, string, string][] = [
-  ["match_reminders", "Match reminders", "A day before and an hour before kick-off"],
-  ["goals", "Goals", "Live, as they are recorded"],
-  ["match_results", "Results", "At full time"],
-  ["league_announcements", "League announcements", "Season news from the League office"],
+  ["goals", "Goals and red cards", "Who scored, the moment it's recorded"],
+  ["match_results", "Kick-off, half-time and full-time", "Follow the score as each match goes"],
+  ["match_reminders", "Match reminders", "A day and an hour before kick-off, plus time changes"],
+  ["league_announcements", "League news", "New season, champions crowned, Champions League draw"],
   ["team_updates", "Club updates", "News for your club"],
-  ["general_notifications", "General", "Everything else"],
+  ["general_notifications", "General", "Everything else from the League office"],
 ];
 
 type State = "loading" | "off-server" | "install" | "unsupported" | "denied" | "ready" | "on";
@@ -129,7 +129,7 @@ export function PushSettings({ publicKey, prefs }: { publicKey: string | null; p
 
       {state === "ready" && (
         <div>
-          <p className="text-sm text-ivory/60">Get kick-off reminders, goals and results on this device, even when BOSA is closed.</p>
+          <p className="text-sm text-ivory/60">Know the moment someone scores. Kick-off, half-time and full-time alerts, plus reminders before every match, even when BOSA is closed.</p>
           <button type="button" onClick={enable} disabled={busy} className="btn-gold mt-4">
             <Icon name="bell" size={16} /> {busy ? "Waiting for your answer..." : "Enable match notifications"}
           </button>

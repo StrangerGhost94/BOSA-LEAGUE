@@ -4,6 +4,7 @@ import { db, pool } from "@/db";
 import * as s from "@/db/schema";
 import { computeStandings } from "@/lib/standings";
 import { advanceKnockout } from "@/lib/match-service";
+import { inBackground, notifyLeagueNews } from "@/lib/push";
 import { addDays, at, eatDay, nextSunday, orient, pairKey, planRemaining, roundRobin, seededBracket, slotTime, type Pair } from "@/lib/scheduler";
 
 /**
@@ -86,10 +87,13 @@ async function venueId() {
 }
 
 async function publish(slug: string, title: string, excerpt: string, body: string, competitionId: string | null) {
-  await db
+  const created = await db
     .insert(s.articles)
     .values({ slug, title, excerpt, body, category: "COMPETITION", competitionId, featured: true, readMinutes: 1, authorName: "League Office" })
-    .onConflictDoNothing();
+    .onConflictDoNothing()
+    .returning({ id: s.articles.id });
+  // A new League Office story (season announced, champions crowned, Champions League draw, season complete): tell members
+  if (created.length) inBackground("league news", () => notifyLeagueNews(slug, title, excerpt));
 }
 
 const teamName = async (id: string | null) => (id ? (await db.query.teams.findFirst({ where: eq(s.teams.id, id) }))?.name ?? "TBC" : "TBC");

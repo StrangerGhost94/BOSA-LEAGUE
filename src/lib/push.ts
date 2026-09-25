@@ -11,12 +11,14 @@ import webpush from "web-push";
 import { randomUUID } from "crypto";
 import { pool } from "@/db";
 
-export type PushType = "MATCH_REMINDER" | "MATCH_RESULT" | "GOAL" | "FIXTURE" | "LEAGUE_ANNOUNCEMENT" | "TEAM_UPDATE" | "GENERAL";
+export type PushType = "MATCH_REMINDER" | "MATCH_STATUS" | "MATCH_RESULT" | "GOAL" | "RED_CARD" | "FIXTURE" | "LEAGUE_ANNOUNCEMENT" | "TEAM_UPDATE" | "GENERAL";
 
 export const PUSH_TYPE_LABEL: Record<PushType, string> = {
   MATCH_REMINDER: "Match reminder",
+  MATCH_STATUS: "Kick-off / half-time",
   MATCH_RESULT: "Result",
   GOAL: "Goal",
+  RED_CARD: "Red card",
   FIXTURE: "Fixture news",
   LEAGUE_ANNOUNCEMENT: "League announcement",
   TEAM_UPDATE: "Club update",
@@ -27,8 +29,10 @@ export const PUSH_TYPE_LABEL: Record<PushType, string> = {
 const PREF_COLUMN: Record<PushType, string> = {
   MATCH_REMINDER: "match_reminders",
   FIXTURE: "match_reminders",
+  MATCH_STATUS: "match_results",
   MATCH_RESULT: "match_results",
   GOAL: "goals",
+  RED_CARD: "goals",
   LEAGUE_ANNOUNCEMENT: "league_announcements",
   TEAM_UPDATE: "team_updates",
   GENERAL: "general_notifications",
@@ -345,10 +349,75 @@ export async function notifyResult(matchId: string) {
   );
 }
 
+/** Kick-off, half-time, postponed or cancelled. Each is sent once per match (and once per new date). */
+export async function notifyMatchStatus(matchId: string, status: string) {
+  const m = await loadMatch(matchId);
+  if (!m) return;
+  const score = `${m.home} ${m.hs ?? 0}-${m.as ?? 0} ${m.away}`;
+  let payload: PushPayload;
+  let key: string;
+  let ttl = 60 * 30;
+  if (status === "LIVE") {
+    payload = { type: "MATCH_STATUS", title: `Kick-off · ${m.round}`, body: `${m.home} v ${m.away} is under way.`, url: `/matches/${m.id}`, tag: `match-${m.id}` };
+    key = "kickoff";
+  } else if (status === "HALF_TIME") {
+    payload = { type: "MATCH_STATUS", title: "Half-time", body: score, url: `/matches/${m.id}`, tag: `match-${m.id}` };
+    key = "halftime";
+  } else if (status === "POSTPONED" || status === "CANCELLED") {
+    const word = status === "POSTPONED" ? "Postponed" : "Cancelled";
+    payload = { type: "FIXTURE", title: `${word}: ${m.home} v ${m.away}`, body: `${m.round} on ${fmtDay(m.kickoff)} will not go ahead as planned. Tap for details.`, url: `/matches/${m.id}`, tag: `match-${m.id}` };
+    key = `${status.toLowerCase()}:${m.kickoff.toISOString()}`;
+    ttl = 60 * 60 * 24;
+  } else return;
+  const ids = await audienceFor(payload.type);
+  await sendPushToUsers(ids, payload, { ttl, urgency: status === "LIVE" || status === "HALF_TIME" ? "high" : "normal", dedupe: (uid) => `status:${m.id}:${key}:${uid}` });
+}
+
+/** A red card (straight or second yellow) during a match. */
+export async function notifyRedCard(eventId: string) {
+  const { rows } = await pool.query(
+    `select e.id, e.match_id, e.type, e.minute, e.team_id, pl.first_name, pl.last_name
+       from match_events e left join players pl on pl.id = e.player_id where e.id = $1`,
+    [eventId],
+  );
+  const e = rows[0];
+  if (!e || !["RED", "SECOND_YELLOW"].includes(e.type)) return;
+  const m = await loadMatch(e.match_id);
+  if (!m) return;
+  const team = e.team_id === m.home_id ? m.home : m.away;
+  const who = [e.first_name, e.last_name].filter(Boolean).join(" ") || "A player";
+  await sendPushToUsers(
+    await audienceFor("RED_CARD"),
+    { type: "RED_CARD", title: `Red card · ${team}`, body: `${who} ${e.minute}'${e.type === "SECOND_YELLOW" ? " (second yellow)" : ""} · ${m.home} ${m.hs ?? 0}-${m.as ?? 0} ${m.away}`, url: `/matches/${m.id}`, tag: `match-${m.id}` },
+    { ttl: 60 * 15, urgency: "high", dedupe: (uid) => `red:${e.id}:${uid}` },
+  );
+}
+
+/** A scheduled match was moved to a new time. */
+export async function notifyRescheduled(matchId: string) {
+  const m = await loadMatch(matchId);
+  if (!m || m.kickoff.getTime() < Date.now()) return;
+  await sendPushToUsers(
+    await audienceFor("FIXTURE"),
+    { type: "FIXTURE", title: `New time: ${m.home} v ${m.away}`, body: `${m.round} now kicks off ${fmtDay(m.kickoff)} at ${hhmm(m.kickoff)}.`, url: `/matches/${m.id}`, tag: `match-${m.id}` },
+    { ttl: 60 * 60 * 24, dedupe: (uid) => `moved:${m.id}:${m.kickoff.toISOString()}:${uid}` },
+  );
+}
+
+/** A Newsroom story the season engine published by itself (season announced, champions crowned, Champions League draw...). */
+export async function notifyLeagueNews(slug: string, title: string, excerpt: string) {
+  await sendPushToUsers(
+    await audienceFor("LEAGUE_ANNOUNCEMENT"),
+    { type: "LEAGUE_ANNOUNCEMENT", title: title.slice(0, 80), body: excerpt, url: `/news/${slug}`, tag: `news-${slug}`.slice(0, 64) },
+    { ttl: 60 * 60 * 24 * 2, dedupe: (uid) => `news:${slug}:${uid}` },
+  );
+}
+
 /* ------------------------------------------------------------------ reminders */
 
 const TZ = "Africa/Kampala";
 const dayKey = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+const fmtDay = (d: Date) => new Intl.DateTimeFormat("en-GB", { timeZone: TZ, weekday: "long", day: "numeric", month: "long" }).format(d);
 const hhmm = (d: Date) => new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false }).format(d);
 
 /**

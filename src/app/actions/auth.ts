@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { users, players, teams } from "@/db/schema";
 import { startSession, endSession } from "@/lib/auth";
-import { homeFor } from "@/lib/roles";
+import { isStaff, homeFor } from "@/lib/roles";
 import { fail, str, optStr } from "@/lib/result";
 import { logActivity } from "@/lib/activity";
 import type { ActionResult } from "@/components/form";
@@ -26,7 +26,9 @@ export async function signInAction(_: ActionResult, fd: FormData): Promise<Actio
   if (!u.active) return fail("This account has been deactivated. Contact the League office.");
   await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, u.id));
   await startSession(u);
-  redirect(next && next.startsWith("/") && !next.startsWith("//") ? next : homeFor(u.role));
+  // Fans and players land on the home page; staff go straight to their panel
+  const fallback = isStaff(u.role) ? homeFor(u.role) : "/";
+  redirect(next && next.startsWith("/") && !next.startsWith("//") ? next : fallback);
 }
 
 export async function signUpAction(_: ActionResult, fd: FormData): Promise<ActionResult> {
