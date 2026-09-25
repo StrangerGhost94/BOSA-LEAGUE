@@ -155,6 +155,7 @@ export const ICONS = {
   arrowRight: <><path d="M5 12h14M13 6l6 6-6 6" /></>,
   home: <><path d="m3 11 9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9Z" /></>,
   sparkle: <><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6" /></>,
+  bell: <><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></>,
 };
 
 export function EmptyState({ title, body, action }: { title: string; body?: string; action?: ReactNode }) {

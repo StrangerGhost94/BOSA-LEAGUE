@@ -429,6 +429,66 @@ export const vouchers = pgTable(
   (t) => [index("vouchers_status_idx").on(t.status), index("vouchers_batch_idx").on(t.batch)],
 );
 
+/* ============================== PUSH NOTIFICATIONS ============================== */
+
+/** One row per phone or browser that allowed notifications. A person can have several. */
+export const pushSubscriptions = pgTable(
+  "push_subscriptions",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    endpoint: text("endpoint").notNull().unique(),
+    p256dh: text("p256dh").notNull(),
+    auth: text("auth").notNull(),
+    platform: text("platform"), // ios, android, desktop
+    browser: text("browser"),
+    userAgent: text("user_agent"),
+    createdAt: created(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+    // Set when the person turns notifications off, signs out, or the push service says the device is gone
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  },
+  (t) => [index("push_subs_user_idx").on(t.userId)],
+);
+
+/** What each person wants to hear about. No row means everything is on. */
+export const notificationPreferences = pgTable("notification_preferences", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  matchReminders: boolean("match_reminders").notNull().default(true),
+  matchResults: boolean("match_results").notNull().default(true),
+  goals: boolean("goals").notNull().default(true),
+  leagueAnnouncements: boolean("league_announcements").notNull().default(true),
+  teamUpdates: boolean("team_updates").notNull().default(true),
+  generalNotifications: boolean("general_notifications").notNull().default(true),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * Every notification attempt. A row with a dedupe key and no device is the "claim" that makes
+ * automatic notifications (reminders, goals, results) go out once per person, however often the job runs.
+ */
+export const notificationLogs = pgTable(
+  "notification_logs",
+  {
+    id: id(),
+    notificationId: text("notification_id").notNull(), // shared by every row of one send
+    userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+    subscriptionId: text("subscription_id").references(() => pushSubscriptions.id, { onDelete: "set null" }),
+    notificationType: text("notification_type").notNull(),
+    status: text("status").notNull().default("queued"), // queued, sent, failed, expired, revoked
+    dedupeKey: text("dedupe_key").unique(),
+    createdAt: created(),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    failureReason: text("failure_reason"),
+  },
+  (t) => [index("notification_logs_notification_idx").on(t.notificationId), index("notification_logs_created_idx").on(t.createdAt)],
+);
+
 export const perks = pgTable("perks", {
   id: id(),
   sponsor: text("sponsor").notNull(),

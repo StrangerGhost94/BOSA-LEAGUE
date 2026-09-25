@@ -6,6 +6,8 @@ import { getSessionState, hasMembership } from "@/lib/auth";
 import { ROLE_LABEL, homeFor } from "@/lib/roles";
 import { pool } from "@/db";
 import { tickSeasonEngine } from "@/lib/season-engine";
+import { PushSync } from "@/components/push/push-sync";
+import { pushConfigured, vapidPublicKey } from "@/lib/push";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   await tickSeasonEngine();
@@ -26,6 +28,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       </main>
       <MobileTabBar liveCount={live.rows[0].c} />
       <SiteFooter signedIn={!!u} member={hasMembership(u)} />
+      <PushSync signedIn={!!u} member={hasMembership(u)} publicKey={pushConfigured() ? vapidPublicKey() : null} />
       <div className="h-[calc(var(--tabbar-h)+var(--safe-bottom))] xl:hidden" aria-hidden />
     </>
   );

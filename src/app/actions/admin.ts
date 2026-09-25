@@ -11,6 +11,7 @@ import { logActivity } from "@/lib/activity";
 import { fromLocalInput, slugify } from "@/lib/format";
 import { assignableRoles, can } from "@/lib/roles";
 import { getGroupTables } from "@/lib/data";
+import { inBackground } from "@/lib/push";
 import type { ActionResult } from "@/components/form";
 import type { CurrentUser } from "@/lib/auth";
 
@@ -326,6 +327,8 @@ export async function setMatchStatusAction(_: ActionResult, fd: FormData): A {
       await advanceKnockout(m.id);
     }
     await logActivity(u.id, `Match status: ${status.replace("_", " ").toLowerCase()}`, "Match", m.round, m.id);
+    // Push the result to members (once per person, even if full time is recorded twice)
+    if (status === "FULL_TIME") inBackground("result", async () => (await import("@/lib/push")).notifyResult(m.id));
     return ok(status === "FULL_TIME" ? "Full-time recorded. Standings updated." : `Status set to ${status.replace("_", " ").toLowerCase()}.`);
   });
 }
@@ -355,6 +358,7 @@ export async function setScoreAction(_: ActionResult, fd: FormData): A {
       const { advanceKnockout } = await import("@/lib/match-service");
       await advanceKnockout(m.id);
     }
+    if (finalise) inBackground("result", async () => (await import("@/lib/push")).notifyResult(m.id));
     await logActivity(u.id, finalise ? "Recorded result" : "Updated score", "Match", `${m.round}: ${hs}-${as}${hp != null ? ` (pens ${hp}-${ap})` : ""}`, m.id);
     return ok(finalise ? `Result recorded: ${hs}-${as}. Points updated.` : `Score updated to ${hs}-${as}.`);
   });
@@ -387,6 +391,8 @@ export async function addEventAction(_: ActionResult, fd: FormData): A {
     if (m.status === "SCHEDULED") await db.update(s.matches).set({ status: "LIVE", minute, clockAt: new Date(), homeScore: m.homeScore ?? 0, awayScore: m.awayScore ?? 0 }).where(eq(s.matches.id, m.id));
     if (["GOAL", "PENALTY_GOAL", "OWN_GOAL"].includes(type) && m.status === "SCHEDULED") await recalcScore(m.id);
     await logActivity(u.id, `Added ${type.replace("_", " ").toLowerCase()}`, "Match", `${m.round} ${minute}'`, m.id);
+    // Goal alert while the match is on (goals added after full time are corrections, not news)
+    if (["GOAL", "PENALTY_GOAL", "OWN_GOAL"].includes(type) && m.status !== "FULL_TIME") inBackground("goal", async () => (await import("@/lib/push")).notifyGoal(e.id));
     return ok(`Event added.${extra}`);
   });
 }

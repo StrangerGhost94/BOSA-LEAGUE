@@ -193,20 +193,26 @@ export default async function HomePage() {
               </p>
               <div className="mt-7 grid grid-cols-2 gap-3 sm:mt-10 sm:flex sm:flex-wrap sm:items-center sm:gap-4">
                 <Magnetic className="w-full sm:w-auto">
-                  <Link href="/fixtures" className="btn-primary w-full px-4 py-3.5 sm:w-auto sm:px-7">
-                    Fixtures <Arrow />
-                  </Link>
+                  {member ? (
+                    <Link href="/fixtures" className="btn-primary w-full px-4 py-3.5 sm:w-auto sm:px-7">
+                      Fixtures <Arrow />
+                    </Link>
+                  ) : (
+                    <Link href="/membership" className="btn-primary w-full px-4 py-3.5 sm:w-auto sm:px-7">
+                      {me ? "Activate" : "Join"} <Arrow />
+                    </Link>
+                  )}
                 </Magnetic>
                 <Magnetic className="w-full sm:w-auto">
-                  <Link href={cta.href} className="btn-ghost w-full px-4 py-3.5 sm:w-auto sm:px-7">
-                    {cta.label}
+                  <Link href={member ? cta.href : me ? "/members/perks" : "/sign-in"} className="btn-ghost w-full px-4 py-3.5 sm:w-auto sm:px-7">
+                    {member ? cta.label : me ? "Member perks" : "Sign in"}
                   </Link>
                 </Magnetic>
               </div>
             </FadeIn>
           </div>
 
-          {featured && (
+          {member && featured && (
             <FadeIn delay={0.5} className="w-full">
               <div className="glass relative overflow-hidden rounded-3xl p-6 shadow-[0_40px_120px_-40px_rgba(0,0,0,.9)] sm:p-7">
                 <div
@@ -273,7 +279,7 @@ export default async function HomePage() {
       </section>
 
       {/* ---------------- MATCHDAY TIMELINE ---------------- */}
-      {matchday.length > 0 && (
+      {member && matchday.length > 0 && (
         <section className="container-x pt-14 sm:pt-24">
           <SectionHeading eyebrow={`Upcoming · ${fmtLong(matchday[0].kickoff)}`} title={<>Matchday {nextMd} <em className="gold-text">fixtures</em></>} action={{ href: "/fixtures", label: "All fixtures" }} />
           <div className="grid gap-10 lg:grid-cols-[320px_1fr]">
@@ -327,6 +333,8 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Members only: competitions, table, results and news */}
+      {member && (<>
       {/* ---------------- COMPETITIONS ---------------- */}
       <section className="container-x pt-14 sm:pt-28">
         <SectionHeading eyebrow="Three competitions" title={<>Choose your <em className="gold-text">stage</em></>} />
@@ -466,9 +474,11 @@ export default async function HomePage() {
         </div>
       </section>
 
+      </>)}
+
       {/* ---------------- HONOURS ---------------- */}
       {honours.length > 0 && <section className="container-x pt-14 sm:pt-28">
-        <SectionHeading eyebrow="Roll of honour" title={<>Previous <em className="gold-text">champions</em></>} action={{ href: "/league#history", label: "All champions" }} />
+        <SectionHeading eyebrow="Roll of honour" title={<>Previous <em className="gold-text">champions</em></>} action={member ? { href: "/league#history", label: "All champions" } : undefined} />
         <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {honours.slice(0, 12).map((h, i) => {
             const t = teams.find((x) => x.name === h.champion);

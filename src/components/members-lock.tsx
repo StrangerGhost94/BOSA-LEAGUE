@@ -12,7 +12,7 @@ export function MembersLock({ title = "Members-only content", body = "Activate y
       <p className="relative mx-auto mt-2 max-w-md text-sm text-ivory/60">{body}</p>
       <div className="relative mt-6 flex justify-center gap-3">
         <Link href="/membership" className="btn-gold">
-          Become a member
+          {signedIn ? "Activate membership" : "Become a member"}
         </Link>
         {!signedIn && (
           <Link href="/sign-in" className="btn-ghost">

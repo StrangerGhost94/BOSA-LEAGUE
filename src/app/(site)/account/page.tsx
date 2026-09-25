@@ -11,6 +11,9 @@ import { Crest, Pill, SectionHeading } from "@/components/ui";
 import { FadeIn } from "@/components/motion";
 import { getPlayerStats } from "@/lib/data";
 import { completionYears } from "@/lib/years";
+import { pool } from "@/db";
+import { vapidPublicKey, pushConfigured } from "@/lib/push";
+import { PushSettings, type Prefs } from "@/components/push/push-settings";
 
 export const metadata = { title: "My account" };
 
@@ -20,6 +23,16 @@ export default async function AccountPage() {
   const pays = await db.query.payments.findMany({ where: eq(payments.userId, u.id), orderBy: desc(payments.createdAt) });
   const stats = u.playerId ? (await getPlayerStats({ playerId: u.playerId, includePending: true }))[0] : null;
   const panel = homeFor(u.role);
+  const { rows: prefRows } = await pool.query("select * from notification_preferences where user_id = $1", [u.id]);
+  const p = prefRows[0];
+  const prefs: Prefs = {
+    match_reminders: p?.match_reminders ?? true,
+    match_results: p?.match_results ?? true,
+    goals: p?.goals ?? true,
+    league_announcements: p?.league_announcements ?? true,
+    team_updates: p?.team_updates ?? true,
+    general_notifications: p?.general_notifications ?? true,
+  };
 
   return (
     <section className="container-x pt-36">
@@ -114,6 +127,7 @@ export default async function AccountPage() {
           </div>
         </div>
         <div className="space-y-8">
+          {member && <PushSettings publicKey={pushConfigured() ? vapidPublicKey() : null} prefs={prefs} />}
           <div className="panel p-6">
             <div className="eyebrow mb-4">Payments</div>
             {pays.length === 0 && <p className="text-sm text-ivory/45">No payments yet.</p>}

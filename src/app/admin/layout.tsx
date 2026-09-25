@@ -31,7 +31,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     },
     {
       section: "Publishing",
-      items: [...item("news", { href: "/admin/news", label: "Newsroom", icon: "news" }), ...item("news", { href: "/admin/gallery", label: "Gallery", icon: "grid" })],
+      items: [...item("news", { href: "/admin/news", label: "Newsroom", icon: "news" }), ...item("news", { href: "/admin/notifications", label: "Notifications", icon: "bell" }), ...item("news", { href: "/admin/gallery", label: "Gallery", icon: "grid" })],
     },
     {
       section: "Administration",
