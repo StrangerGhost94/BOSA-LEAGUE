@@ -11,7 +11,7 @@ import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS, HISTORY, SQUADS,
  *
  * DATA_VERSION lets a deployment replace older demo data exactly once.
  */
-const DATA_VERSION = "10";
+const DATA_VERSION = "11";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool, { schema: s });
@@ -69,6 +69,16 @@ async function applyResults() {
     [seasonId],
   );
   console.log(`Stored ${n} results for Matchdays 1-4; the table is now built from the matches.`);
+}
+
+/** The starter Live Desk account (same starting password as the other staff accounts; change it after first sign-in). */
+async function addLiveReporter() {
+  const hash = await bcrypt.hash(process.env.SEED_PASSWORD || "Bosa@2026", 10);
+  const r = await pool.query(
+    "insert into users (id, name, email, password_hash, role, membership) values (gen_random_uuid()::text, 'Live Desk', 'live@bosaleague.com', $1, 'LIVE_REPORTER', 'ACTIVE') on conflict (email) do nothing",
+    [hash],
+  );
+  console.log(r.rowCount ? "Created the Live Desk account live@bosaleague.com." : "Live Desk account already exists.");
 }
 
 async function applySquads() {
@@ -227,6 +237,11 @@ async function main() {
     if (v.rows[0]?.value === "9" && !process.argv.includes("--force")) {
       // Non-destructive update from version 9: Matchdays 1-4 stored as real results
       await applyResults();
+      v.rows[0].value = "10";
+    }
+    if (v.rows[0]?.value === "10" && !process.argv.includes("--force")) {
+      // Non-destructive update from version 10: a starter live reporter account for the Live Desk
+      await addLiveReporter();
       await pool.query("insert into settings (key, value) values ('data_version', $1) on conflict (key) do update set value=excluded.value", [DATA_VERSION]);
       console.log("Updated data to version " + DATA_VERSION + " (no results or accounts removed).");
       await pool.end();
@@ -284,6 +299,7 @@ async function main() {
     { name: "Referee One", email: "referee1@bosaleague.com", passwordHash, role: "REFEREE", membership: "ACTIVE" },
     { name: "Referee Two", email: "referee2@bosaleague.com", passwordHash, role: "REFEREE", membership: "ACTIVE" },
     { name: "Referee Three", email: "referee3@bosaleague.com", passwordHash, role: "REFEREE", membership: "ACTIVE" },
+    { name: "Live Desk", email: "live@bosaleague.com", passwordHash, role: "LIVE_REPORTER", membership: "ACTIVE" },
     ...teamRows.map((t) => ({
       name: `${t.name} Manager`,
       email: `coach.${t.slug}@bosaleague.com`,

@@ -30,7 +30,7 @@ const EV: Record<string, { icon: string; label: string }> = {
  * The live reporter's whole job on one phone screen: start the match, tap GOAL for a team and pick the scorer,
  * give cards, call half-time and full time. Everything else (standings, alerts to members) happens by itself.
  */
-export function LiveControls({ match: m, home, away, events }: { match: Match; home: Side; away: Side; events: Ev[] }) {
+export function LiveControls({ match: m, home, away, events, base = "/live-desk" }: { match: Match; home: Side; away: Side; events: Ev[]; base?: string }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [toast, setToast] = useState<ActionResult>(null);
@@ -81,7 +81,7 @@ export function LiveControls({ match: m, home, away, events }: { match: Match; h
 
   return (
     <div className={pending ? "pointer-events-none opacity-70 transition" : "transition"}>
-      <Link href="/live-desk" className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-gold">
+      <Link href={base} className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-gold">
         ‹ Matches
       </Link>
 

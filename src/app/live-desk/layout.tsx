@@ -1,15 +1,19 @@
 import Link from "next/link";
-import { requireRole } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { getCurrentUser, requireRole } from "@/lib/auth";
+import { can } from "@/lib/roles";
 import { BosaLogo, Icon } from "@/components/ui";
 
 export const metadata = { title: { default: "Live Desk", template: "%s · Live Desk" } };
 
 /**
  * The Live Desk: a deliberately simple screen for live reporters to run a match from their phone.
- * League admins can open it too (to help out or check it).
+ * Admins use the same desk inside the Control Room (/admin/live), so they are sent there.
  */
 export default async function LiveDeskLayout({ children }: { children: React.ReactNode }) {
-  const u = await requireRole(["LIVE_REPORTER", "SUPER_ADMIN", "LEAGUE_ADMIN", "COMPETITION_MANAGER"], "/live-desk");
+  const me = await getCurrentUser();
+  if (me && me.role !== "LIVE_REPORTER" && can(me.role, "results")) redirect("/admin/live");
+  const u = await requireRole(["LIVE_REPORTER"], "/live-desk");
   return (
     <div className="min-h-screen bg-night-900 pb-[calc(2rem+var(--safe-bottom))]">
       <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-night-900/90 pt-[var(--safe-top)] backdrop-blur">

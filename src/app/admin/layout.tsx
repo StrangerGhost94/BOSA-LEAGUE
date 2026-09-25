@@ -19,7 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const sharing = can(u.role, "sharing") ? await countSharingFlags() : 0;
   const item = (perm: Permission, i: PanelNavItem) => (can(u.role, perm) ? [i] : []);
   const nav = [
-    { section: "Matchday", items: [{ href: "/admin", label: "Overview", icon: "grid" as const, exact: true }, ...item("fixtures", { href: "/admin/fixtures", label: "Fixtures & results", icon: "calendar", badge: c.live }), ...item("results", { href: "/live-desk", label: "Live desk", icon: "activity" }), ...item("competitions", { href: "/admin/season", label: "Season control", icon: "trophy" })] },
+    { section: "Matchday", items: [{ href: "/admin", label: "Overview", icon: "grid" as const, exact: true }, ...item("fixtures", { href: "/admin/fixtures", label: "Fixtures & results", icon: "calendar", badge: c.live }), ...item("results", { href: "/admin/live", label: "Live desk", icon: "activity" }), ...item("competitions", { href: "/admin/season", label: "Season control", icon: "trophy" })] },
     {
       section: "Competition",
       items: [
