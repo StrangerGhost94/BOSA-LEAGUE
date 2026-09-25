@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BosaLogo } from "@/components/ui";
+import { PARTNERS } from "@/lib/partners";
 
 export function SiteFooter({ signedIn = false, member = false }: { signedIn?: boolean; member?: boolean }) {
   const memberLinks: [string, string][] = member
@@ -32,13 +33,26 @@ export function SiteFooter({ signedIn = false, member = false }: { signedIn?: bo
         </div>
         <div className="mt-14 border-t border-white/[0.06] pt-8">
           <div className="text-[10px] uppercase tracking-[0.3em] text-ivory/30">Official partners</div>
-          <div className="mt-4 flex flex-wrap gap-x-8 gap-y-3 font-display text-sm uppercase tracking-[0.18em] text-ivory/45">
-            <span>Bilal Islamic Institute</span>
-            <span>Weli Travel</span>
-            <span>SondeStone Hardware</span>
-            <span>Plasma Designs Atlantis</span>
-            <span>Hannan Petroleum</span>
-            <span>Daherz Family Doctors</span>
+          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3 font-display text-sm uppercase tracking-[0.18em] text-ivory/45">
+            {PARTNERS.map((p) =>
+              p.url ? (
+                <a
+                  key={p.name}
+                  href={p.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={p.linkLabel?.replace(/\u200B/g, "")}
+                  className="inline-flex items-center gap-1 transition hover:text-gold"
+                >
+                  {p.name}
+                  <svg width="9" height="9" viewBox="0 0 10 10" className="text-gold/60" aria-hidden>
+                    <path d="M3 1h6v6M9 1 1 9" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </a>
+              ) : (
+                <span key={p.name}>{p.name}</span>
+              ),
+            )}
           </div>
         </div>
         <div className="mt-10 flex flex-wrap justify-between gap-4 text-xs text-ivory/30">

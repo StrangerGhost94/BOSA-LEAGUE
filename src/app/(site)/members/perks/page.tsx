@@ -70,11 +70,17 @@ export default async function PerksPage() {
             <div className="font-serif text-2xl">Partner offers are on the way</div>
             <p className="mt-2 max-w-xl text-sm text-ivory/55">The League office is agreeing member offers with our partners. They will appear here, and on your member card, as soon as they are confirmed.</p>
             <div className="mt-6 flex flex-wrap gap-2">
-              {PARTNERS.map((p) => (
-                <span key={p} className="chip text-ivory/70">
-                  {p}
-                </span>
-              ))}
+              {PARTNERS.map((p) =>
+                p.url ? (
+                  <a key={p.name} href={p.url} target="_blank" rel="noopener noreferrer" className="chip text-ivory/70 transition hover:border-gold/40 hover:text-ivory">
+                    {p.name} ↗
+                  </a>
+                ) : (
+                  <span key={p.name} className="chip text-ivory/70">
+                    {p.name}
+                  </span>
+                ),
+              )}
             </div>
             {u && can(u.role, "perks") && (
               <Link href="/admin/perks" className="btn-ghost btn-sm mt-6">
