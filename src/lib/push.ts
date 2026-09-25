@@ -52,12 +52,29 @@ type Sub = { id: string; user_id: string; endpoint: string; p256dh: string; auth
 
 let configured: boolean | null = null;
 
+/**
+ * Reads a setting and forgives copy-paste slips: spaces, line breaks and quotes are removed, and a pasted
+ * "NAME=value" becomes just the value. Keys never contain spaces, so removing them is safe.
+ */
+function envKey(name: string) {
+  let v = (process.env[name] ?? "").trim().replace(/^["'`]+|["'`]+$/g, "").trim();
+  if (v.startsWith(name + "=")) v = v.slice(name.length + 1).replace(/^["'`]+|["'`]+$/g, "");
+  if (name !== "VAPID_SUBJECT") v = v.replace(/\s+/g, "");
+  return v || undefined;
+}
+
+/** Describes what is wrong with a key without revealing it (safe to log). */
+function keyProblem(name: string, v: string, expectedLength: number) {
+  const bad = [...new Set(v.replace(/[A-Za-z0-9_-]/g, ""))].map((c) => JSON.stringify(c)).join(" ");
+  return `${name}: ${v.length} characters (expected ${expectedLength})${bad ? `, contains ${bad}` : ""}`;
+}
+
 /** True when all three VAPID settings are present and valid. Without them, push quietly stays off. */
 export function pushConfigured() {
   if (configured !== null) return configured;
-  const pub = process.env.VAPID_PUBLIC_KEY;
-  const priv = process.env.VAPID_PRIVATE_KEY;
-  const subject = process.env.VAPID_SUBJECT;
+  const pub = envKey("VAPID_PUBLIC_KEY");
+  const priv = envKey("VAPID_PRIVATE_KEY");
+  const subject = envKey("VAPID_SUBJECT");
   if (!pub || !priv || !subject) {
     console.warn("[push] VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY or VAPID_SUBJECT not set: push notifications are off.");
     configured = false;
@@ -68,7 +85,7 @@ export function pushConfigured() {
     configured = true;
   } catch (e) {
     // web-push's messages describe the problem ("should be 32 bytes") without echoing the key
-    console.error("[push] VAPID settings rejected:", (e as Error).message);
+    console.error("[push] VAPID settings rejected:", (e as Error).message, "|", keyProblem("VAPID_PUBLIC_KEY", pub, 87), "|", keyProblem("VAPID_PRIVATE_KEY", priv, 43), "| subject starts with mailto: or https:", /^(mailto:|https:)/.test(subject));
     configured = false;
   }
   return configured;
@@ -76,7 +93,7 @@ export function pushConfigured() {
 
 /** The public key is meant to be public: browsers need it to subscribe. */
 export function vapidPublicKey() {
-  return process.env.VAPID_PUBLIC_KEY || null;
+  return envKey("VAPID_PUBLIC_KEY") ?? null;
 }
 
 /* ------------------------------------------------------------------ validation */
