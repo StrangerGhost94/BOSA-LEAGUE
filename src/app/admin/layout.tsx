@@ -16,10 +16,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     "select (select count(*) from players where status='PENDING')::int pending, (select count(*) from team_applications where status='PENDING')::int apps, (select count(*) from matches where status in ('LIVE','HALF_TIME'))::int live",
   );
   const c = rows[0] as { pending: number; apps: number; live: number };
-  const sharing = can(u.role, "users") ? await countSharingFlags() : 0;
+  const sharing = can(u.role, "sharing") ? await countSharingFlags() : 0;
   const item = (perm: Permission, i: PanelNavItem) => (can(u.role, perm) ? [i] : []);
   const nav = [
-    { section: "Matchday", items: [{ href: "/admin", label: "Overview", icon: "grid" as const, exact: true }, ...item("fixtures", { href: "/admin/fixtures", label: "Fixtures & results", icon: "calendar", badge: c.live }), ...item("competitions", { href: "/admin/season", label: "Season control", icon: "trophy" })] },
+    { section: "Matchday", items: [{ href: "/admin", label: "Overview", icon: "grid" as const, exact: true }, ...item("fixtures", { href: "/admin/fixtures", label: "Fixtures & results", icon: "calendar", badge: c.live }), ...item("results", { href: "/live-desk", label: "Live desk", icon: "activity" }), ...item("competitions", { href: "/admin/season", label: "Season control", icon: "trophy" })] },
     {
       section: "Competition",
       items: [
@@ -36,8 +36,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     {
       section: "Administration",
       items: [
-        ...item("users", { href: "/admin/users", label: "Users & roles", icon: "user" }),
-        ...item("users", { href: "/admin/security", label: "Account sharing", icon: "shield", badge: sharing }),
+        ...item("users", { href: "/admin/users", label: u.role === "SUPER_ADMIN" ? "Users & roles" : "Coaches & officials", icon: "user" }),
+        ...item("sharing", { href: "/admin/security", label: "Account sharing", icon: "shield", badge: sharing }),
         ...item("payments", { href: "/admin/vouchers", label: "Vouchers", icon: "card" }),
         ...item("payments", { href: "/admin/payments", label: "Memberships", icon: "users" }),
         ...item("perks", { href: "/admin/perks", label: "Member perks", icon: "sparkle" }),

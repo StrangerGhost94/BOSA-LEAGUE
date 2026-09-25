@@ -12,7 +12,9 @@ export const metadata = { title: "Notifications" };
 export const dynamic = "force-dynamic";
 
 export default async function NotificationsAdmin() {
-  await requirePermission("news");
+  const me = await requirePermission("news");
+  // Only the Super Admin sees the list of individual members
+  const everyone = me.role === "SUPER_ADMIN";
   const configured = pushConfigured();
   const [teams, devices, people, recent] = await Promise.all([
     getTeams(),
@@ -83,7 +85,7 @@ export default async function NotificationsAdmin() {
               <select name="audience" className="input" defaultValue="all">
                 <option value="all">All members with notifications on</option>
                 <option value="team">One club (its players and fans)</option>
-                <option value="users">Selected people (tick below)</option>
+                {everyone && <option value="users">Selected people (tick below)</option>}
               </select>
             </Field>
             <Field label="Club (when sending to one club)">
@@ -96,6 +98,7 @@ export default async function NotificationsAdmin() {
                 ))}
               </select>
             </Field>
+            {everyone && (
             <details className="rounded-xl border border-white/[0.07] px-4 py-3">
               <summary className="cursor-pointer text-sm font-semibold text-gold">People (when sending to selected people): {people.rows.length}</summary>
               <div className="mt-3 max-h-72 space-y-1 overflow-y-auto">
@@ -109,6 +112,7 @@ export default async function NotificationsAdmin() {
                 {people.rows.length === 0 && <p className="text-xs text-ivory/45">Nobody has turned notifications on yet.</p>}
               </div>
             </details>
+            )}
             <div>
               <Submit className="btn-gold" pendingText="Sending...">
                 Send notification

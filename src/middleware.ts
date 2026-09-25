@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySession } from "@/lib/session";
 
-const PROTECTED = ["/admin", "/team-panel", "/referee", "/account"];
+const PROTECTED = ["/admin", "/team-panel", "/referee", "/live-desk", "/account"];
 
 export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
@@ -16,4 +16,4 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = { matcher: ["/admin/:path*", "/team-panel/:path*", "/referee/:path*", "/account/:path*"] };
+export const config = { matcher: ["/admin/:path*", "/team-panel/:path*", "/referee/:path*", "/live-desk/:path*", "/account/:path*"] };

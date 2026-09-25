@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, or, type SQL } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, or, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import * as s from "@/db/schema";
 import { PageHeader } from "@/components/panel-shell";
@@ -7,7 +7,7 @@ import { FilterBar } from "@/components/filter-bar";
 import { ActionForm, Field, Submit } from "@/components/form";
 import { Pill } from "@/components/ui";
 import { requirePermission } from "@/lib/auth";
-import { ROLE_LABEL, assignableRoles, can } from "@/lib/roles";
+import { ROLE_LABEL, assignableRoles, can, manageableRoles } from "@/lib/roles";
 import { createUserAction, updateUserAction } from "@/app/actions/admin";
 import { getTeams } from "@/lib/data";
 import { timeAgo } from "@/lib/format";
@@ -18,6 +18,10 @@ export default async function AdminUsers({ searchParams }: { searchParams: Recor
   const me = await requirePermission("users");
   const teams = await getTeams();
   const conds: SQL[] = [];
+  const everyone = me.role === "SUPER_ADMIN";
+  const visible = manageableRoles(me.role);
+  // League Administrators only see the coaches and match officials they look after
+  if (!everyone) conds.push(inArray(s.users.role, visible));
   if (searchParams.role) conds.push(eq(s.users.role, searchParams.role as s.Role));
   if (searchParams.q) conds.push(or(ilike(s.users.name, `%${searchParams.q}%`), ilike(s.users.email, `%${searchParams.q}%`))!);
   if (searchParams.member && can(me.role, "payments")) conds.push(eq(s.users.membership, searchParams.member as "NONE" | "ACTIVE"));
@@ -27,8 +31,8 @@ export default async function AdminUsers({ searchParams }: { searchParams: Recor
 
   return (
     <>
-      <PageHeader eyebrow={`${users.length} accounts`} title="Users & roles">
-        <Drawer label="Create account" title="Create a staff or member account" description="Share the temporary password privately; the user can change it from My account." icon="plus">
+      <PageHeader eyebrow={`${users.length} accounts`} title={everyone ? "Users & roles" : "Coaches & officials"}>
+        <Drawer label={everyone ? "Create account" : "Add a person"} title={everyone ? "Create a staff or member account" : "Add a coach, referee or live reporter"} description="Share the temporary password privately; the user can change it from My account." icon="plus">
           <ActionForm action={createUserAction} className="space-y-5" resetOnSuccess>
             <Field label="Full name">
               <input name="name" className="input" required />
@@ -37,7 +41,7 @@ export default async function AdminUsers({ searchParams }: { searchParams: Recor
               <input name="email" type="email" className="input" required />
             </Field>
             <Field label="Role">
-              <select name="role" className="input" defaultValue="TEAM_MANAGER">
+              <select name="role" className="input" defaultValue={everyone ? "TEAM_MANAGER" : "LIVE_REPORTER"}>
                 {roles.map((r) => (
                   <option key={r} value={r}>
                     {ROLE_LABEL[r]}
@@ -45,7 +49,7 @@ export default async function AdminUsers({ searchParams }: { searchParams: Recor
                 ))}
               </select>
             </Field>
-            <Field label="Club (team managers and players)">
+            <Field label={everyone ? "Club (team managers and players)" : "Club (coaches only)"}>
               <select name="teamId" className="input" defaultValue="">
                 <option value="">None</option>
                 {teams.map((t) => (
@@ -66,7 +70,7 @@ export default async function AdminUsers({ searchParams }: { searchParams: Recor
         className="mb-6"
         filters={[
           { name: "q", label: "Search", type: "search", placeholder: "Name or email" },
-          { name: "role", label: "Role", type: "select", all: "All roles", options: Object.entries(ROLE_LABEL).map(([value, label]) => ({ value, label })) },
+          { name: "role", label: "Role", type: "select", all: "All roles", options: visible.map((value) => ({ value, label: ROLE_LABEL[value] })) },
           ...(seesMembership ? [{ name: "member", label: "Membership", type: "select" as const, all: "Any", options: [{ value: "ACTIVE", label: "Active" }, { value: "NONE", label: "Not paid" }] }] : []),
         ]}
       />

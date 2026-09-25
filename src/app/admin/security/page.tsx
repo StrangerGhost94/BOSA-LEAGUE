@@ -10,7 +10,7 @@ import { setAccountSuspendedAction, signOutEverywhereAction } from "@/app/action
 export const metadata = { title: "Account sharing" };
 
 export default async function SecurityPage() {
-  await requirePermission("users");
+  await requirePermission("sharing");
   const flags = await getSharingFlags();
   const history = await Promise.all(flags.map((f) => recentSignIns(f.id, 8)));
 

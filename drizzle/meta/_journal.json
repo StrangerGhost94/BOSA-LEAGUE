@@ -78,6 +78,13 @@
       "when": 1790296602880,
       "tag": "0010_push_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790303131851,
+      "tag": "0011_live_reporter_role",
+      "breakpoints": true
     }
   ]
 }

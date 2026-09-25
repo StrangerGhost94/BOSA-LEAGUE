@@ -326,12 +326,13 @@ export async function notifyGoal(eventId: string) {
   if (!e || !["GOAL", "PENALTY_GOAL", "OWN_GOAL"].includes(e.type)) return;
   const m = await loadMatch(e.match_id);
   if (!m) return;
-  const scorer = e.type === "OWN_GOAL" ? "Own goal" : [e.first_name, e.last_name].filter(Boolean).join(" ") + (e.type === "PENALTY_GOAL" ? " (pen)" : "");
+  const name = [e.first_name, e.last_name].filter(Boolean).join(" ");
+  const scorer = e.type === "OWN_GOAL" ? "Own goal" : name ? name + (e.type === "PENALTY_GOAL" ? " (pen)" : "") : e.type === "PENALTY_GOAL" ? "Penalty" : "";
   const team = e.team_id === m.home_id ? m.home : m.away;
   const ids = await audienceFor("GOAL");
   await sendPushToUsers(
     ids,
-    { type: "GOAL", title: `Goal! ${team}`, body: `${m.home} ${m.hs ?? 0}-${m.as ?? 0} ${m.away} · ${scorer} ${e.minute}'`, url: `/matches/${m.id}`, tag: `match-${m.id}` },
+    { type: "GOAL", title: `Goal! ${team}`, body: `${m.home} ${m.hs ?? 0}-${m.as ?? 0} ${m.away} · ${scorer ? `${scorer} ` : ""}${e.minute}'`, url: `/matches/${m.id}`, tag: `match-${m.id}` },
     { ttl: 60 * 15, urgency: "high", dedupe: (uid) => `goal:${e.id}:${uid}` },
   );
 }

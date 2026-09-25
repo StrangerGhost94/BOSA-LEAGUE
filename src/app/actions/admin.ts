@@ -9,7 +9,7 @@ import { guarded, Denied } from "@/lib/guard";
 import { ok, fail, str, optStr, num, bool } from "@/lib/result";
 import { logActivity } from "@/lib/activity";
 import { fromLocalInput, slugify } from "@/lib/format";
-import { assignableRoles, can } from "@/lib/roles";
+import { assignableRoles, can, manageableRoles } from "@/lib/roles";
 import { getGroupTables } from "@/lib/data";
 import { inBackground } from "@/lib/push";
 import type { ActionResult } from "@/components/form";
@@ -296,16 +296,19 @@ export async function generateRoundRobinAction(_: ActionResult, fd: FormData): A
 async function loadMatchForEdit(u: CurrentUser, matchId: string) {
   const m = await db.query.matches.findFirst({ where: eq(s.matches.id, matchId) });
   if (!m) throw new Denied("Match not found.");
-  if (!(can(u.role, "results") || (u.role === "REFEREE" && m.refereeId === u.id))) throw new Denied("Only administrators or the appointed referee can update this match.");
+  // Live reporters cover any match; a referee only the matches they are appointed to
+  if (!(can(u.role, "results") || u.role === "LIVE_REPORTER" || (u.role === "REFEREE" && m.refereeId === u.id))) throw new Denied("Only administrators, live reporters or the appointed referee can update this match.");
   return m;
 }
-const canResults = (u: CurrentUser) => can(u.role, "results") || u.role === "REFEREE";
+const canResults = (u: CurrentUser) => can(u.role, "results") || u.role === "REFEREE" || u.role === "LIVE_REPORTER";
 
 export async function setMatchStatusAction(_: ActionResult, fd: FormData): A {
   return guarded(canResults, async (u) => {
     const m = await loadMatchForEdit(u, str(fd, "id"));
     const status = str(fd, "status") as s.MatchStatus;
     if (!["SCHEDULED", "LIVE", "HALF_TIME", "FULL_TIME", "POSTPONED", "CANCELLED"].includes(status)) return fail("Invalid status.");
+    // Live reporters run the match itself; postponing or cancelling is for the League office
+    if (u.role === "LIVE_REPORTER" && !["LIVE", "HALF_TIME", "FULL_TIME"].includes(status)) return fail("Only the League office can postpone or cancel a match.");
     const minute = num(fd, "minute");
     const patch: Partial<s.Match> = { status, updatedAt: new Date() };
     if (status === "LIVE") {
@@ -379,7 +382,8 @@ export async function addEventAction(_: ActionResult, fd: FormData): A {
     if (![m.homeTeamId, m.awayTeamId].includes(teamId)) return fail("Choose one of the two teams.");
     if (minute == null || minute < 0 || minute > 130) return fail("Enter a valid minute.");
     const playerId = optStr(fd, "playerId");
-    if (type !== "OWN_GOAL" && !playerId) return fail("Choose the player.");
+    // Goals and cards can be logged before the player is known (clubs without a squad list, or a quick tap mid-match)
+    if (["SUB", "PENALTY_MISS"].includes(type) && !playerId) return fail("Choose the player.");
     const [e] = await db
       .insert(s.matchEvents)
       .values({ matchId: m.id, type, teamId, minute, playerId, assistId: optStr(fd, "assistId"), playerOffId: optStr(fd, "playerOffId"), note: optStr(fd, "note") })
@@ -732,6 +736,8 @@ export async function updateUserAction(_: ActionResult, fd: FormData): A {
     const target = await db.query.users.findFirst({ where: eq(s.users.id, id) });
     if (!target) return fail("User not found.");
     const role = str(fd, "role") as s.Role;
+    // A League Administrator only looks after coaches, referees and live reporters; everyone else is the Super Admin's
+    if (!manageableRoles(u.role).includes(target.role)) throw new Denied("Only the Super Admin can manage this account.");
     if (target.role === "SUPER_ADMIN" && u.role !== "SUPER_ADMIN") throw new Denied("Only a Super Admin can change another Super Admin.");
     if (role !== target.role && !assignableRoles(u.role).includes(role)) throw new Denied("You cannot assign that role.");
     if (target.id === u.id && role !== u.role) return fail("You cannot change your own role.");
@@ -944,7 +950,7 @@ export async function markVouchersIssuedAction(_: ActionResult, fd: FormData): A
 
 /** Ends every session of a member: all phones are signed out and must sign in again. */
 export async function signOutEverywhereAction(_: ActionResult, fd: FormData): A {
-  return guarded("users", async (u) => {
+  return guarded("sharing", async (u) => {
     const id = str(fd, "userId");
     const [t] = await db.update(s.users).set({ sessionVersion: sql`${s.users.sessionVersion} + 1` }).where(eq(s.users.id, id)).returning({ name: s.users.name });
     if (!t) return fail("Account not found.");
@@ -955,7 +961,7 @@ export async function signOutEverywhereAction(_: ActionResult, fd: FormData): A 
 
 /** Suspends (or restores) a member account. Suspending also signs it out everywhere. */
 export async function setAccountSuspendedAction(_: ActionResult, fd: FormData): A {
-  return guarded("users", async (u) => {
+  return guarded("sharing", async (u) => {
     const id = str(fd, "userId");
     const suspend = str(fd, "suspend") === "1";
     if (id === u.id) return fail("You cannot suspend your own account.");

@@ -64,6 +64,7 @@ export async function sendAnnouncementAction(_: ActionResult, fd: FormData): A {
       if (!teamId) return fail("Choose the club.");
       audience = { kind: "teams", teamIds: [teamId] };
     } else if (to === "users") {
+      if (u.role !== "SUPER_ADMIN") return fail("Only the Super Admin can send to individual members.");
       const ids = fd.getAll("userIds").filter((x): x is string => typeof x === "string").slice(0, 500);
       if (!ids.length) return fail("Tick at least one person.");
       audience = { kind: "users", userIds: ids };

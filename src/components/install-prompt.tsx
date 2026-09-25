@@ -72,7 +72,7 @@ export function InstallPrompt() {
 
   // Offer it by itself a few seconds after arrival, not on top of the first impression.
   // Never pops up by itself inside the Control Room, coach or referee panels (staff are working there).
-  const inPanel = /^\/(admin|team-panel|referee|print)(\/|$)/.test(pathname ?? "");
+  const inPanel = /^\/(admin|team-panel|referee|live-desk|print)(\/|$)/.test(pathname ?? "");
   useEffect(() => {
     if (!mode || inPanel || recentlyDismissed()) return;
     const t = setTimeout(() => setOpen(true), 6000);

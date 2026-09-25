@@ -22,6 +22,7 @@ export const roleEnum = pgEnum("role", [
   "COMPETITION_MANAGER",
   "TEAM_MANAGER",
   "REFEREE",
+  "LIVE_REPORTER",
   "PLAYER",
   "STUDENT_FAN",
   "ALUMNI_FAN",
