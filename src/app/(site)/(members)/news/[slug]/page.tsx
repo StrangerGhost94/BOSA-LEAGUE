@@ -78,9 +78,16 @@ export default async function ArticlePage({ params }: { params: { slug: string }
           <FadeIn>
             <article className="ivory-card p-8 sm:p-12">
               <div className="prose-luxe">
-                {paragraphs.map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
+                {paragraphs.map((p, i) =>
+                  // A short line in capitals is a section heading (used by the automatic matchday stories)
+                  /^[A-Z][A-Z ]{2,30}$/.test(p.trim()) ? (
+                    <h3 key={i} className="!mb-2 !mt-8 font-display text-sm uppercase tracking-[0.2em] text-crimson">
+                      {p}
+                    </h3>
+                  ) : (
+                    <p key={i}>{p}</p>
+                  ),
+                )}
               </div>
             </article>
           </FadeIn>

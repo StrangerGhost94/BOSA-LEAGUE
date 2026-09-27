@@ -23,6 +23,7 @@ import {
 } from "@/lib/data";
 import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { getSeasonState } from "@/lib/season-engine";
+import { currentMoment } from "@/lib/matchday-news";
 import { fmtDate, fmtLong, fmtTime } from "@/lib/format";
 
 export default async function HomePage() {
@@ -46,7 +47,7 @@ export default async function HomePage() {
     getLiveMatches(),
     getCurrentSeasonIds(),
   ]);
-  const [recent, state, nextAll] = await Promise.all([getRecentResults(6, seasonIds), getSeasonState(), getMatches({ seasonIds, status: "upcoming", limit: 12 })]);
+  const [recent, state, nextAll, moment] = await Promise.all([getRecentResults(6, seasonIds), getSeasonState(), getMatches({ seasonIds, status: "upcoming", limit: 12 }), currentMoment()]);
   const upcoming = visibleTo(upcomingAll, member);
   const nextMatch = visibleTo(nextAll, member).find((m) => m.homeTeamId && m.awayTeamId) ?? visibleTo(nextAll, member)[0];
   const activeClubs = teams.filter((t) => t.active).length;
@@ -56,12 +57,43 @@ export default async function HomePage() {
   const COMP_TITLE: Record<string, string> = { LEAGUE: "BOSA League.", CHAMPIONS: "Champions League.", SUPER: "Super Cup." };
   const daysAway = nextMatch ? (nextMatch.kickoff.getTime() - Date.now()) / 86_400_000 : Infinity;
   const nextWeekday = nextMatch ? fmtDate(nextMatch.kickoff, { weekday: "long" }) : "";
-  const hero =
-    live[0]
-      ? { top: "Live now", bottom: COMP_TITLE[live[0].season.competition.type] ?? "BOSA League." }
-      : state.phase === "OFF_SEASON" || !nextMatch
-        ? { top: "Off season.", bottom: "Back soon." }
-        : { top: daysAway <= 7 ? `This ${nextWeekday}` : `${nextWeekday} ${fmtDate(nextMatch.kickoff, { day: "numeric", month: "long" })}`, bottom: COMP_TITLE[nextMatch.season.competition.type] ?? "BOSA League." };
+  // Headline follows the league calendar, the way the Premier League site does: live, today, just played,
+  // tomorrow, this week, later. The Champions League, Super Cup and off season keep their own lines.
+  const kick = (d: Date) => fmtTime(d);
+  const inLeague = state.phase === "LEAGUE";
+  let hero: { top: string; bottom: string };
+  let momentLine: string | null = null;
+  let heroLink: { href: string; label: string } | null = null;
+  if (live[0]) {
+    const lgLive = live[0].season.competition.type === "LEAGUE" && live[0].matchday;
+    hero = { top: "Live now", bottom: lgLive ? `Matchday ${live[0].matchday}.` : COMP_TITLE[live[0].season.competition.type] ?? "BOSA League." };
+    momentLine = member ? `${live.length === 1 ? "One match is" : `${live.length} matches are`} in progress. Every goal lands in the match centre the moment it is recorded.` : "Members follow every goal live, with alerts on their phone.";
+    if (member) heroLink = { href: "/live", label: "Open the match centre" };
+  } else if (state.phase === "OFF_SEASON" || !nextMatch) {
+    hero = { top: "Off season.", bottom: "Back soon." };
+  } else if (inLeague && moment.kind === "underway") {
+    hero = { top: `Matchday ${moment.md}`, bottom: "under way." };
+    momentLine = member ? `${moment.done} of ${moment.total} results are in. The table moves after every final whistle.` : "Results are coming in. Members see every score and the live table.";
+  } else if (inLeague && moment.kind === "today") {
+    hero = { top: "Today", bottom: `Matchday ${moment.md}.` };
+    momentLine = `${moment.count} matches from ${kick(moment.first)} at Henry's Pitch, Kabalagala, behind Shell Kabalagala.`;
+  } else if (inLeague && moment.kind === "after") {
+    hero = { top: `Matchday ${moment.md}`, bottom: "in the books." };
+    const next = moment.nextFirst && moment.nextMd ? ` Next up: Matchday ${moment.nextMd} on ${fmtDate(moment.nextFirst, { weekday: "long", day: "numeric", month: "long" })}.` : "";
+    momentLine = member && moment.roundUp ? `${moment.roundUp.excerpt}${next}` : `Every result, goal and the new table are in for members.${next}`;
+    if (member && moment.roundUp) heroLink = { href: `/news/${moment.roundUp.slug}`, label: `Read the Matchday ${moment.md} round-up` };
+  } else if (inLeague && (moment.kind === "tomorrow" || moment.kind === "week" || moment.kind === "later")) {
+    const wd = fmtDate(moment.first, { weekday: "long" });
+    hero =
+      moment.kind === "tomorrow"
+        ? { top: "Tomorrow", bottom: `Matchday ${moment.md}.` }
+        : moment.kind === "week"
+          ? { top: `This ${wd}`, bottom: "BOSA League." }
+          : { top: `${wd} ${fmtDate(moment.first, { day: "numeric", month: "long" })}`, bottom: `Matchday ${moment.md}.` };
+    momentLine = `Matchday ${moment.md}: ${moment.count} matches from ${kick(moment.first)}.${moment.headline ? ` ${moment.headline.home} v ${moment.headline.away} is the pick of the day.` : ""}`;
+  } else {
+    hero = { top: daysAway <= 7 ? `This ${nextWeekday}` : `${nextWeekday} ${fmtDate(nextMatch.kickoff, { day: "numeric", month: "long" })}`, bottom: COMP_TITLE[nextMatch.season.competition.type] ?? "BOSA League." };
+  }
   const seasonLine =
     state.phase === "OFF_SEASON"
       ? `${state.league?.name} is complete. League champions: ${teams.find((t) => t.id === state.league?.championId)?.name ?? "TBC"}. Champions League winners: ${teams.find((t) => t.id === state.champions?.championId)?.name ?? "TBC"}. The League office will announce the start of the next season.`
@@ -189,8 +221,13 @@ export default async function HomePage() {
             </h1>
             <FadeIn delay={0.6}>
               <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-ivory/65 sm:mt-8 sm:text-lg">
-                {seasonLine ?? `${clubsWord} clubs of Bilal Islamic Institute old students. Three competitions. One pitch behind Shell Kabalagala where reputations are made every weekend.`}
+                {momentLine ?? seasonLine ?? `${clubsWord} clubs of Bilal Islamic Institute old students. Three competitions. One pitch behind Shell Kabalagala where reputations are made every weekend.`}
               </p>
+              {heroLink && (
+                <Link href={heroLink.href} className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-gold hover:underline">
+                  {heroLink.label} <Arrow />
+                </Link>
+              )}
               <div className="mt-7 grid grid-cols-2 gap-3 sm:mt-10 sm:flex sm:flex-wrap sm:items-center sm:gap-4">
                 <Magnetic className="w-full sm:w-auto">
                   <Link href="/fixtures" className="btn-primary w-full px-4 py-3.5 sm:w-auto sm:px-7">

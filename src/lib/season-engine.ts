@@ -305,6 +305,13 @@ export async function runSeasonEngine(): Promise<string[]> {
           );
         }
       }
+      // The automatic newsroom: matchday previews and round-ups, refreshed after every result
+      try {
+        const { syncMatchdayNews } = await import("./matchday-news");
+        log.push(...(await syncMatchdayNews()));
+      } catch (e) {
+        console.error("Matchday news:", e);
+      }
     } finally {
       await client.query("select pg_advisory_unlock(424242)");
     }
