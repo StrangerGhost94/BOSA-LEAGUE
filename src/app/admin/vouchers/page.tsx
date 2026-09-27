@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DownloadButton } from "@/components/download-button";
 import { pool } from "@/db";
 import { PageHeader } from "@/components/panel-shell";
 import { ActionForm, Field, Submit } from "@/components/form";
@@ -37,9 +38,7 @@ export default async function VouchersPage({ searchParams }: { searchParams: { q
   return (
     <>
       <PageHeader eyebrow="One-time membership codes" title="Vouchers">
-        <Link href="/api/vouchers?status=UNUSED" className="btn-ghost btn-sm">
-          Download unused (CSV)
-        </Link>
+        <DownloadButton href="/api/vouchers?status=UNUSED">Download unused (CSV)</DownloadButton>
       </PageHeader>
 
       <div className="mb-8 grid grid-cols-2 gap-4 xl:grid-cols-4">
@@ -105,9 +104,7 @@ export default async function VouchersPage({ searchParams }: { searchParams: { q
                 <Link href={`/print/vouchers?batch=${encodeURIComponent(b.batch)}`} className="btn-gold btn-sm">
                   Print cards
                 </Link>
-                <Link href={`/api/vouchers?status=UNUSED&batch=${encodeURIComponent(b.batch)}`} className="btn-ghost btn-sm">
-                  CSV
-                </Link>
+                <DownloadButton href={`/api/vouchers?status=UNUSED&batch=${encodeURIComponent(b.batch)}`}>CSV</DownloadButton>
                 <Link href={`/admin/vouchers?batch=${encodeURIComponent(b.batch)}`} className="btn-quiet btn-sm">
                   View
                 </Link>

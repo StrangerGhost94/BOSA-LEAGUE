@@ -32,6 +32,9 @@ export default async function PrintVouchers({ searchParams }: { searchParams: { 
           {searchParams.batch ? ` in "${searchParams.batch}"` : ""}. Print on A4, then cut along the lines.
         </div>
         <PrintButton />
+        <a href="/admin/vouchers" className="rounded-full border border-[#999] px-5 py-2 text-sm font-semibold text-[#0A0F1E]">
+          ‹ Back to Vouchers
+        </a>
       </div>
       <div className="grid grid-cols-3">
         {rows.map((r: { code: string }) => (

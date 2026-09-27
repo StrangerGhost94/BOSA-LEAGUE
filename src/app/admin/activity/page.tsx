@@ -1,4 +1,5 @@
 import { and, desc, eq, ilike, type SQL } from "drizzle-orm";
+import { DownloadButton } from "@/components/download-button";
 import { db } from "@/db";
 import { activityLogs } from "@/db/schema";
 import { PageHeader } from "@/components/panel-shell";
@@ -18,7 +19,7 @@ export default async function Activity({ searchParams }: { searchParams: Record<
   return (
     <>
       <PageHeader eyebrow="Audit trail" title="Activity history">
-        <a href="/api/export/activity" className="btn-ghost btn-sm">Export CSV</a>
+        <DownloadButton href="/api/export/activity">Export CSV</DownloadButton>
       </PageHeader>
       <FilterBar
         className="mb-6"
