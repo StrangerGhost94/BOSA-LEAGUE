@@ -12,10 +12,11 @@ import { pageMeta } from "@/lib/site";
 import { AboutBosa } from "@/components/site/about";
 import { emailConfigured, needsEmailConfirmation } from "@/lib/email";
 
-export const metadata = pageMeta("/membership", "Membership", "Join the BOSA League: live scores, tables, fixtures, goal alerts and your digital member card with partner perks.");
+export const metadata = pageMeta("/membership", "Membership", "Join the BOSA League: live scores, the full match centre, top scorers, goal alerts and your digital member card with partner perks.");
 
 const BENEFITS = [
-  "Live match centre: follow every Sunday game minute by minute, with scores that update by themselves",
+  "Live match centre: follow every Sunday game minute by minute, with scores that update by themselves (the table and final results are free for everyone)",
+  "Top scorers, assists, clean sheets and the full season statistics",
   "Member perks: discounts from BOSA League partners with your digital member card",
   "Vote for the fans' player of the match and the player of the month",
   "Members-only photo albums and video highlights from every matchday",

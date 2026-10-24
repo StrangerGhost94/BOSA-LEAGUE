@@ -7,17 +7,22 @@ import { headers } from "next/headers";
 import { MembersPreview } from "@/components/site/members-preview";
 
 /**
- * Everything in this folder (tables, fixtures, results, clubs, players, news, gallery, votes, rules)
- * is for members. Staff count as members. Everyone else sees a friendly invitation to join.
+ * Everything in this folder (clubs, players, news, gallery, votes, rules, match centre) is for members,
+ * except the league table and results (FREE below). Staff count as members. Everyone else sees a friendly invitation to join.
  * The URLs are unchanged: a (group) folder does not appear in the address.
  */
+/** Open to everyone: the BOSA League table and final results (live scores, scorers and match details stay for members) */
+const FREE = ["/league", "/fixtures"];
+
 export default async function MembersOnlyLayout({ children }: { children: React.ReactNode }) {
+  const path = (await headers()).get("x-pathname") ?? "";
+  if (FREE.includes(path)) return <>{children}</>;
   const u = await getCurrentUser();
   if (hasMembership(u)) return <>{children}</>;
-  const [price, path] = await Promise.all([getMembershipPrice(), headers().then((h) => h.get("x-pathname") ?? "")]);
+  const price = await getMembershipPrice();
   const perks = [
     { icon: "activity" as const, t: "Live scores and the full match centre" },
-    { icon: "list" as const, t: "Tables, fixtures and results for all three competitions" },
+    { icon: "list" as const, t: "The live table, scorers and full match reports" },
     { icon: "users" as const, t: "Every club, player and goal" },
     { icon: "bell" as const, t: "Goal alerts and kick-off reminders on your phone" },
     { icon: "card" as const, t: "Your digital member card and partner perks" },

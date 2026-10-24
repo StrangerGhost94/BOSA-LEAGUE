@@ -3,7 +3,7 @@ import { CompetitionHero, HonoursList, LeaderBoard, MatchdayNav, SubNav, TeamGoa
 import { FixtureRow, StandingsTable } from "@/components/match";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion";
 import { SectionHeading, StatTile } from "@/components/ui";
-import { getCompetition, getHonours, getMatches, getPlayerStats, getSeasonTable, getSeasonTotals, getTeams, visibleTo } from "@/lib/data";
+import { getCompetition, getHonours, getMatches, getPlayerStats, getSeasonTable, getSeasonTotals, getTeams, hideLiveScores, visibleTo } from "@/lib/data";
 import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { MembersLock } from "@/components/members-lock";
 import { fmtLong } from "@/lib/format";
@@ -30,7 +30,8 @@ export default async function LeaguePage(props: { searchParams: Promise<{ md?: s
   const user = await getCurrentUser();
   const member = hasMembership(user);
   const [table, totals, allMatches, stats, honours, teams] = await Promise.all([
-    getSeasonTable(season.id),
+    // Free visitors get the table after each final whistle; the live table (with matches in progress) is for members
+    getSeasonTable(season.id, member),
     getSeasonTotals(season.id),
     getMatches({ seasonId: season.id }),
     getPlayerStats({ seasonId: season.id }),
@@ -43,7 +44,7 @@ export default async function LeaguePage(props: { searchParams: Promise<{ md?: s
   const nextMd = all.find((m) => m.status !== "FULL_TIME")?.matchday ?? totalMd;
   const md = Math.min(totalMd, Math.max(1, parseInt(searchParams.md ?? "", 10) || nextMd));
   const mdAll = all.filter((m) => m.matchday === md);
-  const mdMatches = visibleTo(mdAll, member);
+  const mdMatches = hideLiveScores(visibleTo(mdAll, member), member);
   const lockedUntil = mdAll.length > mdMatches.length ? mdAll.find((m) => m.publicFrom)?.publicFrom ?? null : null;
 
   const scorers = stats.filter((p) => p.goals > 0).slice(0, 6);
@@ -125,6 +126,13 @@ export default async function LeaguePage(props: { searchParams: Promise<{ md?: s
 
       <section id="stats" className="container-x scroll-mt-40 pt-14 sm:pt-24">
         <SectionHeading eyebrow="Season in numbers" title={<>Competition <em className="gold-text">statistics</em></>} />
+        {!member ? (
+          <MembersLock
+            title="Top scorers and season statistics"
+            body="Members see the golden boot race, assists, clean sheets, player of the match awards and every club's goals, plus live scores and the full match centre."
+            signedIn={!!user}
+          />
+        ) : (<>
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatTile label="Goals per match" hint={`${totals.goals} goals in ${totals.played} matches`}>{totals.played ? (totals.goals / totals.played).toFixed(2) : "0.00"}</StatTile>
           <StatTile label="Best attack" hint={bestAttack ? `${bestAttack.team.name}` : ""} accent="crimson">{bestAttack?.goalsFor ?? 0}</StatTile>
@@ -140,6 +148,7 @@ export default async function LeaguePage(props: { searchParams: Promise<{ md?: s
         <div className="mt-6">
           <TeamGoalsChart rows={table} />
         </div>
+        </>)}
       </section>
 
       <section id="history" className="container-x scroll-mt-40 pt-14 sm:pt-24">

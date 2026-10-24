@@ -83,14 +83,14 @@ export default async function HomePage() {
     hero = { top: "Off season.", bottom: "Back soon." };
   } else if (inLeague && moment.kind === "underway") {
     hero = { top: `Matchday ${moment.md}`, bottom: "under way." };
-    momentLine = member ? `${moment.done} of ${moment.total} results are in. The table moves after every final whistle.` : "Results are coming in. Members see every score and the live table.";
+    momentLine = member ? `${moment.done} of ${moment.total} results are in. The table moves after every final whistle.` : "Results are coming in. The table is free for everyone; members follow every goal live.";
   } else if (inLeague && moment.kind === "today") {
     hero = { top: "Today", bottom: `Matchday ${moment.md}.` };
     momentLine = `${moment.count} matches from ${kick(moment.first)} at Henry's Pitch, Kabalagala, behind Shell Kabalagala.`;
   } else if (inLeague && moment.kind === "after") {
     hero = { top: `Matchday ${moment.md}`, bottom: "in the books." };
     const next = moment.nextFirst && moment.nextMd ? ` Next up: Matchday ${moment.nextMd} on ${fmtDate(moment.nextFirst, { weekday: "long", day: "numeric", month: "long" })}.` : "";
-    momentLine = member && moment.roundUp ? `${moment.roundUp.excerpt}${next}` : `Every result, goal and the new table are in for members.${next}`;
+    momentLine = member && moment.roundUp ? `${moment.roundUp.excerpt}${next}` : `Every result and the new table are in. Members get the scorers and the full match reports.${next}`;
     if (member && moment.roundUp) heroLink = { href: `/news/${moment.roundUp.slug}`, label: `Read the Matchday ${moment.md} round-up` };
   } else if (inLeague && (moment.kind === "tomorrow" || moment.kind === "week" || moment.kind === "later")) {
     const wd = fmtDate(moment.first, { weekday: "long" });
@@ -404,7 +404,7 @@ export default async function HomePage() {
         <CompetitionSwitcher items={previews} />
       </section>
 
-      {/* Members only: the summit (leader, golden boot, scoring chart) and recent results */}
+      {/* Members only: the summit (leader, golden boot, scoring chart). Recent results below are for everyone. */}
       {member && (<>
       {/* ---------------- LEADER + TOP SCORER (ivory) ---------------- */}
       <section className="relative mt-28 bg-ivory py-24 text-night-800">
@@ -508,6 +508,8 @@ export default async function HomePage() {
         </div>
       </section>
 
+      </>)}
+
       {/* ---------------- RECENT RESULTS ---------------- */}
       <section className="container-x pt-14 sm:pt-28">
         <SectionHeading eyebrow="Final whistle" title={<>Recent <em className="gold-text">results</em></>} action={{ href: "/fixtures?status=completed", label: "All results" }} />
@@ -519,8 +521,6 @@ export default async function HomePage() {
           ))}
         </Stagger>
       </section>
-
-      </>)}
 
       {/* ---------------- NEWS ---------------- */}
       <section className="container-x pt-14 sm:pt-28">

@@ -344,6 +344,12 @@ export async function getCurrentSeasonIds() {
 
 
 /** Early access: non-members only see fixtures whose public release time has passed. */
+/** Free visitors see final scores; a match in progress shows as live without its score (live scores are for members) */
+export function hideLiveScores<T extends { status: string; homeScore: number | null; awayScore: number | null }>(list: T[], member: boolean): T[] {
+  if (member) return list;
+  return list.map((m) => (m.status === "LIVE" || m.status === "HALF_TIME" ? { ...m, homeScore: null, awayScore: null } : m));
+}
+
 export function visibleTo<T extends { publicFrom: Date | null }>(list: T[], member: boolean): T[] {
   if (member) return list;
   const now = Date.now();
