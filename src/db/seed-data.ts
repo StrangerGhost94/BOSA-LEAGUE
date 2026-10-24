@@ -244,3 +244,67 @@ export const SQUADS: { slug: Slug; coach: string; captain?: string; assistant?: 
 
 /** Earlier placeholder entries that are the same person as a squad player: [club, old name, name on the squad sheet]. */
 export const PLAYER_RENAMES: [Slug, string, string][] = [["dream-cast", "Iwere", "Lwere Hamidu"]];
+
+/**
+ * Remaining fixtures from the League office ("Remaining Fixtures — resumes 1st Nov 2026"). Matchday 8 was
+ * postponed on 18 October; the season resumes on 1 November and each round on the sheet moves back one week.
+ * On 1 November, Dreamcast v Ittihad is the last game of the day. Two clubs rest each Sunday.
+ */
+export const REMAINING_FIXTURES: [string, [Slug, Slug, string][]][] = [
+  ["2026-11-01", [
+    ["alnasr", "los-blancos", "10:00"],
+    ["hbm", "osasuna", "11:00"],
+    ["elites", "golden-jubilee", "12:00"],
+    ["karegular", "la-masia", "13:00"],
+    ["alhilal", "sc-m19", "14:00"],
+    ["dream-cast", "ittihad", "15:00"],
+  ]],
+  ["2026-11-08", [
+    ["ahal-sunnah", "sc-m19", "10:00"],
+    ["albayan", "los-blancos", "11:00"],
+    ["dream-cast", "elites", "12:00"],
+    ["alhilal", "la-masia", "13:00"],
+    ["alnasr", "golden-jubilee", "14:00"],
+    ["hbm", "karegular", "15:00"],
+  ]],
+  ["2026-11-15", [
+    ["alhilal", "hbm", "10:00"],
+    ["ahal-sunnah", "osasuna", "11:00"],
+    ["los-blancos", "golden-jubilee", "12:00"],
+    ["sc-m19", "la-masia", "13:00"],
+    ["albayan", "ittihad", "14:00"],
+    ["alnasr", "dream-cast", "15:00"],
+  ]],
+  ["2026-11-22", [
+    ["ittihad", "elites", "10:00"],
+    ["albayan", "golden-jubilee", "11:00"],
+    ["sc-m19", "hbm", "12:00"],
+    ["osasuna", "karegular", "13:00"],
+    ["los-blancos", "dream-cast", "14:00"],
+    ["ahal-sunnah", "la-masia", "15:00"],
+  ]],
+  ["2026-11-29", [
+    ["golden-jubilee", "dream-cast", "10:00"],
+    ["la-masia", "hbm", "11:00"],
+    ["ahal-sunnah", "karegular", "12:00"],
+    ["ittihad", "alnasr", "13:00"],
+    ["osasuna", "alhilal", "14:00"],
+    ["albayan", "elites", "15:00"],
+  ]],
+  ["2026-12-06", [
+    ["karegular", "alhilal", "10:00"],
+    ["elites", "alnasr", "11:00"],
+    ["ittihad", "los-blancos", "12:00"],
+    ["albayan", "dream-cast", "13:00"],
+    ["ahal-sunnah", "hbm", "14:00"],
+    ["osasuna", "sc-m19", "15:00"],
+  ]],
+  ["2026-12-13", [
+    ["la-masia", "osasuna", "10:00"],
+    ["karegular", "sc-m19", "11:00"],
+    ["albayan", "alnasr", "12:00"],
+    ["ahal-sunnah", "alhilal", "13:00"],
+    ["elites", "los-blancos", "14:00"],
+    ["golden-jubilee", "ittihad", "15:00"],
+  ]],
+];

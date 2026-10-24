@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as s from "./schema";
-import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS, HISTORY, SQUADS, PLAYER_RENAMES } from "./seed-data";
+import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS, HISTORY, SQUADS, PLAYER_RENAMES, REMAINING_FIXTURES } from "./seed-data";
 
 /**
  * Seeds BOSA League Season 4 with the official data supplied by the League office:
@@ -11,7 +11,7 @@ import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS, HISTORY, SQUADS,
  *
  * DATA_VERSION lets a deployment replace older demo data exactly once.
  */
-const DATA_VERSION = "11";
+const DATA_VERSION = "12";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool, { schema: s });
@@ -79,6 +79,61 @@ async function addLiveReporter() {
     [hash],
   );
   console.log(r.rowCount ? "Created the Live Desk account live@bosaleague.com." : "Live Desk account already exists.");
+}
+
+/**
+ * Puts the League office's remaining fixtures in place. Only fixtures that have NOT been played are touched:
+ * - unplayed fixtures for pairings on the sheet are replaced by the new dates;
+ * - an unplayed repeat of a pairing that has already been played is removed;
+ * - every other match, and every result, is left exactly as it is.
+ */
+async function applyRemainingFixtures() {
+  const { rows: sea } = await pool.query(
+    "select s.id from seasons s join competitions c on c.id=s.competition_id where c.slug='bosa-league' and s.is_current order by s.year desc limit 1",
+  );
+  const seasonId = sea[0]?.id;
+  if (!seasonId) return;
+  const { rows: teamRows } = await pool.query("select id, slug from teams");
+  const T = Object.fromEntries(teamRows.map((t: { id: string; slug: string }) => [t.slug, t.id]));
+  const key = (a: string, b: string) => [a, b].sort().join("|");
+  const { rows: ms } = await pool.query(
+    "select id, home_team_id h, away_team_id a, status, matchday from matches where season_id=$1 and stage='LEAGUE'",
+    [seasonId],
+  );
+  const played = new Set(ms.filter((m: { status: string }) => m.status === "FULL_TIME").map((m: { h: string; a: string }) => key(m.h, m.a)));
+  const onSheet = new Set(REMAINING_FIXTURES.flatMap(([, list]) => list.map(([h, a]) => key(T[h], T[a]))));
+  const drop = ms
+    .filter((m: { status: string; h: string; a: string }) => ["SCHEDULED", "POSTPONED"].includes(m.status) && m.h && m.a && (onSheet.has(key(m.h, m.a)) || played.has(key(m.h, m.a))))
+    .map((m: { id: string }) => m.id);
+  // Never remove a match that has anything recorded against it
+  const { rows: del } = await pool.query(
+    "delete from matches m where m.id = any($1::text[]) and not exists (select 1 from match_events e where e.match_id = m.id) and not exists (select 1 from lineups l where l.match_id = m.id) returning id",
+    [drop],
+  );
+  const { rows: mx } = await pool.query("select coalesce(max(matchday),0)::int md from matches where season_id=$1 and stage='LEAGUE'", [seasonId]);
+  const { rows: venue } = await pool.query(
+    "select venue_id id from matches where season_id=$1 and stage='LEAGUE' and venue_id is not null order by kickoff desc limit 1",
+    [seasonId],
+  );
+  let md = mx[0].md;
+  let added = 0;
+  let skipped = 0;
+  for (const [date, list] of REMAINING_FIXTURES) {
+    md++;
+    for (const [h, a, time] of list) {
+      if (played.has(key(T[h], T[a]))) {
+        skipped++;
+        continue;
+      }
+      await pool.query(
+        `insert into matches (id, season_id, stage, round, matchday, home_team_id, away_team_id, kickoff, venue_id, status, counts_in_table)
+         values (gen_random_uuid()::text, $1, 'LEAGUE', $2, $3, $4, $5, $6, $7, 'SCHEDULED', true)`,
+        [seasonId, `Matchday ${md}`, md, T[h], T[a], eat(date, time), venue[0]?.id ?? null],
+      );
+      added++;
+    }
+  }
+  console.log(`Remaining fixtures: removed ${del.length} unplayed fixture(s), added ${added} (Matchdays ${mx[0].md + 1}-${md})${skipped ? `, skipped ${skipped} already played` : ""}.`);
 }
 
 async function applySquads() {
@@ -242,6 +297,11 @@ async function main() {
     if (v.rows[0]?.value === "10" && !process.argv.includes("--force")) {
       // Non-destructive update from version 10: a starter live reporter account for the Live Desk
       await addLiveReporter();
+      v.rows[0].value = "11";
+    }
+    if (v.rows[0]?.value === "11" && !process.argv.includes("--force")) {
+      // Non-destructive update from version 11: the League office's remaining fixtures (resumes 1 November)
+      await applyRemainingFixtures();
       await pool.query("insert into settings (key, value) values ('data_version', $1) on conflict (key) do update set value=excluded.value", [DATA_VERSION]);
       console.log("Updated data to version " + DATA_VERSION + " (no results or accounts removed).");
       await pool.end();
@@ -396,6 +456,7 @@ async function main() {
   await launchVouchers();
   await applySquads();
   await applyResults();
+  await applyRemainingFixtures();
 
   /* ---------- News ---------- */
   await db.insert(s.articles).values([
