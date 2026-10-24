@@ -20,7 +20,8 @@ function csv(rows: (string | number | null | undefined)[][]) {
     .join("\n");
 }
 
-export async function GET(req: Request, { params }: { params: { kind: string } }) {
+export async function GET(req: Request, props: { params: Promise<{ kind: string }> }) {
+  const params = await props.params;
   const u = await getCurrentUser();
   if (!u || !can(u.role, "exports")) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const url = new URL(req.url);

@@ -1,8 +1,8 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useActionState, useEffect, useRef, type ReactNode } from "react";
 import clsx from "clsx";
 import { useDrawer } from "@/components/drawer";
 
@@ -26,7 +26,7 @@ export function ActionForm({
   toast?: boolean;
   closeOnSuccess?: boolean;
 }) {
-  const [state, formAction] = useFormState(action, null);
+  const [state, formAction] = useActionState(action, null);
   const ref = useRef<HTMLFormElement>(null);
   const drawer = useDrawer();
   useEffect(() => {

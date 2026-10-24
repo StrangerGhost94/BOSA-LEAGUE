@@ -18,7 +18,8 @@ const SORTS: Record<string, (a: import("@/lib/data").PlayerStat, b: import("@/li
   name: (a, b) => a.lastName.localeCompare(b.lastName),
 };
 
-export default async function PlayersPage({ searchParams }: { searchParams: Record<string, string | undefined> }) {
+export default async function PlayersPage(props: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const searchParams = await props.searchParams;
   await expireStatuses();
   const [all, teams] = await Promise.all([getPlayerStats(), getTeams()]);
   const q = (searchParams.q ?? "").toLowerCase();

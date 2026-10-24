@@ -14,7 +14,10 @@ export const metadata = { title: "Vouchers" };
 
 type Row = { code: string; batch: string; status: string; note: string | null; used_at: Date | null; used_by: string | null; email: string | null };
 
-export default async function VouchersPage({ searchParams }: { searchParams: { q?: string; status?: string; batch?: string } }) {
+export default async function VouchersPage(
+  props: { searchParams: Promise<{ q?: string; status?: string; batch?: string }> }
+) {
+  const searchParams = await props.searchParams;
   await requirePermission("payments");
   const price = await getMembershipPrice();
   const status = ["UNUSED", "USED", "VOID"].includes(searchParams.status ?? "") ? searchParams.status! : "ALL";

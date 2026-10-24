@@ -15,7 +15,7 @@ const MAX_DEVICES = 10;
  * The person comes only from the session cookie; any user id in the body is ignored.
  */
 export async function POST(req: Request) {
-  if (!sameOrigin()) return NextResponse.json({ error: "Bad origin" }, { status: 403 });
+  if (!(await sameOrigin())) return NextResponse.json({ error: "Bad origin" }, { status: 403 });
   if (!pushConfigured()) return NextResponse.json({ error: "Notifications are not switched on for this site yet." }, { status: 503 });
   const u = await getCurrentUser();
   if (!u) return NextResponse.json({ error: "Please sign in." }, { status: 401 });
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
   const sub = validSubscription(body?.subscription);
   if (!sub) return NextResponse.json({ error: "Invalid subscription." }, { status: 400 });
 
-  const ua = (headers().get("user-agent") ?? "").slice(0, 400);
+  const ua = ((await headers()).get("user-agent") ?? "").slice(0, 400);
   const { platform, browser } = describeDevice(ua);
   // One row per endpoint. If the phone changes hands (someone else signs in on it), it moves to the new person.
   const { rows } = await pool.query(

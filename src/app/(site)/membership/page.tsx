@@ -20,7 +20,10 @@ const BENEFITS = [
   "Full match timelines, line-ups, reports and player profiles",
 ];
 
-export default async function MembershipPage({ searchParams }: { searchParams: { success?: string; welcome?: string; voucher?: string } }) {
+export default async function MembershipPage(
+  props: { searchParams: Promise<{ success?: string; welcome?: string; voucher?: string }> }
+) {
+  const searchParams = await props.searchParams;
   const [user, price] = await Promise.all([getCurrentUser(), getMembershipPrice()]);
   const member = hasMembership(user);
   const live = pesapalConfigured();

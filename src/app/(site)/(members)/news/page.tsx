@@ -8,7 +8,8 @@ import { CATEGORY_LABEL } from "@/lib/format";
 
 export const metadata = { title: "Newsroom" };
 
-export default async function NewsPage({ searchParams }: { searchParams: { c?: string } }) {
+export default async function NewsPage(props: { searchParams: Promise<{ c?: string }> }) {
+  const searchParams = await props.searchParams;
   const cat = searchParams.c && CATEGORY_LABEL[searchParams.c] ? searchParams.c : undefined;
   const articles = await getArticles({ category: cat });
   const featured = !cat ? articles.filter((a) => a.featured).slice(0, 2) : [];

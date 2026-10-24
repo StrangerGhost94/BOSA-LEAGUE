@@ -9,7 +9,8 @@ import { Lightbox } from "@/components/lightbox";
 import { EmptyState, Icon } from "@/components/ui";
 import { fmtLong } from "@/lib/format";
 
-export default async function AlbumPage({ params }: { params: { id: string } }) {
+export default async function AlbumPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const u = await getCurrentUser();
   if (!hasMembership(u)) redirect("/membership");
   const a = await db.query.albums.findFirst({ where: eq(albums.id, params.id) });

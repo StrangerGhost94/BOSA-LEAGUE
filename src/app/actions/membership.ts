@@ -56,7 +56,7 @@ export async function redeemVoucherAction(_: ActionResult, fd: FormData): Promis
   const code = String(fd.get("voucher") ?? "").trim();
   if (!code) return fail("Enter the voucher code printed on your card.");
   // Wrong guesses are limited per account and per connection
-  const ip = headers().get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
   const r = await redeemVoucher(user.id, code, `ip:${ip}`);
   if (!r.ok) return fail(r.message);
   redirect("/members?welcome=1");

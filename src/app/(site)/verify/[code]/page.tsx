@@ -8,7 +8,8 @@ import { hasMembership } from "@/lib/auth";
 export const metadata = { title: "Verify member", robots: { index: false } };
 
 /** Page a sponsor lands on after scanning a member card's QR code. */
-export default async function VerifyPage({ params }: { params: { code: string } }) {
+export default async function VerifyPage(props: { params: Promise<{ code: string }> }) {
+  const params = await props.params;
   const n = parseCardCode(decodeURIComponent(params.code));
   const u = n ? await db.query.users.findFirst({ where: eq(users.memberNumber, n) }) : null;
   const valid = !!u && u.active && hasMembership(u);

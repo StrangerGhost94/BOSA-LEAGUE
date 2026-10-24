@@ -6,7 +6,8 @@ import { PageHeader } from "@/components/panel-shell";
 import { ArticleForm } from "@/components/admin/article-form";
 import { getCompetitions, getTeams } from "@/lib/data";
 
-export default async function EditArticle({ params }: { params: { id: string } }) {
+export default async function EditArticle(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const a = await db.query.articles.findFirst({ where: eq(articles.id, params.id) });
   if (!a) notFound();
   const [teams, comps] = await Promise.all([getTeams(), getCompetitions()]);

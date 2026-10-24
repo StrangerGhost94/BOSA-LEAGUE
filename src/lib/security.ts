@@ -12,7 +12,7 @@ export function deviceLabel(ua: string) {
 }
 
 export async function recordSignIn(userId: string) {
-  const h = headers();
+  const h = await headers();
   const ua = h.get("user-agent") ?? "";
   const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || null;
   const device = createHash("sha256").update(ua).digest("hex").slice(0, 16);

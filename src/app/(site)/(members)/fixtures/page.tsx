@@ -12,7 +12,8 @@ import { dayKey, fmtLong } from "@/lib/format";
 
 export const metadata = { title: "Fixtures and Results" };
 
-export default async function FixturesPage({ searchParams }: { searchParams: Record<string, string | undefined> }) {
+export default async function FixturesPage(props: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const searchParams = await props.searchParams;
   const [comps, teams, venues, currentSeasons] = await Promise.all([getCompetitions(), getTeams(), getVenues(), db.select().from(seasons).where(eq(seasons.isCurrent, true))]);
   const comp = comps.find((c) => c.slug === searchParams.comp);
   const seasonIds = comp ? currentSeasons.filter((s) => s.competitionId === comp.id).map((s) => s.id) : currentSeasons.map((s) => s.id);

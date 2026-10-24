@@ -19,7 +19,8 @@ import { and, eq, notInArray } from "drizzle-orm";
 import { fmtLong, fmtTime, liveMinute, STAGE_LABEL } from "@/lib/format";
 import { StadiumBackdrop } from "@/components/site/stadium";
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const m = await getMatch(params.id);
   return { title: m ? `${m.homeTeam?.name ?? "TBD"} vs ${m.awayTeam?.name ?? "TBD"}` : "Match" };
 }
@@ -35,7 +36,8 @@ const EV_LABEL: Record<string, string> = {
   SUB: "Substitution",
 };
 
-export default async function MatchPage({ params }: { params: { id: string } }) {
+export default async function MatchPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const m = await getMatch(params.id);
   if (!m) notFound();
   const user = await getCurrentUser();

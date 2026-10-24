@@ -15,7 +15,8 @@ import { fmtDate, fmtTime, toLocalInput } from "@/lib/format";
 
 export const metadata = { title: "Fixtures & results" };
 
-export default async function AdminFixtures({ searchParams }: { searchParams: Record<string, string | undefined> }) {
+export default async function AdminFixtures(props: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const searchParams = await props.searchParams;
   const [teams, venues, referees, seasons] = await Promise.all([getTeams(), getVenues(), getReferees(), getAllSeasons()]);
   const current = seasons.filter((x) => x.isCurrent);
   const seasonId = searchParams.season ?? current.find((x) => x.competition.type === "LEAGUE")?.id ?? seasons[0]?.id;

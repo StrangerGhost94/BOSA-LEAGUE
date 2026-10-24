@@ -53,7 +53,8 @@ function Group({ children, note }: { children: React.ReactNode; note?: string })
   );
 }
 
-export default async function AccountPage({ searchParams }: { searchParams: { view?: string } }) {
+export default async function AccountPage(props: { searchParams: Promise<{ view?: string }> }) {
+  const searchParams = await props.searchParams;
   const u = await requireUser("/account");
   const member = hasMembership(u);
   const panel = homeFor(u.role);

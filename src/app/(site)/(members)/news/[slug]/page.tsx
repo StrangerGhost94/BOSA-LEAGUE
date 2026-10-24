@@ -11,12 +11,14 @@ import { MembersLock } from "@/components/members-lock";
 import { CATEGORY_LABEL, fmtLong } from "@/lib/format";
 import { can } from "@/lib/roles";
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const a = await db.query.articles.findFirst({ where: eq(articles.slug, params.slug) });
   return { title: a?.title ?? "Story", description: a?.excerpt };
 }
 
-export default async function ArticlePage({ params }: { params: { slug: string } }) {
+export default async function ArticlePage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const a = await db.query.articles.findFirst({ where: eq(articles.slug, params.slug), with: { team: true, competition: true } });
   const user = await getCurrentUser();
   if (!a || (!a.published && !can(user?.role, "news"))) notFound();

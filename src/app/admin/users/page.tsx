@@ -14,7 +14,8 @@ import { timeAgo } from "@/lib/format";
 
 export const metadata = { title: "Users & roles" };
 
-export default async function AdminUsers({ searchParams }: { searchParams: Record<string, string | undefined> }) {
+export default async function AdminUsers(props: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const searchParams = await props.searchParams;
   const me = await requirePermission("users");
   const teams = await getTeams();
   const conds: SQL[] = [];

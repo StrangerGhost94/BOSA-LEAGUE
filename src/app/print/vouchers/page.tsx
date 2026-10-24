@@ -7,7 +7,8 @@ import { PrintButton } from "./print-button";
 export const metadata = { title: "Print vouchers" };
 
 /** Printable A4 sheet of voucher cards (3 across, 8 down) for the unused codes in a batch. */
-export default async function PrintVouchers({ searchParams }: { searchParams: { batch?: string } }) {
+export default async function PrintVouchers(props: { searchParams: Promise<{ batch?: string }> }) {
+  const searchParams = await props.searchParams;
   await requirePermission("payments");
   const price = await getMembershipPrice();
   const { rows } = await pool.query("select code from vouchers where status='UNUSED' and ($1::text is null or batch=$1) order by code", [searchParams.batch ?? null]);

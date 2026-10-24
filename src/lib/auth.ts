@@ -13,7 +13,7 @@ import { cache } from "react";
  * another phone raises the account's session version, and older sessions are treated as signed out.
  */
 export const getSessionState = cache(async () => {
-  const token = cookies().get(SESSION_COOKIE)?.value;
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
   const payload = await verifySession(token);
   if (!payload) return { user: null, superseded: false };
   const u = await db.query.users.findFirst({
@@ -44,7 +44,7 @@ export async function startSession(u: { id: string; role: Role; name: string }) 
     sv = row.sv;
   }
   const token = await signSession({ uid: u.id, role: u.role, name: u.name, sv });
-  cookies().set(SESSION_COOKIE, token, {
+  (await cookies()).set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -55,8 +55,8 @@ export async function startSession(u: { id: string; role: Role; name: string }) 
   await recordSignIn(u.id).catch((e) => console.error("sign-in log", e));
 }
 
-export function endSession() {
-  cookies().delete(SESSION_COOKIE);
+export async function endSession() {
+  (await cookies()).delete(SESSION_COOKIE);
 }
 
 export async function requireUser(next = "/account") {

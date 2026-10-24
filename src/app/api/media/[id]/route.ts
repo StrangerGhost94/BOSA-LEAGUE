@@ -5,7 +5,8 @@ import { media } from "@/db/schema";
 import { getCurrentUser, hasMembership } from "@/lib/auth";
 
 // Photos are members-only. The tiny blurred "teaser" is public so locked albums still look inviting.
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const size = new URL(req.url).searchParams.get("v") ?? "thumb";
   const col = size === "full" ? media.full : size === "teaser" ? media.teaser : media.thumb;
   if (size !== "teaser") {

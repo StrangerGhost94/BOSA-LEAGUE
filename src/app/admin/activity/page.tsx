@@ -10,7 +10,8 @@ import { fmtDateTime } from "@/lib/format";
 
 export const metadata = { title: "Activity history" };
 
-export default async function Activity({ searchParams }: { searchParams: Record<string, string | undefined> }) {
+export default async function Activity(props: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const searchParams = await props.searchParams;
   await requirePermission("activity");
   const conds: SQL[] = [];
   if (searchParams.entity) conds.push(eq(activityLogs.entity, searchParams.entity));

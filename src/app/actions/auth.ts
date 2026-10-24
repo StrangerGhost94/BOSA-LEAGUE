@@ -44,7 +44,7 @@ export async function signUpAction(_: ActionResult, fd: FormData): Promise<Actio
   if (fd.get("terms") !== "on") return fail("Please accept the membership terms to continue.");
   // Optional membership voucher: checked before the account is created so a wrong code never leaves a half-made account
   const voucherRaw = str(fd, "voucher");
-  const ip = headers().get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
   if (voucherRaw) {
     if (tooManyAttempts(`ip:${ip}`)) return fail("Too many wrong voucher codes. Please wait 15 minutes and try again.");
     const code = normaliseCode(voucherRaw);
@@ -81,6 +81,6 @@ export async function signUpAction(_: ActionResult, fd: FormData): Promise<Actio
 }
 
 export async function signOutAction() {
-  endSession();
+  await endSession();
   redirect("/");
 }

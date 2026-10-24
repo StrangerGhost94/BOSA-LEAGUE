@@ -4,7 +4,8 @@ import { BosaLogo } from "@/components/ui";
 
 export const metadata = { title: "Payment status" };
 
-export default async function CallbackPage({ searchParams }: { searchParams: { OrderTrackingId?: string } }) {
+export default async function CallbackPage(props: { searchParams: Promise<{ OrderTrackingId?: string }> }) {
+  const searchParams = await props.searchParams;
   let status: string = "UNKNOWN";
   if (searchParams.OrderTrackingId) {
     try {

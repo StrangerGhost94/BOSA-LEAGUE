@@ -12,7 +12,8 @@ import { saveLineupAction } from "@/app/actions/admin";
 import { fmtLong, fmtTime } from "@/lib/format";
 import clsx from "clsx";
 
-export default async function TeamSheet({ params }: { params: { id: string } }) {
+export default async function TeamSheet(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const u = await requireRole(["TEAM_MANAGER"]);
   const m = await getMatch(params.id);
   if (!m || !u.teamId || (m.homeTeamId !== u.teamId && m.awayTeamId !== u.teamId)) notFound();

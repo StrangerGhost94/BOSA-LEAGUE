@@ -1,6 +1,6 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
-import { isRedirectError } from "next/dist/client/components/redirect";
+import { unstable_rethrow } from "next/navigation";
 import { requireUser, type CurrentUser } from "./auth";
 import { can, type Permission } from "./roles";
 import { fail } from "./result";
@@ -23,7 +23,8 @@ export async function guarded(perm: Permission | ((u: CurrentUser) => boolean), 
     revalidatePath("/", "layout");
     return r;
   } catch (e) {
-    if (isRedirectError(e)) throw e;
+    // Let Next handle its own control flow (redirect, notFound) instead of reporting it as an error
+    unstable_rethrow(e);
     console.error(e);
     const msg = e instanceof Error ? e.message : "Something went wrong.";
     if (/duplicate key/i.test(msg)) return fail("That record already exists.");

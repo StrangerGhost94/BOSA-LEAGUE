@@ -5,7 +5,8 @@ import { FadeIn } from "@/components/motion";
 
 export const metadata = { title: "Sign in" };
 
-export default function SignInPage({ searchParams }: { searchParams: { next?: string; reason?: string } }) {
+export default async function SignInPage(props: { searchParams: Promise<{ next?: string; reason?: string }> }) {
+  const searchParams = await props.searchParams;
   return (
     <FadeIn>
       <div className="eyebrow mb-4">Welcome back</div>

@@ -19,7 +19,8 @@ import {
 import { getGroupTables, getSeasonTable, getTeams, getVenues } from "@/lib/data";
 import { SuperSeasonAdmin } from "@/components/admin/super-season";
 
-export default async function SeasonAdmin({ params }: { params: { seasonId: string } }) {
+export default async function SeasonAdmin(props: { params: Promise<{ seasonId: string }> }) {
+  const params = await props.params;
   const season = await db.query.seasons.findFirst({
     where: eq(s.seasons.id, params.seasonId),
     with: { competition: true, teams: true, groups: { orderBy: asc(s.groups.order), with: { teams: true } } },

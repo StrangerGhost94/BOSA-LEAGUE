@@ -11,12 +11,14 @@ import { FixtureRow, MatchCard } from "@/components/match";
 import { NewsCard } from "@/components/news";
 import { POSITION_LABEL } from "@/lib/format";
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const t = await db.query.teams.findFirst({ where: eq(teams.slug, params.slug) });
   return { title: t?.name ?? "Team" };
 }
 
-export default async function TeamPage({ params }: { params: { slug: string } }) {
+export default async function TeamPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const t = await db.query.teams.findFirst({ where: eq(teams.slug, params.slug) });
   if (!t) notFound();
   const lg = await getCurrentSeason("bosa-league");

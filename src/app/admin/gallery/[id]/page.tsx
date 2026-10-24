@@ -12,7 +12,8 @@ import { AlbumForm } from "@/components/admin/album-form";
 import { Icon, Pill } from "@/components/ui";
 import { addVideoAction, deleteAlbumAction, deleteMediaAction, setCoverAction, uploadPhotosAction } from "@/app/actions/media";
 
-export default async function AdminAlbum({ params }: { params: { id: string } }) {
+export default async function AdminAlbum(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   await requirePermission("news");
   const a = await db.query.albums.findFirst({ where: eq(albums.id, params.id) });
   if (!a) notFound();

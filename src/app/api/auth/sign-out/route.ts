@@ -8,7 +8,7 @@ import { pool } from "@/db";
 // so we must not build an absolute URL from req.url.
 export async function POST() {
   // Stop notifications for the signed-out account on this device
-  const pushId = cookies().get(PUSH_COOKIE)?.value;
+  const pushId = (await cookies()).get(PUSH_COOKIE)?.value;
   if (pushId) await pool.query("update push_subscriptions set revoked_at = now(), updated_at = now() where id = $1", [pushId]).catch(() => {});
   const res = new NextResponse(null, { status: 303, headers: { Location: "/" } });
   res.cookies.delete(SESSION_COOKIE);

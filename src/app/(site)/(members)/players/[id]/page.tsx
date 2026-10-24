@@ -10,12 +10,14 @@ import { Crest, Pill, StatTile } from "@/components/ui";
 import { MembersLock } from "@/components/members-lock";
 import { POSITION_LABEL, fmtDate } from "@/lib/format";
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const p = await db.query.players.findFirst({ where: eq(players.id, params.id) });
   return { title: p ? `${p.firstName} ${p.lastName}` : "Player" };
 }
 
-export default async function PlayerPage({ params }: { params: { id: string } }) {
+export default async function PlayerPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const p = await db.query.players.findFirst({ where: eq(players.id, params.id), with: { team: true } });
   if (!p || p.status === "REJECTED") notFound();
   const [stats] = await getPlayerStats({ playerId: p.id, includePending: true });

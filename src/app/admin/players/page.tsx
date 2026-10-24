@@ -13,7 +13,8 @@ import { fmtDate } from "@/lib/format";
 
 export const metadata = { title: "Players" };
 
-export default async function AdminPlayers({ searchParams }: { searchParams: Record<string, string | undefined> }) {
+export default async function AdminPlayers(props: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const searchParams = await props.searchParams;
   const teams = await getTeams();
   const conds: SQL[] = [];
   if (searchParams.team) conds.push(eq(s.players.teamId, searchParams.team));

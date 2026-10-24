@@ -15,7 +15,8 @@ import Link from "next/link";
 
 export const metadata = { title: "BOSA League" };
 
-export default async function LeaguePage({ searchParams }: { searchParams: { md?: string; season?: string } }) {
+export default async function LeaguePage(props: { searchParams: Promise<{ md?: string; season?: string }> }) {
+  const searchParams = await props.searchParams;
   const c = await getCompetition("bosa-league");
   if (!c?.season) notFound();
   const seasons = await db.query.seasons.findMany({ where: eq(sc.seasons.competitionId, c.comp.id), orderBy: [desc(sc.seasons.year), desc(sc.seasons.createdAt)] });
