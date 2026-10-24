@@ -11,7 +11,7 @@ import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS, HISTORY, SQUADS,
  *
  * DATA_VERSION lets a deployment replace older demo data exactly once.
  */
-const DATA_VERSION = "14";
+const DATA_VERSION = "15";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool, { schema: s });
@@ -163,6 +163,19 @@ async function applySheetDates() {
     }
   }
   console.log(`Remaining fixtures on the sheet's dates (from ${REMAINING_FIXTURES[0][0]}): ${moved} moved.`);
+}
+
+/**
+ * Deletes the demo staff accounts the first seed created on @bosaleague.com (League Administrator, Competitions Desk,
+ * referees, Live Desk, club managers). The Super Admin is kept. Matches, articles and the activity log keep their
+ * records; only the link to the removed account is cleared.
+ */
+async function removeDemoAccounts() {
+  const { rows } = await pool.query(
+    "delete from users where email like '%@bosaleague.com' and email <> 'superadmin@bosaleague.com' and role <> 'SUPER_ADMIN' returning name, email, last_login_at",
+  );
+  const used = rows.filter((r: { last_login_at: Date | null }) => r.last_login_at).map((r: { email: string }) => r.email);
+  console.log(`Removed ${rows.length} demo account(s)${used.length ? ` (had signed in before: ${used.join(", ")})` : ""}.`);
 }
 
 /**
@@ -356,8 +369,13 @@ async function main() {
     if (v.rows[0]?.value === "13" && !process.argv.includes("--force")) {
       // Non-destructive update from version 13: the remaining fixtures go back to the sheet's dates (resume 25 October)
       await applySheetDates();
+      v.rows[0].value = "14";
+    }
+    if (v.rows[0]?.value === "14" && !process.argv.includes("--force")) {
+      // Update from version 14: the demo staff accounts from the first setup are removed; the Super Admin stays
+      await removeDemoAccounts();
       await pool.query("insert into settings (key, value) values ('data_version', $1) on conflict (key) do update set value=excluded.value", [DATA_VERSION]);
-      console.log("Updated data to version " + DATA_VERSION + " (no results or accounts removed).");
+      console.log("Updated data to version " + DATA_VERSION + " (no results removed).");
       await pool.end();
       return;
     }
