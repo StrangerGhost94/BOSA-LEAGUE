@@ -508,6 +508,23 @@ export const perks = pgTable("perks", {
   createdAt: created(),
 });
 
+/** Sponsor banners shown to visitors who are not members (members see no ads) */
+export const sponsorAds = pgTable("sponsor_ads", {
+  id: id(),
+  sponsor: text("sponsor").notNull(),
+  url: text("url"),
+  image: bytea("image").notNull(), // webp, up to 1200 wide
+  width: integer("width").notNull(),
+  height: integer("height").notNull(),
+  placement: text("placement").notNull().default("ALL"), // ALL | HOME | LEAGUE | FIXTURES
+  active: boolean("active").notNull().default(true),
+  startsOn: timestamp("starts_on", { withTimezone: true }),
+  endsOn: timestamp("ends_on", { withTimezone: true }),
+  impressions: integer("impressions").notNull().default(0),
+  clicks: integer("clicks").notNull().default(0),
+  createdAt: created(),
+});
+
 export const votes = pgTable(
   "votes",
   {

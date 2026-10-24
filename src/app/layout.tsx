@@ -7,6 +7,7 @@ import { Providers } from "@/components/providers";
 import { CommandMenu } from "@/components/site/command-menu";
 import { InstallPrompt } from "@/components/install-prompt";
 import { SITE_URL } from "@/lib/site";
+import { getSocialLinks } from "@/lib/socials";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export const metadata: Metadata = {
   verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
 };
 
-const STRUCTURED_DATA = {
+const structuredData = (sameAs: string[]) => ({
   "@context": "https://schema.org",
   "@graph": [
     { "@type": "WebSite", "@id": `${SITE_URL}/#website`, url: SITE_URL, name: "BOSA League", alternateName: ["BOSA", "Bilal Institute Old Students Football"], publisher: { "@id": `${SITE_URL}/#org` } },
@@ -46,18 +47,21 @@ const STRUCTURED_DATA = {
       logo: `${SITE_URL}/crests/bosa-logo.png`,
       description: "Football league for the old students of Bilal Institute, played on Sundays at Henry's Pitch, Kabalagala.",
       location: { "@type": "Place", name: "Henry's Pitch", address: { "@type": "PostalAddress", addressLocality: "Kabalagala, Kampala", addressCountry: "UG" } },
+      // The league's own social accounts, so search engines know they belong to this site
+      ...(sameAs.length ? { sameAs } : {}),
     },
   ],
-};
+});
 
 export const viewport: Viewport = { themeColor: "#060913", width: "device-width", initialScale: 1, viewportFit: "cover" };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const sameAs = await getSocialLinks().then((l) => l.map((x) => x.url)).catch(() => []);
   return (
     <html lang="en">
       <body>
         {/* Tells Google the site's name and logo, so a search for "BOSA League" shows it as the league's own site */}
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData(sameAs)) }} />
         <Providers>
           {children}
           <CommandMenu />

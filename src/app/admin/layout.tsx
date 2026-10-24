@@ -41,6 +41,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         ...item("payments", { href: "/admin/vouchers", label: "Vouchers", icon: "card" }),
         ...item("payments", { href: "/admin/payments", label: "Memberships", icon: "users" }),
         ...item("perks", { href: "/admin/perks", label: "Member perks", icon: "sparkle" }),
+        ...item("perks", { href: "/admin/sponsors", label: "Sponsors", icon: "trophy" }),
         ...item("exports", { href: "/admin/exports", label: "Reports & exports", icon: "download" }),
         ...item("activity", { href: "/admin/activity", label: "Activity history", icon: "activity" }),
         ...item("fixtures", { href: "/admin/settings", label: "Settings & venues", icon: "settings" }),

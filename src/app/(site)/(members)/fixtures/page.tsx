@@ -10,6 +10,7 @@ import { seasons } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { dayKey, fmtLong } from "@/lib/format";
 import { pageMeta } from "@/lib/site";
+import { SponsorSlot } from "@/components/site/sponsor-slot";
 
 export const metadata = pageMeta("/fixtures", "Fixtures and Results", "BOSA League fixtures, kick-off times and results for every matchday at Henry's Pitch, Kabalagala, Kampala.");
 
@@ -89,6 +90,7 @@ export default async function FixturesPage(props: { searchParams: Promise<Record
             <span className="shrink-0 text-gold">Become a member</span>
           </a>
         )}
+        <SponsorSlot placement="FIXTURES" className="!px-0 mt-8" />
         <div className="mt-12 space-y-14">
           {byDay.size === 0 && <EmptyState title="No matches found" body="Try widening the date range or clearing a filter." />}
           {Array.from(byDay.entries()).map(([day, ms]) => (

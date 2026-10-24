@@ -908,6 +908,72 @@ export async function deletePerkAction(_: ActionResult, fd: FormData): A {
   });
 }
 
+/* ============================== SPONSOR BANNERS ============================== */
+
+const PLACEMENT_VALUES = ["ALL", "HOME", "LEAGUE", "FIXTURES"];
+const dayStart = (v: string | null) => (v ? new Date(`${v}T00:00:00+03:00`) : null);
+
+export async function saveSponsorAdAction(_: ActionResult, fd: FormData): A {
+  return guarded("perks", async (u) => {
+    const id = str(fd, "id");
+    const sponsor = str(fd, "sponsor");
+    if (!sponsor) return fail("Enter the sponsor's name.");
+    let url = optStr(fd, "url");
+    if (url && !/^https?:\/\//i.test(url)) url = `https://${url}`;
+    if (url && !/^https?:\/\/[^\s/]+\.[^\s]+$/i.test(url)) return fail("That website address does not look right.");
+    const placement = PLACEMENT_VALUES.includes(str(fd, "placement")) ? str(fd, "placement") : "ALL";
+    const startsOn = dayStart(optStr(fd, "startsOn"));
+    // The end date is the last day it shows, so it stops at midnight after it
+    const endsOn = optStr(fd, "endsOn") ? new Date(dayStart(optStr(fd, "endsOn"))!.getTime() + 86_400_000) : null;
+    if (startsOn && endsOn && endsOn <= startsOn) return fail("The last day must be after the first day.");
+    const values: Partial<typeof s.sponsorAds.$inferInsert> = { sponsor, url, placement, startsOn, endsOn, active: bool(fd, "active") };
+    const file = fd.get("image");
+    if (file && typeof file === "object" && "arrayBuffer" in file && (file as File).size > 0) {
+      const f = file as File;
+      if (!f.type.startsWith("image/") || f.size > 8 * 1024 * 1024) return fail("Upload the banner as a JPG, PNG or WEBP image under 8 MB.");
+      try {
+        const sharp = (await import("sharp")).default;
+        const out = await sharp(Buffer.from(await f.arrayBuffer()), { failOn: "none" })
+          .rotate()
+          .resize({ width: 1200, height: 600, fit: "inside", withoutEnlargement: true })
+          .webp({ quality: 82 })
+          .toBuffer({ resolveWithObject: true });
+        Object.assign(values, { image: out.data, width: out.info.width, height: out.info.height });
+      } catch {
+        return fail("That image could not be read. Try a JPG or PNG.");
+      }
+    } else if (!id) return fail("Choose the banner image.");
+    if (id) await db.update(s.sponsorAds).set(values).where(eq(s.sponsorAds.id, id));
+    else await db.insert(s.sponsorAds).values(values as typeof s.sponsorAds.$inferInsert);
+    await logActivity(u.id, id ? "Updated sponsor banner" : "Added sponsor banner", "Sponsor", `${sponsor} (${placement})`);
+    return ok("Sponsor banner saved.");
+  });
+}
+
+export async function deleteSponsorAdAction(_: ActionResult, fd: FormData): A {
+  return guarded("perks", async (u) => {
+    const [ad] = await db.delete(s.sponsorAds).where(eq(s.sponsorAds.id, str(fd, "id"))).returning({ sponsor: s.sponsorAds.sponsor });
+    await logActivity(u.id, "Deleted sponsor banner", "Sponsor", ad?.sponsor);
+    return ok("Banner removed.");
+  });
+}
+
+/* ============================== SOCIAL LINKS ============================== */
+
+export async function saveSocialLinksAction(_: ActionResult, fd: FormData): A {
+  return guarded("settings", async (u) => {
+    const { SOCIALS } = await import("@/lib/socials");
+    for (const k of SOCIALS) {
+      let v = str(fd, k.key);
+      if (v && !/^https?:\/\//i.test(v)) v = `https://${v}`;
+      if (v && !/^https?:\/\/[^\s/]+\.[^\s]+/i.test(v)) return fail(`The ${k.label} link does not look right.`);
+      await db.insert(s.settings).values({ key: k.key, value: v }).onConflictDoUpdate({ target: s.settings.key, set: { value: v } });
+    }
+    await logActivity(u.id, "Updated social links", "Setting", "Footer and search engine profile links");
+    return ok("Social links saved.");
+  });
+}
+
 /* ============================== VOUCHERS ============================== */
 
 export async function generateVouchersAction(_: ActionResult, fd: FormData): A {

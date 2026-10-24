@@ -13,6 +13,7 @@ import { db } from "@/db";
 import * as sc from "@/db/schema";
 import Link from "next/link";
 import { pageMeta } from "@/lib/site";
+import { SponsorSlot } from "@/components/site/sponsor-slot";
 
 export const metadata = pageMeta("/league", "League table", "The BOSA League table: points, goal difference and form for every Bilal Institute old students club, updated after each Sunday at Henry's Pitch, Kabalagala.");
 
@@ -70,6 +71,8 @@ export default async function LeaguePage(props: { searchParams: Promise<{ md?: s
         ]}
       />
       <SubNav items={[{ href: "#table", label: "Standings" }, { href: "#fixtures", label: "Fixtures & Results" }, { href: "#stats", label: "Statistics" }, { href: "#history", label: "Champions" }]} />
+
+      <SponsorSlot placement="LEAGUE" className="pt-10" />
 
       <section id="table" className="container-x scroll-mt-40 pt-14 sm:pt-20">
         {seasons.length > 1 && (

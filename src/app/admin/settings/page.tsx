@@ -1,8 +1,9 @@
 import { PageHeader } from "@/components/panel-shell";
 import { Drawer } from "@/components/drawer";
 import { ActionForm, Field, Submit } from "@/components/form";
-import { getMembershipPrice, getVenues } from "@/lib/data";
-import { saveSettingsAction, saveVenueAction } from "@/app/actions/admin";
+import { getMembershipPrice, getSetting, getVenues } from "@/lib/data";
+import { SOCIALS } from "@/lib/socials";
+import { saveSettingsAction, saveSocialLinksAction, saveVenueAction } from "@/app/actions/admin";
 import { requirePermission } from "@/lib/auth";
 import { can } from "@/lib/roles";
 import { pesapalConfigured } from "@/lib/pesapal";
@@ -32,7 +33,7 @@ function VenueForm({ v }: { v?: { id: string; name: string; area: string; addres
 
 export default async function Settings() {
   const u = await requirePermission("fixtures");
-  const [price, venues] = await Promise.all([getMembershipPrice(), getVenues()]);
+  const [price, venues, socialValues] = await Promise.all([getMembershipPrice(), getVenues(), Promise.all(SOCIALS.map((x) => getSetting(x.key, "")))]);
   return (
     <>
       <PageHeader eyebrow="Configuration" title="Settings & venues" />
@@ -54,6 +55,20 @@ export default async function Settings() {
             Set PESAPAL_CONSUMER_KEY, PESAPAL_CONSUMER_SECRET and PESAPAL_ENV=live in your hosting environment variables to accept real payments.
           </div>
         </div>
+        {can(u.role, "settings") && (
+          <div className="panel p-6">
+            <div className="eyebrow mb-2">BOSA League social accounts</div>
+            <p className="mb-4 text-sm text-ivory/55">Shown in the site footer and given to Google, so searches for BOSA League connect the site with these accounts. Leave empty any you do not use.</p>
+            <ActionForm action={saveSocialLinksAction} className="space-y-4">
+              {SOCIALS.map((x, i) => (
+                <Field key={x.key} label={x.label}>
+                  <input name={x.key} className="input" defaultValue={socialValues[i]} placeholder={x.placeholder} />
+                </Field>
+              ))}
+              <Submit className="btn-gold">Save social links</Submit>
+            </ActionForm>
+          </div>
+        )}
         <div className="panel p-6">
           <div className="mb-4 flex items-center justify-between">
             <div className="eyebrow">Venues</div>

@@ -29,6 +29,7 @@ import { currentMoment } from "@/lib/matchday-news";
 import { fmtDate, fmtLong, fmtTime } from "@/lib/format";
 import { SITE_URL } from "@/lib/site";
 import { AboutBosa } from "@/components/site/about";
+import { SponsorSlot } from "@/components/site/sponsor-slot";
 
 export const metadata = {
   alternates: { canonical: "/" },
@@ -515,6 +516,8 @@ export default async function HomePage() {
       </section>
 
       </>)}
+
+      <SponsorSlot placement="HOME" className="pt-14 sm:pt-20" />
 
       {/* ---------------- RECENT RESULTS ---------------- */}
       <section className="container-x pt-14 sm:pt-28">

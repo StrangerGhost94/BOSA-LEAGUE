@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BosaLogo } from "@/components/ui";
 import { PARTNERS } from "@/lib/partners";
 
-export function SiteFooter({ signedIn = false, member = false }: { signedIn?: boolean; member?: boolean }) {
+export function SiteFooter({ signedIn = false, member = false, socials = [] }: { signedIn?: boolean; member?: boolean; socials?: { key: string; label: string; url: string }[] }) {
   const memberLinks: [string, string][] = member
     ? [["Members' area", "/members"], ["My member card", "/members/card"], ["Member perks", "/members/perks"], ["My account", "/account"]]
     : signedIn
@@ -25,7 +25,17 @@ export function SiteFooter({ signedIn = false, member = false }: { signedIn?: bo
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-ivory/50">
               Fourteen clubs, three competitions, one standard. Every Sunday at Henry's Pitch, Kabalagala, behind Shell Kabalagala.
             </p>
-            <div className="mt-6 text-sm text-ivory/40">@bosaleague · #bosaleague</div>
+            {socials.length > 0 ? (
+              <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+                {socials.map((s) => (
+                  <a key={s.key} href={s.url} target="_blank" rel="noopener noreferrer me" className="text-ivory/55 transition hover:text-gold">
+                    {s.label}
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-6 text-sm text-ivory/40">@bosaleague · #bosaleague</div>
+            )}
           </div>
           <FooterCol title="Competitions" links={[["BOSA League", "/league"], ["Champions League", "/champions-league"], ["Super Cup", "/super-cup"], ["Rules", "/rules"]]} />
           <FooterCol title="Matchday" links={[["Fixtures & Results", "/fixtures"], ["Teams", "/teams"], ["Players", "/players"], ["Newsroom", "/news"]]} />

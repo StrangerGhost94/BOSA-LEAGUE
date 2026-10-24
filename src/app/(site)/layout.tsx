@@ -8,12 +8,14 @@ import { pool } from "@/db";
 import { tickSeasonEngine } from "@/lib/season-engine";
 import { PushSync } from "@/components/push/push-sync";
 import { pushConfigured, vapidPublicKey } from "@/lib/push";
+import { getSocialLinks } from "@/lib/socials";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   await tickSeasonEngine();
-  const [session, live] = await Promise.all([
+  const [session, live, socials] = await Promise.all([
     getSessionState(),
     pool.query("select count(*)::int c from matches where status in ('LIVE','HALF_TIME')"),
+    getSocialLinks(),
   ]);
   const u = session.user;
   const headerUser = u
@@ -27,7 +29,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         {children}
       </main>
       <MobileTabBar liveCount={live.rows[0].c} />
-      <SiteFooter signedIn={!!u} member={hasMembership(u)} />
+      <SiteFooter signedIn={!!u} member={hasMembership(u)} socials={socials} />
       <PushSync signedIn={!!u} member={hasMembership(u)} publicKey={pushConfigured() ? vapidPublicKey() : null} />
       <div className="h-[calc(var(--tabbar-h)+var(--safe-bottom))] xl:hidden" aria-hidden />
     </>
