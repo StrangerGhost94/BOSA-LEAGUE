@@ -26,7 +26,27 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
   },
-  openGraph: { images: ["/crests/bosa-logo.png"] },
+  openGraph: { type: "website", siteName: "BOSA League", locale: "en_UG", images: ["/crests/bosa-logo.png"] },
+  keywords: ["BOSA League", "BOSA", "Bilal Institute", "old students football", "Kabalagala", "Kampala", "Uganda football", "BOSA Champions League", "BOSA Super Cup"],
+  // Google Search Console's HTML-tag check: set GOOGLE_SITE_VERIFICATION to the code it gives you (not needed with the DNS check)
+  verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
+};
+
+const STRUCTURED_DATA = {
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "WebSite", "@id": `${SITE_URL}/#website`, url: SITE_URL, name: "BOSA League", alternateName: ["BOSA", "Bilal Institute Old Students Football"], publisher: { "@id": `${SITE_URL}/#org` } },
+    {
+      "@type": "SportsOrganization",
+      "@id": `${SITE_URL}/#org`,
+      name: "BOSA League",
+      sport: "Soccer",
+      url: SITE_URL,
+      logo: `${SITE_URL}/crests/bosa-logo.png`,
+      description: "Football league for the old students of Bilal Institute, played on Sundays at Henry's Pitch, Kabalagala.",
+      location: { "@type": "Place", name: "Henry's Pitch", address: { "@type": "PostalAddress", addressLocality: "Kabalagala, Kampala", addressCountry: "UG" } },
+    },
+  ],
 };
 
 export const viewport: Viewport = { themeColor: "#060913", width: "device-width", initialScale: 1, viewportFit: "cover" };
@@ -35,6 +55,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
+        {/* Tells Google the site's name and logo, so a search for "BOSA League" shows it as the league's own site */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }} />
         <Providers>
           {children}
           <CommandMenu />
