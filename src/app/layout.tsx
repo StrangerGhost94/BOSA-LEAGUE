@@ -26,6 +26,7 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
   },
+  twitter: { card: "summary", images: ["/crests/bosa-logo.png"] },
   openGraph: { type: "website", siteName: "BOSA League", locale: "en_UG", images: ["/crests/bosa-logo.png"] },
   keywords: ["BOSA League", "BOSA", "Bilal Institute", "old students football", "Kabalagala", "Kampala", "Uganda football", "BOSA Champions League", "BOSA Super Cup"],
   // Google Search Console's HTML-tag check: set GOOGLE_SITE_VERIFICATION to the code it gives you (not needed with the DNS check)

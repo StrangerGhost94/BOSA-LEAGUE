@@ -5,8 +5,9 @@ import { FilterBar } from "@/components/filter-bar";
 import { EmptyState, Pill } from "@/components/ui";
 import { getPlayerStats, getTeams, expireStatuses } from "@/lib/data";
 import { POSITION_LABEL } from "@/lib/format";
+import { pageMeta } from "@/lib/site";
 
-export const metadata = { title: "Players" };
+export const metadata = pageMeta("/players", "Players and top scorers", "BOSA League players and top scorers: goals, assists and cards for every old student of Bilal Institute on the pitch.");
 
 const SORTS: Record<string, (a: import("@/lib/data").PlayerStat, b: import("@/lib/data").PlayerStat) => number> = {
   goals: (a, b) => b.goals - a.goals || b.assists - a.assists,

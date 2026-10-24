@@ -25,6 +25,14 @@ import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { getSeasonState } from "@/lib/season-engine";
 import { currentMoment } from "@/lib/matchday-news";
 import { fmtDate, fmtLong, fmtTime } from "@/lib/format";
+import { SITE_URL } from "@/lib/site";
+
+export const metadata = {
+  alternates: { canonical: "/" },
+  openGraph: { url: "/", type: "website", siteName: "BOSA League", images: ["/crests/bosa-logo.png"] },
+};
+
+const EVENT_STATUS: Record<string, string> = { POSTPONED: "https://schema.org/EventPostponed", CANCELLED: "https://schema.org/EventCancelled" };
 
 export default async function HomePage() {
   const [lg, cl, sl, teams] = await Promise.all([getCompetition("bosa-league"), getCompetition("champions-league"), getCompetition("super-cup"), getTeams()]);
@@ -199,8 +207,32 @@ export default async function HomePage() {
   const featuredNews = news.find((n) => n.featured) ?? news[0];
   const sideNews = news.filter((n) => n.id !== featuredNews?.id).slice(0, 4);
 
+  // Upcoming fixtures as sports events, so Google can list them for "BOSA League fixtures" searches
+  const events = upcoming.slice(0, 8).map((m) => ({
+    "@type": "SportsEvent",
+    name: `${m.homeTeam!.name} v ${m.awayTeam!.name}`,
+    description: `${m.season.competition.name}, ${m.round}`,
+    sport: "Soccer",
+    startDate: m.kickoff.toISOString(),
+    eventStatus: EVENT_STATUS[m.status] ?? "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    homeTeam: { "@type": "SportsTeam", name: m.homeTeam!.name },
+    awayTeam: { "@type": "SportsTeam", name: m.awayTeam!.name },
+    competitor: [{ "@type": "SportsTeam", name: m.homeTeam!.name }, { "@type": "SportsTeam", name: m.awayTeam!.name }],
+    location: {
+      "@type": "Place",
+      name: m.venue?.name ?? "Henry's Pitch",
+      address: { "@type": "PostalAddress", addressLocality: m.venue?.area ?? "Kabalagala, Kampala", addressCountry: "UG" },
+    },
+    organizer: { "@type": "SportsOrganization", name: "BOSA League", url: SITE_URL },
+    url: `${SITE_URL}/fixtures`,
+  }));
+
   return (
     <>
+      {events.length > 0 && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@graph": events }) }} />
+      )}
       {/* ---------------- HERO ---------------- */}
       <section className="relative flex min-h-[92svh] items-end overflow-hidden pb-10 pt-24 sm:min-h-[100svh] sm:pb-16 sm:pt-32 lg:pb-24">
         <HeroParallax className="absolute inset-0">

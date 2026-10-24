@@ -11,8 +11,9 @@ import { AnimatedScore } from "@/components/motion";
 import { Crest, EmptyState, Icon, StatusBadge } from "@/components/ui";
 import { Countdown } from "@/components/countdown";
 import { dayKey, fmtLong, fmtTime, liveMinute } from "@/lib/format";
+import { pageMeta } from "@/lib/site";
 
-export const metadata = { title: "Live centre" };
+export const metadata = pageMeta("/live", "Live scores", "Live BOSA League scores, goals and cards minute by minute from Henry's Pitch, Kabalagala.");
 
 const EV: Record<string, string> = { GOAL: "Goal", PENALTY_GOAL: "Penalty goal", OWN_GOAL: "Own goal", PENALTY_MISS: "Penalty missed", YELLOW: "Yellow card", SECOND_YELLOW: "Second yellow", RED: "Red card", SUB: "Substitution" };
 

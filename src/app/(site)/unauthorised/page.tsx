@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/ui";
 
+export const metadata = { title: "Reserved area", robots: { index: false } };
+
 export default function Unauthorised() {
   return (
     <section className="container-x pt-40">

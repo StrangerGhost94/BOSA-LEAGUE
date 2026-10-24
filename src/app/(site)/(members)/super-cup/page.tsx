@@ -9,8 +9,9 @@ import { FadeIn } from "@/components/motion";
 import { Crest, EmptyState, SectionHeading } from "@/components/ui";
 import { getCompetition, getHonours, getMatches, getTeams, visibleTo } from "@/lib/data";
 import { getCurrentUser, hasMembership } from "@/lib/auth";
+import { pageMeta } from "@/lib/site";
 
-export const metadata = { title: "BOSA Super Cup" };
+export const metadata = pageMeta("/super-cup", "BOSA Super Cup", "The BOSA Super Cup: the season's showpiece final between the league and Champions League winners.");
 
 export default async function SuperCupPage() {
   const c = await getCompetition("super-cup");

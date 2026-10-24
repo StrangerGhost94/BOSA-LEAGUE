@@ -4,8 +4,9 @@ import { Stagger, StaggerItem } from "@/components/motion";
 import { Crest } from "@/components/ui";
 import { db, pool } from "@/db";
 import { getCurrentSeason, getSeasonTable, getTeams } from "@/lib/data";
+import { pageMeta } from "@/lib/site";
 
-export const metadata = { title: "Teams" };
+export const metadata = pageMeta("/teams", "Clubs", "Every BOSA League club, one for each Bilal Institute intake year: squads, form, results and history.");
 
 export default async function TeamsPage() {
   const teams = (await getTeams()).filter((t) => t.active).sort((a, b) => (a.intakeYear ?? 9999) - (b.intakeYear ?? 9999));

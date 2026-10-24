@@ -5,8 +5,9 @@ import { NewsCard } from "@/components/news";
 import { EmptyState } from "@/components/ui";
 import { getArticles } from "@/lib/data";
 import { CATEGORY_LABEL } from "@/lib/format";
+import { pageMeta } from "@/lib/site";
 
-export const metadata = { title: "Newsroom" };
+export const metadata = pageMeta("/news", "News", "BOSA League news: match reports, matchday previews and announcements from the League office.");
 
 export default async function NewsPage(props: { searchParams: Promise<{ c?: string }> }) {
   const searchParams = await props.searchParams;

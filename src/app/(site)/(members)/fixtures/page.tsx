@@ -9,8 +9,9 @@ import { db } from "@/db";
 import { seasons } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { dayKey, fmtLong } from "@/lib/format";
+import { pageMeta } from "@/lib/site";
 
-export const metadata = { title: "Fixtures and Results" };
+export const metadata = pageMeta("/fixtures", "Fixtures and Results", "BOSA League fixtures, kick-off times and results for every matchday at Henry's Pitch, Kabalagala, Kampala.");
 
 export default async function FixturesPage(props: { searchParams: Promise<Record<string, string | undefined>> }) {
   const searchParams = await props.searchParams;

@@ -5,8 +5,9 @@ import { MembersNav } from "@/components/members-nav";
 import { EmptyState, Icon } from "@/components/ui";
 import { Stagger, StaggerItem } from "@/components/motion";
 import { fmtLong } from "@/lib/format";
+import { pageMeta } from "@/lib/site";
 
-export const metadata = { title: "Gallery" };
+export const metadata = pageMeta("/gallery", "Gallery", "Photos and videos from BOSA League Sundays at Henry's Pitch, Kabalagala.");
 
 export default async function GalleryPage() {
   const [u, albums] = await Promise.all([getCurrentUser(), getAlbums()]);

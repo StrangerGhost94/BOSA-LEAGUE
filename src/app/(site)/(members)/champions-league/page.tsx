@@ -9,8 +9,9 @@ import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { toBracket } from "@/lib/bracket-data";
 import { getSeasonTable } from "@/lib/data";
 import { CL_PLACES, getSeasonState } from "@/lib/season-engine";
+import { pageMeta } from "@/lib/site";
 
-export const metadata = { title: "BOSA Champions League" };
+export const metadata = pageMeta("/champions-league", "BOSA Champions League", "The BOSA Champions League: groups, knock-out bracket, fixtures and results for the old students of Bilal Institute.");
 
 export default async function ChampionsLeaguePage() {
   const c = await getCompetition("champions-league");

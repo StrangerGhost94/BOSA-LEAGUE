@@ -8,8 +8,9 @@ import { FadeIn, RevealText } from "@/components/motion";
 import { ActionForm, Field, Submit } from "@/components/form";
 import { redeemVoucherAction, startPaymentAction } from "@/app/actions/membership";
 import { BosaLogo, Icon } from "@/components/ui";
+import { pageMeta } from "@/lib/site";
 
-export const metadata = { title: "Membership" };
+export const metadata = pageMeta("/membership", "Membership", "Join the BOSA League: live scores, tables, fixtures, goal alerts and your digital member card with partner perks.");
 
 const BENEFITS = [
   "Live match centre: follow every Sunday game minute by minute, with scores that update by themselves",

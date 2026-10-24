@@ -3,7 +3,7 @@ import { ActionForm, Field, Submit } from "@/components/form";
 import { signInAction } from "@/app/actions/auth";
 import { FadeIn } from "@/components/motion";
 
-export const metadata = { title: "Sign in" };
+export const metadata = { title: "Sign in", robots: { index: false } };
 
 export default async function SignInPage(props: { searchParams: Promise<{ next?: string; reason?: string }> }) {
   const searchParams = await props.searchParams;

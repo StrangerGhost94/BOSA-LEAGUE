@@ -1,7 +1,8 @@
 import { FadeIn, RevealText, Stagger, StaggerItem } from "@/components/motion";
 import { getRules } from "@/lib/data";
+import { pageMeta } from "@/lib/site";
 
-export const metadata = { title: "Competition Rules" };
+export const metadata = pageMeta("/rules", "Competition Rules", "The rules of the BOSA League, BOSA Champions League and BOSA Super Cup: points, tie-breakers, eligibility and discipline.");
 
 export default async function RulesPage() {
   const rules = await getRules();
