@@ -778,7 +778,7 @@ export async function createUserAction(_: ActionResult, fd: FormData): A {
     if (await db.query.users.findFirst({ where: eq(s.users.email, email) })) return fail("A user with that email already exists.");
     const [n] = await db
       .insert(s.users)
-      .values({ name, email, role, passwordHash: await bcrypt.hash(password, 10), teamId: optStr(fd, "teamId"), membership: ["STUDENT_FAN", "ALUMNI_FAN", "PLAYER"].includes(role) ? "NONE" : "ACTIVE" })
+      .values({ name, email, emailVerifiedAt: new Date(), role, passwordHash: await bcrypt.hash(password, 10), teamId: optStr(fd, "teamId"), membership: ["STUDENT_FAN", "ALUMNI_FAN", "PLAYER"].includes(role) ? "NONE" : "ACTIVE" })
       .returning();
     await logActivity(u.id, "Created user", "User", `${name} (${role})`, n.id);
     return ok(`${name} can now sign in with the temporary password.`);

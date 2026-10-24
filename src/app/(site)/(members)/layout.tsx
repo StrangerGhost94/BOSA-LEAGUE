@@ -3,6 +3,8 @@ import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { getMembershipPrice } from "@/lib/data";
 import { ugx } from "@/lib/format";
 import { Icon } from "@/components/ui";
+import { headers } from "next/headers";
+import { MembersPreview } from "@/components/site/members-preview";
 
 /**
  * Everything in this folder (tables, fixtures, results, clubs, players, news, gallery, votes, rules)
@@ -12,7 +14,7 @@ import { Icon } from "@/components/ui";
 export default async function MembersOnlyLayout({ children }: { children: React.ReactNode }) {
   const u = await getCurrentUser();
   if (hasMembership(u)) return <>{children}</>;
-  const price = await getMembershipPrice();
+  const [price, path] = await Promise.all([getMembershipPrice(), headers().then((h) => h.get("x-pathname") ?? "")]);
   const perks = [
     { icon: "activity" as const, t: "Live scores and the full match centre" },
     { icon: "list" as const, t: "Tables, fixtures and results for all three competitions" },
@@ -52,6 +54,7 @@ export default async function MembersOnlyLayout({ children }: { children: React.
           </Link>
         </div>
       </div>
+      <MembersPreview path={path} />
     </section>
   );
 }

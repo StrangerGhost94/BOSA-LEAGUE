@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin", "/team-panel", "/referee", "/live-desk", "/account", "/members$", "/members/", "/membership/callback", "/verify", "/print", "/api/"],
+      disallow: ["/admin", "/team-panel", "/referee", "/live-desk", "/account", "/members$", "/members/", "/membership/callback", "/verify", "/confirm-email", "/print", "/api/"],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,

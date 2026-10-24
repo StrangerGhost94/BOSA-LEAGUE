@@ -32,3 +32,19 @@ export async function verifySession(token?: string | null): Promise<SessionPaylo
     return null;
   }
 }
+
+/** Link token for confirming an email address: tied to the address, so it stops working if the email changes */
+export async function signEmailToken(uid: string, email: string) {
+  return new SignJWT({ uid, email, purpose: "verify-email" }).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime("7d").sign(secret());
+}
+
+export async function verifyEmailToken(token?: string | null): Promise<{ uid: string; email: string } | null> {
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, secret());
+    if (payload.purpose !== "verify-email" || typeof payload.uid !== "string" || typeof payload.email !== "string") return null;
+    return { uid: payload.uid, email: payload.email };
+  } catch {
+    return null;
+  }
+}

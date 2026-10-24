@@ -26,6 +26,7 @@ import { getSeasonState } from "@/lib/season-engine";
 import { currentMoment } from "@/lib/matchday-news";
 import { fmtDate, fmtLong, fmtTime } from "@/lib/format";
 import { SITE_URL } from "@/lib/site";
+import { AboutBosa } from "@/components/site/about";
 
 export const metadata = {
   alternates: { canonical: "/" },
@@ -208,7 +209,7 @@ export default async function HomePage() {
   const sideNews = news.filter((n) => n.id !== featuredNews?.id).slice(0, 4);
 
   // Upcoming fixtures as sports events, so Google can list them for "BOSA League fixtures" searches
-  const events = upcoming.slice(0, 8).map((m) => ({
+  const events = upcoming.filter((m) => m.kickoff.getTime() > Date.now()).slice(0, 8).map((m) => ({
     "@type": "SportsEvent",
     name: `${m.homeTeam!.name} v ${m.awayTeam!.name}`,
     description: `${m.season.competition.name}, ${m.round}`,
@@ -623,6 +624,8 @@ export default async function HomePage() {
           </div>
         </FadeIn>
       </section>
+
+      <AboutBosa className="pt-14 sm:pt-24" />
     </>
   );
 }

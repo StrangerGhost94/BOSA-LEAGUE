@@ -6,7 +6,9 @@ import { requireUser, hasMembership } from "@/lib/auth";
 import { ROLE_LABEL, homeFor } from "@/lib/roles";
 import { fmtDateTime, fmtLong, ugx } from "@/lib/format";
 import { ActionForm, Field, Submit } from "@/components/form";
-import { changePasswordAction, updateProfileAction } from "@/app/actions/account";
+import { changePasswordAction, confirmEmailCodeAction, resendVerificationAction, updateProfileAction } from "@/app/actions/account";
+import { emailConfigured } from "@/lib/email";
+import { isStaff } from "@/lib/roles";
 import { Crest, Icon, Pill } from "@/components/ui";
 import { FadeIn } from "@/components/motion";
 import { getPlayerStats } from "@/lib/data";
@@ -17,9 +19,10 @@ import { PushSettings, type Prefs } from "@/components/push/push-settings";
 
 export const metadata = { title: "My account" };
 
-type View = "profile" | "notifications" | "player" | "payments" | "password";
+type View = "profile" | "email" | "notifications" | "player" | "payments" | "password";
 const TITLES: Record<View, string> = {
   profile: "Personal details",
+  email: "Confirm your email",
   notifications: "Match notifications",
   player: "My player registration",
   payments: "Membership & payments",
@@ -58,6 +61,8 @@ export default async function AccountPage(props: { searchParams: Promise<{ view?
   const u = await requireUser("/account");
   const member = hasMembership(u);
   const panel = homeFor(u.role);
+  // Staff accounts are set up by the League office; fans confirm their own address once email is switched on
+  const needsEmail = !u.emailVerifiedAt && !isStaff(u.role) && emailConfigured();
   const view = (Object.keys(TITLES) as View[]).find((v) => v === searchParams.view) ?? null;
   const initials = u.name
     .split(/\s+/)
@@ -100,6 +105,11 @@ export default async function AccountPage(props: { searchParams: Promise<{ view?
       </FadeIn>
 
       <div className="mt-6 space-y-6">
+        {needsEmail && (
+          <Group note={`We sent a 6-digit code to ${u.email}. Confirming it means we can reach you about your membership and your account.`}>
+            <Row href="/account?view=email" icon="bell" tint="bg-crimson text-white" label="Confirm your email" value="Not confirmed" />
+          </Group>
+        )}
         {!member && (
           <Group note="One payment unlocks tables, fixtures, live scores, notifications and your member card.">
             <Row href="/membership" icon="sparkle" tint="bg-gold text-night-900" label="Activate membership" />
@@ -138,6 +148,29 @@ export default async function AccountPage(props: { searchParams: Promise<{ view?
 type U = Awaited<ReturnType<typeof requireUser>>;
 
 async function Detail({ view, u, member }: { view: View; u: U; member: boolean }) {
+  if (view === "email") {
+    if (u.emailVerifiedAt) return <p className="text-sm text-ivory/60">{u.email} is confirmed. Thank you.</p>;
+    return (
+      <div className="space-y-6">
+        <div className="panel p-6">
+          <p className="text-sm text-ivory/65">
+            Enter the 6-digit code we emailed to <span className="text-ivory">{u.email}</span>. You can also tap the button in that email instead.
+          </p>
+          <ActionForm action={confirmEmailCodeAction} className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <input name="code" inputMode="numeric" autoComplete="one-time-code" maxLength={7} placeholder="123456" className="input text-center font-display text-2xl tracking-[0.4em] sm:max-w-[220px]" />
+            <Submit className="btn-gold">Confirm</Submit>
+          </ActionForm>
+        </div>
+        <div className="panel p-6">
+          <p className="text-sm text-ivory/65">No email? Check your spam folder, or correct your address and send a new code. Codes work for 30 minutes.</p>
+          <ActionForm action={resendVerificationAction} className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+            <input name="email" type="email" defaultValue={u.email} className="input" />
+            <Submit className="btn-ghost">Send a new code</Submit>
+          </ActionForm>
+        </div>
+      </div>
+    );
+  }
   if (view === "profile")
     return (
       <div className="panel p-6">

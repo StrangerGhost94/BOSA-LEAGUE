@@ -13,6 +13,7 @@ import type { ActionResult } from "@/components/form";
 import { headers } from "next/headers";
 import { normaliseCode, redeemVoucher, tooManyAttempts } from "@/lib/vouchers";
 import { pool } from "@/db";
+import { sendVerificationEmail } from "@/lib/email";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -71,6 +72,7 @@ export async function signUpAction(_: ActionResult, fd: FormData): Promise<Actio
     })
     .returning();
   await logActivity(u.id, "Created account", "User", `${name} (${completionYear} intake) registered`, u.id);
+  await sendVerificationEmail(u);
   await startSession(u);
   if (voucherRaw) {
     const r = await redeemVoucher(u.id, voucherRaw, `ip:${ip}`);

@@ -130,6 +130,11 @@ export const users = pgTable("users", {
   id: id(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
+  // Set when the person opens the link we email them; accounts from before email verification count as confirmed
+  emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
+  // The latest 6-digit code we emailed (stored hashed) and when it stops working
+  emailCodeHash: text("email_code_hash"),
+  emailCodeExpires: timestamp("email_code_expires", { withTimezone: true }),
   phone: text("phone"),
   passwordHash: text("password_hash").notNull(),
   role: roleEnum("role").notNull().default("STUDENT_FAN"),

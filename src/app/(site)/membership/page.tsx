@@ -9,6 +9,8 @@ import { ActionForm, Field, Submit } from "@/components/form";
 import { redeemVoucherAction, startPaymentAction } from "@/app/actions/membership";
 import { BosaLogo, Icon } from "@/components/ui";
 import { pageMeta } from "@/lib/site";
+import { AboutBosa } from "@/components/site/about";
+import { emailConfigured } from "@/lib/email";
 
 export const metadata = pageMeta("/membership", "Membership", "Join the BOSA League: live scores, tables, fixtures, goal alerts and your digital member card with partner perks.");
 
@@ -28,6 +30,7 @@ export default async function MembershipPage(
   const [user, price] = await Promise.all([getCurrentUser(), getMembershipPrice()]);
   const member = hasMembership(user);
   const live = pesapalConfigured();
+  const emailOn = emailConfigured();
 
   return (
     <section className="relative min-h-screen overflow-hidden pb-16 pt-28 sm:pb-24 sm:pt-36">
@@ -64,7 +67,7 @@ export default async function MembershipPage(
               <BosaLogo size={56} />
               <span className="chip border-gold/40 text-gold">One-time</span>
             </div>
-            {searchParams.welcome && !member && <p className="relative mt-6 rounded-xl border border-emerald/30 bg-emerald/10 px-4 py-3 text-sm text-emerald-400">Welcome to BOSA League. Activate your membership to unlock everything.</p>}
+            {searchParams.welcome && !member && <p className="relative mt-6 rounded-xl border border-emerald/30 bg-emerald/10 px-4 py-3 text-sm text-emerald-400">Welcome to BOSA League. Activate your membership to unlock everything.{emailOn && " We have also emailed you a 6-digit code to confirm your address."}</p>}
             {member ? (
               <div className="relative mt-8">
                 <div className="font-serif text-4xl">You are a member.</div>
@@ -128,6 +131,7 @@ export default async function MembershipPage(
           </div>
         </FadeIn>
       </div>
+      <AboutBosa className="relative pt-16" />
     </section>
   );
 }

@@ -77,6 +77,14 @@ npm run dev                 # http://localhost:3000
    - `PAYMENTS_DEMO_MODE` = `false` in production
 4. Deploy. The start command runs the migrations, seeds the database the first time (it skips if data already exists) and starts the site.
 
+## Email (Resend)
+
+New accounts get a 6-digit code (and a link) to confirm their email, sent from `no-reply@bosaleague.xyz`.
+
+1. In Resend, add the domain `bosaleague.xyz` and add the DNS records it shows (SPF, DKIM) where the domain is managed. Wait until Resend says Verified.
+2. Create an API key (Sending access) and set `RESEND_API_KEY` in Railway. Optionally set `EMAIL_FROM`, for example `BOSA League <hello@bosaleague.xyz>`.
+3. That is all: members see "Confirm your email" in their account until they enter the code. Accounts that existed before this count as confirmed, and staff accounts are never asked.
+
 ## Pesapal
 
 1. Create a merchant account at https://developer.pesapal.com and get your consumer key and secret (sandbox first, then live).
