@@ -79,7 +79,7 @@ npm run dev                 # http://localhost:3000
 
 ## Email (Resend)
 
-New accounts get a 6-digit code (and a link) to confirm their email, sent from `no-reply@bosaleague.xyz`.
+New accounts get a 6-digit code (and a link) to confirm their email, and "Forgot password?" on the sign-in page emails a 6-digit reset code. Both are sent from `no-reply@bosaleague.xyz`.
 
 1. In Resend, add the domain `bosaleague.xyz` and add the DNS records it shows (SPF, DKIM) where the domain is managed. Wait until Resend says Verified.
 2. Create an API key (Sending access) and set `RESEND_API_KEY` in Railway. Optionally set `EMAIL_FROM`, for example `BOSA League <hello@bosaleague.xyz>`.

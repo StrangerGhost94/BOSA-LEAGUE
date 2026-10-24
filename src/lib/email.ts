@@ -62,3 +62,24 @@ export async function sendVerificationEmail(u: { id: string; name: string; email
 </div>`,
   });
 }
+
+/** Forgot password: emails a 6-digit code (valid 15 minutes, replaces any earlier one) */
+export async function sendPasswordResetEmail(u: { id: string; name: string; email: string }) {
+  const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
+  await db.update(users).set({ resetCodeHash: hashCode(code), resetCodeExpires: new Date(Date.now() + 15 * 60_000) }).where(eq(users.id, u.id));
+  const first = u.name.split(/\s+/)[0] || u.name;
+  return sendEmail({
+    to: u.email,
+    subject: `${code} is your BOSA League password reset code`,
+    text: `Hi ${first},\n\nYour BOSA League password reset code is: ${code}\n\nEnter it on the reset page within 15 minutes to choose a new password.\n\nIf you did not ask to reset your password, ignore this email: your password stays the same.\n\nBOSA League\n${SITE_DOMAIN}`,
+    html: `<div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#0A0F1E">
+  <h2 style="margin:0 0 16px">Reset your password</h2>
+  <p>Hi ${esc(first)},</p>
+  <p>Your BOSA League password reset code is:</p>
+  <p style="font-size:32px;font-weight:bold;letter-spacing:8px;margin:16px 0">${code}</p>
+  <p style="font-size:13px;color:#555">Enter it on the reset page within 15 minutes to choose a new password.</p>
+  <p style="font-size:13px;color:#555">If you did not ask to reset your password, ignore this email: your password stays the same.</p>
+  <p style="font-size:13px;color:#555">BOSA League · ${SITE_DOMAIN}</p>
+</div>`,
+  });
+}

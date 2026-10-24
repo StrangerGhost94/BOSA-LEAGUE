@@ -13,7 +13,8 @@ import type { ActionResult } from "@/components/form";
 import { headers } from "next/headers";
 import { normaliseCode, redeemVoucher, tooManyAttempts } from "@/lib/vouchers";
 import { pool } from "@/db";
-import { sendVerificationEmail } from "@/lib/email";
+import { emailConfigured, hashCode, sendPasswordResetEmail, sendVerificationEmail } from "@/lib/email";
+import { overLimit } from "@/lib/rate-limit";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -85,4 +86,40 @@ export async function signUpAction(_: ActionResult, fd: FormData): Promise<Actio
 export async function signOutAction() {
   await endSession();
   redirect("/");
+}
+
+/** Forgot password, step 1: email a reset code. The reply is the same whether or not the address has an account. */
+export async function requestPasswordResetAction(_: ActionResult, fd: FormData): Promise<ActionResult> {
+  const email = str(fd, "email").toLowerCase();
+  if (!EMAIL.test(email)) return fail("Please enter a valid email address.");
+  if (!emailConfigured()) return fail("Password reset by email is not switched on yet. Please contact the League office.");
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  if (overLimit(`reset-ip:${ip}`, 10, 60 * 60_000) || overLimit(`reset-send:${email}`, 3, 15 * 60_000))
+    return fail("We have sent several codes already. Please check your inbox and spam folder, or try again in 15 minutes.");
+  const u = await db.query.users.findFirst({ where: eq(users.email, email) });
+  if (u?.active) await sendPasswordResetEmail(u);
+  redirect(`/reset-password?email=${encodeURIComponent(email)}`);
+}
+
+/** Forgot password, step 2: the code from the email and a new password */
+export async function resetPasswordAction(_: ActionResult, fd: FormData): Promise<ActionResult> {
+  const email = str(fd, "email").toLowerCase();
+  const code = str(fd, "code").replace(/\D/g, "");
+  const password = str(fd, "password");
+  if (code.length !== 6) return fail("Enter the 6-digit code from the email.");
+  if (password.length < 8) return fail("Your new password must be at least 8 characters.");
+  if (password !== str(fd, "confirm")) return fail("The two passwords do not match.");
+  if (overLimit(`reset-code:${email}`, 6, 15 * 60_000)) return fail("Too many wrong codes. Please wait 15 minutes and ask for a new code.");
+  const u = await db.query.users.findFirst({ where: eq(users.email, email) });
+  if (!u?.active || !u.resetCodeHash || !u.resetCodeExpires) return fail("That code is not right. Check the latest email we sent, or ask for a new code.");
+  if (u.resetCodeExpires.getTime() < Date.now()) return fail("That code has expired. Ask for a new one.");
+  if (hashCode(code) !== u.resetCodeHash) return fail("That code is not right. Check the latest email we sent, or ask for a new code.");
+  // The code proves they can read this inbox, so the address also counts as confirmed
+  await db
+    .update(users)
+    .set({ passwordHash: await bcrypt.hash(password, 10), resetCodeHash: null, resetCodeExpires: null, emailVerifiedAt: u.emailVerifiedAt ?? new Date(), lastLoginAt: new Date() })
+    .where(eq(users.id, u.id));
+  await logActivity(u.id, "Reset password", "User", `${u.name} reset their password by email code`, u.id);
+  await startSession(u);
+  redirect(isStaff(u.role) ? homeFor(u.role) : "/");
 }

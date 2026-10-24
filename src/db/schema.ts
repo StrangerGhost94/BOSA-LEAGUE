@@ -135,6 +135,9 @@ export const users = pgTable("users", {
   // The latest 6-digit code we emailed (stored hashed) and when it stops working
   emailCodeHash: text("email_code_hash"),
   emailCodeExpires: timestamp("email_code_expires", { withTimezone: true }),
+  // Forgot password: the latest 6-digit reset code (hashed) and when it stops working
+  resetCodeHash: text("reset_code_hash"),
+  resetCodeExpires: timestamp("reset_code_expires", { withTimezone: true }),
   phone: text("phone"),
   passwordHash: text("password_hash").notNull(),
   role: roleEnum("role").notNull().default("STUDENT_FAN"),

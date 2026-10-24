@@ -25,6 +25,11 @@ export default async function SignInPage(props: { searchParams: Promise<{ next?:
         <Field label="Password">
           <input name="password" type="password" autoComplete="current-password" required className="input" placeholder="Your password" />
         </Field>
+        <div className="-mt-2 text-right">
+          <Link href="/forgot-password" className="text-sm font-semibold text-gold hover:underline">
+            Forgot password?
+          </Link>
+        </div>
         <Submit className="btn-primary w-full py-3" pendingText="Signing in">
           Sign in
         </Submit>
