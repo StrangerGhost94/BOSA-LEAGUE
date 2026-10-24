@@ -247,11 +247,11 @@ export const PLAYER_RENAMES: [Slug, string, string][] = [["dream-cast", "Iwere",
 
 /**
  * Remaining fixtures from the League office ("Remaining Fixtures — resumes 1st Nov 2026"). Matchday 8 was
- * postponed on 18 October; the season resumes on 1 November and each round on the sheet moves back one week.
- * On 1 November, Dreamcast v Ittihad is the last game of the day. Two clubs rest each Sunday.
+ * postponed on 18 October; the season resumes on Sunday 25 October, on the dates printed on the sheet.
+ * On 25 October, Dreamcast v Ittihad is the last game of the day. Two clubs rest each Sunday.
  */
 export const REMAINING_FIXTURES: [string, [Slug, Slug, string][]][] = [
-  ["2026-11-01", [
+  ["2026-10-25", [
     ["alnasr", "los-blancos", "10:00"],
     ["hbm", "osasuna", "11:00"],
     ["elites", "golden-jubilee", "12:00"],
@@ -259,7 +259,7 @@ export const REMAINING_FIXTURES: [string, [Slug, Slug, string][]][] = [
     ["alhilal", "sc-m19", "14:00"],
     ["dream-cast", "ittihad", "15:00"],
   ]],
-  ["2026-11-08", [
+  ["2026-11-01", [
     ["ahal-sunnah", "sc-m19", "10:00"],
     ["albayan", "los-blancos", "11:00"],
     ["dream-cast", "elites", "12:00"],
@@ -267,7 +267,7 @@ export const REMAINING_FIXTURES: [string, [Slug, Slug, string][]][] = [
     ["alnasr", "golden-jubilee", "14:00"],
     ["hbm", "karegular", "15:00"],
   ]],
-  ["2026-11-15", [
+  ["2026-11-08", [
     ["alhilal", "hbm", "10:00"],
     ["ahal-sunnah", "osasuna", "11:00"],
     ["los-blancos", "golden-jubilee", "12:00"],
@@ -275,7 +275,7 @@ export const REMAINING_FIXTURES: [string, [Slug, Slug, string][]][] = [
     ["albayan", "ittihad", "14:00"],
     ["alnasr", "dream-cast", "15:00"],
   ]],
-  ["2026-11-22", [
+  ["2026-11-15", [
     ["ittihad", "elites", "10:00"],
     ["albayan", "golden-jubilee", "11:00"],
     ["sc-m19", "hbm", "12:00"],
@@ -283,7 +283,7 @@ export const REMAINING_FIXTURES: [string, [Slug, Slug, string][]][] = [
     ["los-blancos", "dream-cast", "14:00"],
     ["ahal-sunnah", "la-masia", "15:00"],
   ]],
-  ["2026-11-29", [
+  ["2026-11-22", [
     ["golden-jubilee", "dream-cast", "10:00"],
     ["la-masia", "hbm", "11:00"],
     ["ahal-sunnah", "karegular", "12:00"],
@@ -291,7 +291,7 @@ export const REMAINING_FIXTURES: [string, [Slug, Slug, string][]][] = [
     ["osasuna", "alhilal", "14:00"],
     ["albayan", "elites", "15:00"],
   ]],
-  ["2026-12-06", [
+  ["2026-11-29", [
     ["karegular", "alhilal", "10:00"],
     ["elites", "alnasr", "11:00"],
     ["ittihad", "los-blancos", "12:00"],
@@ -299,7 +299,7 @@ export const REMAINING_FIXTURES: [string, [Slug, Slug, string][]][] = [
     ["ahal-sunnah", "hbm", "14:00"],
     ["osasuna", "sc-m19", "15:00"],
   ]],
-  ["2026-12-13", [
+  ["2026-12-06", [
     ["la-masia", "osasuna", "10:00"],
     ["karegular", "sc-m19", "11:00"],
     ["albayan", "alnasr", "12:00"],

@@ -11,7 +11,7 @@ import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS, HISTORY, SQUADS,
  *
  * DATA_VERSION lets a deployment replace older demo data exactly once.
  */
-const DATA_VERSION = "13";
+const DATA_VERSION = "14";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool, { schema: s });
@@ -134,6 +134,35 @@ async function applyRemainingFixtures() {
     }
   }
   console.log(`Remaining fixtures: removed ${del.length} unplayed fixture(s), added ${added} (Matchdays ${mx[0].md + 1}-${md})${skipped ? `, skipped ${skipped} already played` : ""}.`);
+}
+
+/**
+ * Puts the League office's remaining fixtures on the dates printed on the sheet (resuming Sunday 25 October).
+ * Only unplayed league matches between the sheet's clubs are moved; nothing with events or line-ups is touched.
+ */
+async function applySheetDates() {
+  const { rows: sea } = await pool.query(
+    "select s.id from seasons s join competitions c on c.id=s.competition_id where c.slug='bosa-league' and s.is_current order by s.year desc limit 1",
+  );
+  const seasonId = sea[0]?.id;
+  if (!seasonId) return;
+  const { rows: teamRows } = await pool.query("select id, slug from teams");
+  const T = Object.fromEntries(teamRows.map((t: { id: string; slug: string }) => [t.slug, t.id]));
+  let moved = 0;
+  for (const [date, list] of REMAINING_FIXTURES) {
+    for (const [h, a, time] of list) {
+      const r = await pool.query(
+        `update matches m set kickoff=$4, status='SCHEDULED'
+          where m.season_id=$1 and m.stage='LEAGUE' and m.status in ('SCHEDULED','POSTPONED')
+            and m.home_team_id=$2 and m.away_team_id=$3 and m.kickoff <> $4
+            and not exists (select 1 from match_events e where e.match_id = m.id)
+            and not exists (select 1 from lineups l where l.match_id = m.id)`,
+        [seasonId, T[h], T[a], eat(date, time)],
+      );
+      moved += r.rowCount ?? 0;
+    }
+  }
+  console.log(`Remaining fixtures on the sheet's dates (from ${REMAINING_FIXTURES[0][0]}): ${moved} moved.`);
 }
 
 /**
@@ -315,13 +344,18 @@ async function main() {
       v.rows[0].value = "11";
     }
     if (v.rows[0]?.value === "11" && !process.argv.includes("--force")) {
-      // Non-destructive update from version 11: the League office's remaining fixtures (resumes 1 November)
+      // Non-destructive update from version 11: the League office's remaining fixtures
       await applyRemainingFixtures();
       v.rows[0].value = "12";
     }
     if (v.rows[0]?.value === "12" && !process.argv.includes("--force")) {
       // Non-destructive update from version 12: an incomplete league fixture (no clubs) entered on 18 October
       await removeIncompleteLeagueFixtures();
+      v.rows[0].value = "13";
+    }
+    if (v.rows[0]?.value === "13" && !process.argv.includes("--force")) {
+      // Non-destructive update from version 13: the remaining fixtures go back to the sheet's dates (resume 25 October)
+      await applySheetDates();
       await pool.query("insert into settings (key, value) values ('data_version', $1) on conflict (key) do update set value=excluded.value", [DATA_VERSION]);
       console.log("Updated data to version " + DATA_VERSION + " (no results or accounts removed).");
       await pool.end();
