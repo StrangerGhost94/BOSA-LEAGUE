@@ -9,7 +9,11 @@ import { InstallPrompt } from "@/components/install-prompt";
 
 export const dynamic = "force-dynamic";
 
+/** Public address for link previews (WhatsApp, X): APP_URL, else Railway's domain, else the live site */
+const SITE_URL = (process.env.APP_URL && !process.env.APP_URL.includes("localhost") ? process.env.APP_URL : process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "https://bosa-league.up.railway.app").replace(/\/$/, "");
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: { default: "BOSA League · Bilal Institute Old Students Football", template: "%s · BOSA League" },
   description:
     "The official home of the BOSA League, BOSA Champions League and BOSA Super Cup. Fixtures, results, standings, teams, players and news from Henry's Pitch, Kabalagala.",
