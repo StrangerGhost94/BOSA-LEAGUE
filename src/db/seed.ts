@@ -11,7 +11,7 @@ import { TEAMS, OFFICIAL_TABLE, TOP_SCORERS, FIXTURES, RESULTS, HISTORY, SQUADS,
  *
  * DATA_VERSION lets a deployment replace older demo data exactly once.
  */
-const DATA_VERSION = "12";
+const DATA_VERSION = "13";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool, { schema: s });
@@ -134,6 +134,21 @@ async function applyRemainingFixtures() {
     }
   }
   console.log(`Remaining fixtures: removed ${del.length} unplayed fixture(s), added ${added} (Matchdays ${mx[0].md + 1}-${md})${skipped ? `, skipped ${skipped} already played` : ""}.`);
+}
+
+/**
+ * Removes league fixtures that have no clubs set (an incomplete entry from the admin form). Only unplayed matches
+ * with nothing recorded against them are touched; knock-out slots waiting for a winner are not league fixtures.
+ */
+async function removeIncompleteLeagueFixtures() {
+  const { rows } = await pool.query(
+    `delete from matches m where m.stage='LEAGUE' and (m.home_team_id is null or m.away_team_id is null)
+       and m.status in ('SCHEDULED','POSTPONED')
+       and not exists (select 1 from match_events e where e.match_id = m.id)
+       and not exists (select 1 from lineups l where l.match_id = m.id)
+     returning id, round, kickoff`,
+  );
+  console.log(`Incomplete league fixtures removed: ${rows.length}${rows.length ? " (" + rows.map((r: { round: string; kickoff: Date }) => `${r.round}, ${new Date(r.kickoff).toISOString()}`).join("; ") + ")" : ""}.`);
 }
 
 async function applySquads() {
@@ -302,6 +317,11 @@ async function main() {
     if (v.rows[0]?.value === "11" && !process.argv.includes("--force")) {
       // Non-destructive update from version 11: the League office's remaining fixtures (resumes 1 November)
       await applyRemainingFixtures();
+      v.rows[0].value = "12";
+    }
+    if (v.rows[0]?.value === "12" && !process.argv.includes("--force")) {
+      // Non-destructive update from version 12: an incomplete league fixture (no clubs) entered on 18 October
+      await removeIncompleteLeagueFixtures();
       await pool.query("insert into settings (key, value) values ('data_version', $1) on conflict (key) do update set value=excluded.value", [DATA_VERSION]);
       console.log("Updated data to version " + DATA_VERSION + " (no results or accounts removed).");
       await pool.end();

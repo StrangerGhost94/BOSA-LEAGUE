@@ -167,6 +167,8 @@ export async function createMatchAction(_: ActionResult, fd: FormData): A {
     if (!seasonId || !kickoff) return fail("Season and kick-off time are required.");
     if (home && home === away) return fail("A team cannot play itself.");
     const stage = (str(fd, "stage") || "LEAGUE") as s.Stage;
+    // League and group fixtures are always between two known clubs; only knock-out slots can wait for a winner
+    if ((stage === "LEAGUE" || stage === "GROUP") && (!home || !away)) return fail("Choose both clubs for a league fixture.");
     const matchday = num(fd, "matchday");
     const round = str(fd, "round") || (stage === "LEAGUE" ? `Matchday ${matchday ?? 1}` : stage === "GROUP" ? `Group Stage · Round ${matchday ?? 1}` : stage.replace("_", "-").toLowerCase().replace(/^./, (c) => c.toUpperCase()));
     const [m] = await db

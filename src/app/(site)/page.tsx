@@ -48,7 +48,8 @@ export default async function HomePage() {
     getCurrentSeasonIds(),
   ]);
   const [recent, state, nextAll, moment] = await Promise.all([getRecentResults(6, seasonIds), getSeasonState(), getMatches({ seasonIds, status: "upcoming", limit: 12 }), currentMoment()]);
-  const upcoming = visibleTo(upcomingAll, member);
+  // A league fixture without both clubs is an incomplete entry, never something to feature
+  const upcoming = visibleTo(upcomingAll, member).filter((m) => m.homeTeamId && m.awayTeamId);
   const nextMatch = visibleTo(nextAll, member).find((m) => m.homeTeamId && m.awayTeamId) ?? visibleTo(nextAll, member)[0];
   const activeClubs = teams.filter((t) => t.active).length;
   const WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen", "Twenty"];
