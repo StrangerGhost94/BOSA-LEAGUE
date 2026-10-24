@@ -3,7 +3,7 @@ import { createHmac, randomInt } from "crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { APP_URL, SITE_DOMAIN } from "./site";
+import { APP_URL, SITE_DOMAIN, SITE_URL } from "./site";
 import { signEmailToken } from "./session";
 
 /**
@@ -25,7 +25,7 @@ export async function sendEmail(msg: { to: string; subject: string; html: string
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: FROM(), to: [msg.to], subject: msg.subject, html: msg.html, text: msg.text }),
+      body: JSON.stringify({ from: FROM(), to: [msg.to], subject: msg.subject, html: msg.html, text: msg.text, ...(process.env.EMAIL_REPLY_TO ? { reply_to: process.env.EMAIL_REPLY_TO } : {}) }),
     });
     if (!r.ok) console.error(`[email] Resend refused "${msg.subject}" to ${msg.to}: ${r.status} ${await r.text()}`);
     return r.ok;
@@ -34,6 +34,9 @@ export async function sendEmail(msg: { to: string; subject: string; html: string
     return false;
   }
 }
+
+/** League crest at the top of every email (a hosted PNG: Gmail and Outlook do not show SVG or embedded images reliably) */
+const LOGO = `<p style="text-align:center;margin:0 0 24px"><img src="${SITE_URL}/brand/email-logo.png" width="96" height="104" alt="BOSA League" style="display:inline-block;border:0;outline:none;text-decoration:none"></p>`;
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
@@ -50,6 +53,7 @@ export async function sendVerificationEmail(u: { id: string; name: string; email
     subject: `${code} is your BOSA League code`,
     text: `Hi ${first},\n\nYour BOSA League confirmation code is: ${code}\n\nEnter it in your account within 30 minutes. Or confirm by opening this link:\n\n${link}\n\nThe link works for 7 days. If you did not create an account, you can ignore this email.\n\nBOSA League\n${SITE_DOMAIN}`,
     html: `<div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#0A0F1E">
+  ${LOGO}
   <h2 style="margin:0 0 16px">Confirm your email</h2>
   <p>Hi ${esc(first)},</p>
   <p>Your BOSA League confirmation code is:</p>
@@ -73,6 +77,7 @@ export async function sendPasswordResetEmail(u: { id: string; name: string; emai
     subject: `${code} is your BOSA League password reset code`,
     text: `Hi ${first},\n\nYour BOSA League password reset code is: ${code}\n\nEnter it on the reset page within 15 minutes to choose a new password.\n\nIf you did not ask to reset your password, ignore this email: your password stays the same.\n\nBOSA League\n${SITE_DOMAIN}`,
     html: `<div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#0A0F1E">
+  ${LOGO}
   <h2 style="margin:0 0 16px">Reset your password</h2>
   <p>Hi ${esc(first)},</p>
   <p>Your BOSA League password reset code is:</p>
