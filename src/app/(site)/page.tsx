@@ -20,6 +20,8 @@ import {
   getLiveMatches,
   getCurrentSeasonIds,
   visibleTo,
+  publicScores,
+  resultReleased,
 } from "@/lib/data";
 import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { getSeasonState } from "@/lib/season-engine";
@@ -47,16 +49,18 @@ export default async function HomePage() {
       ? { href: "/membership", label: "Activate membership" }
       : { href: "/membership", label: "Become a member" };
   const [table, upcomingAll, totals, scorers, news, honours, live, seasonIds] = await Promise.all([
-    getSeasonTable(lgSeason.id),
+    getSeasonTable(lgSeason.id, member, !member),
     getMatches({ seasonId: lgSeason.id, status: "upcoming", limit: 14 }),
     getSeasonTotals(lgSeason.id),
     getTopScorers(lgSeason.id, 5),
     getArticles({ limit: 7 }),
     getHonours(),
-    getLiveMatches(),
+    getLiveMatches().then((l) => publicScores(l, member)),
     getCurrentSeasonIds(),
   ]);
-  const [recent, state, nextAll, moment] = await Promise.all([getRecentResults(6, seasonIds), getSeasonState(), getMatches({ seasonIds, status: "upcoming", limit: 12 }), currentMoment()]);
+  const [recentAll, state, nextAll, moment] = await Promise.all([getRecentResults(member ? 6 : 18, seasonIds), getSeasonState(), getMatches({ seasonIds, status: "upcoming", limit: 12 }), currentMoment()]);
+  // Free visitors see results once they are released on the Monday after the match
+  const recent = member ? recentAll : recentAll.filter(resultReleased).slice(0, 6);
   // A league fixture without both clubs is an incomplete entry, never something to feature
   const upcoming = visibleTo(upcomingAll, member).filter((m) => m.homeTeamId && m.awayTeamId);
   const nextMatch = visibleTo(nextAll, member).find((m) => m.homeTeamId && m.awayTeamId) ?? visibleTo(nextAll, member)[0];
@@ -83,14 +87,14 @@ export default async function HomePage() {
     hero = { top: "Off season.", bottom: "Back soon." };
   } else if (inLeague && moment.kind === "underway") {
     hero = { top: `Matchday ${moment.md}`, bottom: "under way." };
-    momentLine = member ? `${moment.done} of ${moment.total} results are in. The table moves after every final whistle.` : "Results are coming in. The table is free for everyone; members follow every goal live.";
+    momentLine = member ? `${moment.done} of ${moment.total} results are in. The table moves after every final whistle.` : "Results are coming in. Members follow every goal live; everyone else gets the results on Monday.";
   } else if (inLeague && moment.kind === "today") {
     hero = { top: "Today", bottom: `Matchday ${moment.md}.` };
     momentLine = `${moment.count} matches from ${kick(moment.first)} at Henry's Pitch, Kabalagala, behind Shell Kabalagala.`;
   } else if (inLeague && moment.kind === "after") {
     hero = { top: `Matchday ${moment.md}`, bottom: "in the books." };
     const next = moment.nextFirst && moment.nextMd ? ` Next up: Matchday ${moment.nextMd} on ${fmtDate(moment.nextFirst, { weekday: "long", day: "numeric", month: "long" })}.` : "";
-    momentLine = member && moment.roundUp ? `${moment.roundUp.excerpt}${next}` : `Every result and the new table are in. Members get the scorers and the full match reports.${next}`;
+    momentLine = member && moment.roundUp ? `${moment.roundUp.excerpt}${next}` : `${!resultReleased({ kickoff: moment.lastKick }) ? "Members have every result and the new table now; everyone else gets them on Monday." : "Every result and the new table are in. Members get the scorers and the full match reports."}${next}`;
     if (member && moment.roundUp) heroLink = { href: `/news/${moment.roundUp.slug}`, label: `Read the Matchday ${moment.md} round-up` };
   } else if (inLeague && (moment.kind === "tomorrow" || moment.kind === "week" || moment.kind === "later")) {
     const wd = fmtDate(moment.first, { weekday: "long" });
@@ -297,6 +301,8 @@ export default async function HomePage() {
                   <div className="text-center">
                     {featured.status === "SCHEDULED" ? (
                       <div className="font-display text-4xl text-gold">{fmtTime(featured.kickoff)}</div>
+                    ) : featured.homeScore == null ? (
+                      <div className="font-display text-4xl text-crimson-400">{featured.status === "FULL_TIME" ? "FT" : "LIVE"}</div>
                     ) : (
                       <div className="font-display text-5xl">
                         {featured.homeScore}-{featured.awayScore}

@@ -41,13 +41,15 @@ export async function teamMap() {
 
 export type TableRow = StandingRow & { team: s.Team };
 
-export async function getSeasonTable(seasonId: string, includeLive = true): Promise<TableRow[]> {
+/** releasedOnly: the free visitors' table, counting only results already released on their Monday */
+export async function getSeasonTable(seasonId: string, includeLive = true, releasedOnly = false): Promise<TableRow[]> {
   const season = await db.query.seasons.findFirst({ where: eq(s.seasons.id, seasonId), with: { teams: true } });
   if (!season) return [];
   const ms = await db
     .select()
     .from(s.matches)
-    .where(and(eq(s.matches.seasonId, seasonId), inArray(s.matches.stage, ["LEAGUE"])));
+    .where(and(eq(s.matches.seasonId, seasonId), inArray(s.matches.stage, ["LEAGUE"])))
+    .then((rows) => (releasedOnly ? rows.filter((m) => m.status !== "FULL_TIME" || resultReleased(m)) : rows));
   const adj = Object.fromEntries(season.teams.map((t) => [t.teamId, t.pointsAdjustment]));
   const baselines = Object.fromEntries(
     season.teams.map((t) => [
@@ -344,10 +346,24 @@ export async function getCurrentSeasonIds() {
 
 
 /** Early access: non-members only see fixtures whose public release time has passed. */
-/** Free visitors see final scores; a match in progress shows as live without its score (live scores are for members) */
-export function hideLiveScores<T extends { status: string; homeScore: number | null; awayScore: number | null }>(list: T[], member: boolean): T[] {
+/**
+ * Monday release: a result opens to everyone at 00:00 Kampala time on the Monday after the match.
+ * Until then only members see it (on matchday, when everyone wants it).
+ */
+export function resultReleaseAt(kickoff: Date) {
+  const EAT = 3 * 3600_000; // Kampala is UTC+3 all year
+  const local = new Date(kickoff.getTime() + EAT);
+  const toMonday = (8 - local.getUTCDay()) % 7 || 7;
+  return new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate() + toMonday) - EAT);
+}
+
+export const resultReleased = (m: { kickoff: Date }) => Date.now() >= resultReleaseAt(m.kickoff).getTime();
+
+/** What free visitors see: no live scores, and a final score only once it is released on the Monday */
+export function publicScores<T extends { status: string; kickoff: Date; homeScore: number | null; awayScore: number | null }>(list: T[], member: boolean): T[] {
   if (member) return list;
-  return list.map((m) => (m.status === "LIVE" || m.status === "HALF_TIME" ? { ...m, homeScore: null, awayScore: null } : m));
+  const hide = (m: T) => m.status === "LIVE" || m.status === "HALF_TIME" || (m.status === "FULL_TIME" && !resultReleased(m));
+  return list.map((m) => (hide(m) ? { ...m, homeScore: null, awayScore: null, homePens: null, awayPens: null } : m));
 }
 
 export function visibleTo<T extends { publicFrom: Date | null }>(list: T[], member: boolean): T[] {

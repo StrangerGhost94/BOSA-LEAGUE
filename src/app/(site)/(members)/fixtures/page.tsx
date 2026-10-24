@@ -3,7 +3,7 @@ import { FilterBar } from "@/components/filter-bar";
 import { MatchCard } from "@/components/match";
 import { Stagger, StaggerItem } from "@/components/motion";
 import { EmptyState } from "@/components/ui";
-import { getCompetitions, getMatches, getTeams, getVenues, hideLiveScores, visibleTo } from "@/lib/data";
+import { getCompetitions, getMatches, getTeams, getVenues, publicScores, visibleTo } from "@/lib/data";
 import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { db } from "@/db";
 import { seasons } from "@/db/schema";
@@ -33,7 +33,7 @@ export default async function FixturesPage(props: { searchParams: Promise<Record
     order: status === "completed" ? "desc" : "asc",
     limit: 400,
   });
-  const matches = hideLiveScores(visibleTo(matchesAll, member), member);
+  const matches = publicScores(visibleTo(matchesAll, member), member);
   const earlyCount = matchesAll.length - matches.length;
   // Default view: from last week onwards, so the page opens on what matters now
   const defaultView = !searchParams.from && !searchParams.to && status === "all";
@@ -74,8 +74,8 @@ export default async function FixturesPage(props: { searchParams: Promise<Record
         {!member && (
           <a href="/membership" className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-gold/30 bg-gold/[0.06] px-5 py-4 text-sm">
             <span>
-              <span className="font-semibold text-gold">Results are free for everyone.</span>{" "}
-              <span className="text-ivory/60">Members follow every match live, with scorers, line-ups, cards and goal alerts on their phone.</span>
+              <span className="font-semibold text-gold">Results open to everyone on the Monday after each matchday.</span>{" "}
+              <span className="text-ivory/60">Members get every score live on Sunday, with scorers, line-ups, cards and goal alerts on their phone.</span>
             </span>
             <span className="shrink-0 text-gold">Become a member</span>
           </a>

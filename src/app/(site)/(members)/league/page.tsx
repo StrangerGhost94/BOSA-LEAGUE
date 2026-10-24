@@ -3,7 +3,7 @@ import { CompetitionHero, HonoursList, LeaderBoard, MatchdayNav, SubNav, TeamGoa
 import { FixtureRow, StandingsTable } from "@/components/match";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion";
 import { SectionHeading, StatTile } from "@/components/ui";
-import { getCompetition, getHonours, getMatches, getPlayerStats, getSeasonTable, getSeasonTotals, getTeams, hideLiveScores, visibleTo } from "@/lib/data";
+import { getCompetition, getHonours, getMatches, getPlayerStats, getSeasonTable, getSeasonTotals, getTeams, publicScores, visibleTo } from "@/lib/data";
 import { getCurrentUser, hasMembership } from "@/lib/auth";
 import { MembersLock } from "@/components/members-lock";
 import { fmtLong } from "@/lib/format";
@@ -30,8 +30,8 @@ export default async function LeaguePage(props: { searchParams: Promise<{ md?: s
   const user = await getCurrentUser();
   const member = hasMembership(user);
   const [table, totals, allMatches, stats, honours, teams] = await Promise.all([
-    // Free visitors get the table after each final whistle; the live table (with matches in progress) is for members
-    getSeasonTable(season.id, member),
+    // Members get the live table; free visitors get it with each matchday's results from the Monday after
+    getSeasonTable(season.id, member, !member),
     getSeasonTotals(season.id),
     getMatches({ seasonId: season.id }),
     getPlayerStats({ seasonId: season.id }),
@@ -44,7 +44,7 @@ export default async function LeaguePage(props: { searchParams: Promise<{ md?: s
   const nextMd = all.find((m) => m.status !== "FULL_TIME")?.matchday ?? totalMd;
   const md = Math.min(totalMd, Math.max(1, parseInt(searchParams.md ?? "", 10) || nextMd));
   const mdAll = all.filter((m) => m.matchday === md);
-  const mdMatches = hideLiveScores(visibleTo(mdAll, member), member);
+  const mdMatches = publicScores(visibleTo(mdAll, member), member);
   const lockedUntil = mdAll.length > mdMatches.length ? mdAll.find((m) => m.publicFrom)?.publicFrom ?? null : null;
 
   const scorers = stats.filter((p) => p.goals > 0).slice(0, 6);
@@ -89,6 +89,12 @@ export default async function LeaguePage(props: { searchParams: Promise<{ md?: s
               <span className="text-sm text-ivory/55">{isCurrent && state.phase === "CHAMPIONS" ? `The top ${CL_PLACES} are now in the Champions League knock-out.` : ""}</span>
             </div>
           </FadeIn>
+        )}
+        {!member && !finished && (
+          <p className="mb-6 rounded-xl border border-gold/25 bg-gold/[0.06] px-4 py-3 text-sm text-ivory/70">
+            The table and results open to everyone on the Monday after each matchday.{" "}
+            <Link href="/membership" className="font-semibold text-gold hover:underline">Members</Link> see every score live on Sunday and the table move with each goal.
+          </p>
         )}
         <SectionHeading eyebrow={finished ? "Final table" : "Updated automatically after every result"} title={<>League <em className="gold-text">standings</em></>} />
         <FadeIn>

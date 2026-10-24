@@ -255,7 +255,7 @@ export type Moment =
   | { kind: "live"; md: number | null; live: number }
   | { kind: "today"; md: number; first: Date; count: number }
   | { kind: "underway"; md: number; done: number; total: number }
-  | { kind: "after"; md: number; roundUp: MatchdayStory | null; nextFirst: Date | null; nextMd: number | null }
+  | { kind: "after"; md: number; lastKick: Date; roundUp: MatchdayStory | null; nextFirst: Date | null; nextMd: number | null }
   | { kind: "tomorrow" | "week" | "later"; md: number; first: Date; count: number; headline: { home: string; away: string } | null }
   | { kind: "none" };
 
@@ -291,7 +291,7 @@ export async function currentMoment(): Promise<Moment> {
     const lastKick = Math.max(...byMd.get(lastDoneMd)!.map((m) => m.kickoff.getTime()));
     const tomorrowNext = nextFirst && nextFirst.getTime() - now < 36 * 3_600_000;
     if (now - lastKick < 2 * 86_400_000 && !tomorrowNext) {
-      return { kind: "after", md: lastDoneMd, roundUp: await roundUp(ctx, lastDoneMd, byMd.get(lastDoneMd)!), nextFirst, nextMd: nextMd ?? null };
+      return { kind: "after", md: lastDoneMd, lastKick: new Date(lastKick), roundUp: await roundUp(ctx, lastDoneMd, byMd.get(lastDoneMd)!), nextFirst, nextMd: nextMd ?? null };
     }
   }
 
