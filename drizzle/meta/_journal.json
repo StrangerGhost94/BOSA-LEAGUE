@@ -99,6 +99,13 @@
       "when": 1792843756301,
       "tag": "0013_password_reset",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792847400000,
+      "tag": "0014_confirm_pre_email_users",
+      "breakpoints": true
     }
   ]
 }
