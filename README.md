@@ -72,7 +72,7 @@ npm run dev                 # http://localhost:3000
 3. Add a PostgreSQL service to the same project, then in the app service's Variables add:
    - `DATABASE_URL` = `${{Postgres.DATABASE_URL}}`
    - `AUTH_SECRET` = a long random string (`openssl rand -base64 48`)
-   - `APP_URL` = your public URL, for example `https://bosa-league-production.up.railway.app` (no trailing slash)
+   - `APP_URL` = your public URL, `https://bosaleague.xyz` (no trailing slash). Add `bosaleague.xyz` under the service's Settings → Networking → Custom Domain; visits to the old `*.up.railway.app` address are redirected there
    - `SEED_PASSWORD` = the password you want for the demo accounts
    - `PAYMENTS_DEMO_MODE` = `false` in production
 4. Deploy. The start command runs the migrations, seeds the database the first time (it skips if data already exists) and starts the site.

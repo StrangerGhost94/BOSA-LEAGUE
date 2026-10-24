@@ -2,6 +2,7 @@ import { pool } from "@/db";
 import { requirePermission } from "@/lib/auth";
 import { getMembershipPrice } from "@/lib/data";
 import { ugx } from "@/lib/format";
+import { SITE_DOMAIN } from "@/lib/site";
 import { PrintButton } from "./print-button";
 
 export const metadata = { title: "Print vouchers" };
@@ -12,7 +13,6 @@ export default async function PrintVouchers(props: { searchParams: Promise<{ bat
   await requirePermission("payments");
   const price = await getMembershipPrice();
   const { rows } = await pool.query("select code from vouchers where status='UNUSED' and ($1::text is null or batch=$1) order by code", [searchParams.batch ?? null]);
-  const base = (process.env.APP_URL || "").replace(/^https?:\/\//, "") || "bosa-league";
   return (
     <div className="voucher-print min-h-screen p-4" style={{ background: "#fff", color: "#000", colorScheme: "light" }}>
       <style>{`
@@ -45,7 +45,7 @@ export default async function PrintVouchers(props: { searchParams: Promise<{ bat
               <span>{ugx(price)}</span>
             </div>
             <div className="text-center font-mono text-[15pt] font-bold tracking-[0.1em]">{r.code}</div>
-            <div className="text-center text-[7.5pt]">Redeem once at {base}</div>
+            <div className="text-center text-[7.5pt]">Redeem once at {SITE_DOMAIN}</div>
           </div>
         ))}
       </div>

@@ -9,6 +9,7 @@ import { cardCode, ensureMemberNumber, membershipId } from "@/lib/members";
 import { isStaff } from "@/lib/roles";
 import { MembersNav } from "@/components/members-nav";
 import { MemberCard, type CardData } from "@/components/member-card";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata = { title: "Member card" };
 
@@ -17,8 +18,7 @@ export default async function CardPage() {
   if (!hasMembership(u)) redirect("/membership");
   const n = await ensureMemberNumber(u.id);
   const code = cardCode(n);
-  const base = (process.env.APP_URL || "").replace(/\/$/, "");
-  const qr = await QRCode.toString(`${base}/verify/${code}`, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#0A0F1E", light: "#FFFFFF" } });
+  const qr = await QRCode.toString(`${SITE_URL}/verify/${code}`, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#0A0F1E", light: "#FFFFFF" } });
   // Old students belong to the club of the year they joined Bilal Institute
   const club = u.team ?? (u.completionYear ? await db.query.teams.findFirst({ where: eq(teams.intakeYear, u.completionYear) }) : null);
   const offers = await db.query.perks.findMany({ where: eq(perks.active, true), orderBy: asc(perks.order) });
@@ -35,7 +35,7 @@ export default async function CardPage() {
     club: club ? { name: club.name, crest: club.crest } : null,
     since,
     qrSvg: qr,
-    verifyHost: base.replace(/^https?:\/\//, "") || "bosa-league",
+    verifyHost: SITE_URL.replace(/^https?:\/\//, ""),
   };
 
   const rows: [string, string][] = [

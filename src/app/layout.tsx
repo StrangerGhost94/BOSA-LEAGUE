@@ -6,11 +6,10 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { CommandMenu } from "@/components/site/command-menu";
 import { InstallPrompt } from "@/components/install-prompt";
+import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
-/** Public address for link previews (WhatsApp, X): APP_URL, else Railway's domain, else the live site */
-const SITE_URL = (process.env.APP_URL && !process.env.APP_URL.includes("localhost") ? process.env.APP_URL : process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "https://bosa-league.up.railway.app").replace(/\/$/, "");
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

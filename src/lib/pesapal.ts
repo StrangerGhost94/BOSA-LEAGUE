@@ -1,4 +1,5 @@
 import "server-only";
+import { APP_URL } from "./site";
 
 /**
  * Pesapal API 3.0 client.
@@ -42,7 +43,7 @@ async function getToken() {
 async function getIpnId() {
   if (process.env.PESAPAL_IPN_ID) return process.env.PESAPAL_IPN_ID;
   if (ipnCache) return ipnCache;
-  const url = `${process.env.APP_URL}/api/payments/pesapal/ipn`;
+  const url = `${APP_URL}/api/payments/pesapal/ipn`;
   const list = await call<{ url: string; ipn_id: string }[]>("/api/URLSetup/GetIpnList", { method: "GET" }).catch(() => []);
   const found = Array.isArray(list) ? list.find((x) => x.url === url) : undefined;
   if (found) return (ipnCache = found.ipn_id);
@@ -74,7 +75,7 @@ export async function submitOrder(input: {
         currency: input.currency,
         amount: input.amount,
         description: input.description,
-        callback_url: `${process.env.APP_URL}/membership/callback`,
+        callback_url: `${APP_URL}/membership/callback`,
         notification_id,
         billing_address: {
           email_address: input.email,
