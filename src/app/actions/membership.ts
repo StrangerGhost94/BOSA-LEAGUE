@@ -11,12 +11,15 @@ import { submitOrder, pesapalConfigured } from "@/lib/pesapal";
 import { headers } from "next/headers";
 import { redeemVoucher } from "@/lib/vouchers";
 import { fail } from "@/lib/result";
+import { needsEmailConfirmation } from "@/lib/email";
 import type { ActionResult } from "@/components/form";
 
 export async function startPaymentAction(_: ActionResult, fd: FormData): Promise<ActionResult> {
   const user = await getCurrentUser();
   if (!user) redirect("/sign-in?next=/membership");
   if (hasMembership(user)) return fail("Your membership is already active.");
+  // Online payment needs an email we know reaches the payer (receipts, payment problems); vouchers are paid in person
+  if (needsEmailConfirmation(user)) return fail("Please confirm your email before paying online. Go to My account, Confirm your email.");
   const amount = await getMembershipPrice();
   const currency = await getSetting("membership_currency", "UGX");
   const merchantRef = `BOSA-${Date.now().toString(36).toUpperCase()}-${randomUUID().slice(0, 6).toUpperCase()}`;

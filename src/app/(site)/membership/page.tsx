@@ -10,7 +10,7 @@ import { redeemVoucherAction, startPaymentAction } from "@/app/actions/membershi
 import { BosaLogo, Icon } from "@/components/ui";
 import { pageMeta } from "@/lib/site";
 import { AboutBosa } from "@/components/site/about";
-import { emailConfigured } from "@/lib/email";
+import { emailConfigured, needsEmailConfirmation } from "@/lib/email";
 
 export const metadata = pageMeta("/membership", "Membership", "Join the BOSA League: live scores, tables, fixtures, goal alerts and your digital member card with partner perks.");
 
@@ -107,7 +107,18 @@ export default async function MembershipPage(
                       </Submit>
                       <p className="text-center text-xs text-ivory/50">Buy a voucher for {ugx(price)} from the League office or a club manager at Henry&apos;s Pitch. Each code works once.</p>
                     </ActionForm>
-                    {live && (
+                    {live && user && needsEmailConfirmation(user) && (
+                      <div className="space-y-3 border-t border-white/[0.08] pt-6 text-center">
+                        <div className="text-[11px] uppercase tracking-[0.2em] text-ivory/45">Or pay online</div>
+                        <p className="text-sm text-ivory/60">
+                          To pay online, first confirm your email. We sent a 6-digit code to <span className="text-ivory">{user.email}</span>.
+                        </p>
+                        <Link href="/account?view=email" className="btn-ghost w-full py-3.5">
+                          Confirm my email
+                        </Link>
+                      </div>
+                    )}
+                    {live && user && !needsEmailConfirmation(user) && (
                       <ActionForm action={startPaymentAction} className="space-y-4 border-t border-white/[0.08] pt-6" toast={false}>
                         <div className="text-center text-[11px] uppercase tracking-[0.2em] text-ivory/45">Or pay online</div>
                         <Field label="Mobile Money number (optional)">

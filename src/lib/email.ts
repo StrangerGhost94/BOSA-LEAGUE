@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { APP_URL, SITE_DOMAIN, SITE_URL } from "./site";
 import { signEmailToken } from "./session";
+import { isStaff } from "./roles";
 
 /**
  * Sends email from the league's own domain through Resend (https://resend.com).
@@ -14,6 +15,11 @@ const FROM = () => process.env.EMAIL_FROM || `BOSA League <no-reply@${SITE_DOMAI
 
 export function emailConfigured() {
   return !!process.env.RESEND_API_KEY;
+}
+
+/** A fan who has not confirmed their email yet (staff are never asked, and nobody is asked while email is off) */
+export function needsEmailConfirmation(u: { emailVerifiedAt: Date | null; role: string }) {
+  return emailConfigured() && !u.emailVerifiedAt && !isStaff(u.role);
 }
 
 export async function sendEmail(msg: { to: string; subject: string; html: string; text: string }) {

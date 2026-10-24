@@ -7,8 +7,7 @@ import { ROLE_LABEL, homeFor } from "@/lib/roles";
 import { fmtDateTime, fmtLong, ugx } from "@/lib/format";
 import { ActionForm, Field, Submit } from "@/components/form";
 import { changePasswordAction, confirmEmailCodeAction, resendVerificationAction, updateProfileAction } from "@/app/actions/account";
-import { emailConfigured } from "@/lib/email";
-import { isStaff } from "@/lib/roles";
+import { needsEmailConfirmation } from "@/lib/email";
 import { Crest, Icon, Pill } from "@/components/ui";
 import { FadeIn } from "@/components/motion";
 import { getPlayerStats } from "@/lib/data";
@@ -62,7 +61,7 @@ export default async function AccountPage(props: { searchParams: Promise<{ view?
   const member = hasMembership(u);
   const panel = homeFor(u.role);
   // Staff accounts are set up by the League office; fans confirm their own address once email is switched on
-  const needsEmail = !u.emailVerifiedAt && !isStaff(u.role) && emailConfigured();
+  const needsEmail = needsEmailConfirmation(u);
   const view = (Object.keys(TITLES) as View[]).find((v) => v === searchParams.view) ?? null;
   const initials = u.name
     .split(/\s+/)
@@ -106,7 +105,7 @@ export default async function AccountPage(props: { searchParams: Promise<{ view?
 
       <div className="mt-6 space-y-6">
         {needsEmail && (
-          <Group note={`We sent a 6-digit code to ${u.email}. Confirming it means we can reach you about your membership and your account.`}>
+          <Group note={`We sent a 6-digit code to ${u.email}. Confirm it to pay for membership online, and so we can reach you about your account.`}>
             <Row href="/account?view=email" icon="bell" tint="bg-crimson text-white" label="Confirm your email" value="Not confirmed" />
           </Group>
         )}
