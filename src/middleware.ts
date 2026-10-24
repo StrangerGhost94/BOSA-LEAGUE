@@ -6,9 +6,10 @@ const PROTECTED = ["/admin", "/team-panel", "/referee", "/live-desk", "/account"
 
 export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
-  // The old Railway address moves to the league's own domain (API routes stay put, so Pesapal's registered IPN keeps working)
+  // The old Railway address and www. move to the league's own domain (API routes stay put, so Pesapal's registered IPN keeps working)
   const publicHost = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "";
-  if (publicHost.endsWith(".up.railway.app") && !pathname.startsWith("/api/") && ["GET", "HEAD"].includes(req.method)) {
+  const otherHost = publicHost.endsWith(".up.railway.app") || publicHost === `www.${SITE_DOMAIN}`;
+  if (otherHost && !pathname.startsWith("/api/") && ["GET", "HEAD"].includes(req.method)) {
     return NextResponse.redirect(`https://${SITE_DOMAIN}${pathname}${search}`, 308);
   }
   // Pages can tell which address they were opened on (the members-only layout uses it for its search summary)
